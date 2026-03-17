@@ -10,6 +10,7 @@
  */
 
 import { OrderRexPayload, LodgeRexPayload } from '../../src/interfaces';
+import { randomExporterReference } from '../../src/helpers';
 
 // ─── Commodity & product codes (confirm with service team) ───────────────────
 // TODO: Confirm actual commodityType code for Horticulture
@@ -43,7 +44,6 @@ const DEFAULTS = {
   destinationCountry:   'SG',
   productType:          PRODUCT_TYPE.MANGO,
   departureDaysFromNow: 5,
-  exporterReference:    'MY-REF-001',
   consigneeName:        'ABC Importer Pte Ltd',
   consigneeAddress: {
     streetLine: '123 Import Road',
@@ -120,7 +120,7 @@ export function buildHortDefaultLodgePayload(overrides: {
       commodityType: COMMODITY_TYPE,
       destinationCountry,
       departureDate,
-      exporterReference: DEFAULTS.exporterReference,
+      exporterReference: randomExporterReference('HORT'),
 
       consigneeDetails: {
         consigneeName:        DEFAULTS.consigneeName,
