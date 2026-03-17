@@ -1,0 +1,10 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:read="http://agriculture.gov.au/nexdoc/ReadRexSoap_1.0" xmlns:com="http://agriculture.gov.au/nexdoc/common/CommonTypes_1.0">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <read:ReadRex>
+         <read:identification>
+            <com:rexNumber>?</com:rexNumber>
+         </read:identification>
+      </read:ReadRex>
+   </soapenv:Body>
+</soapenv:Envelope>

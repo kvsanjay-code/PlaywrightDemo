@@ -1,0 +1,43 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:amen="http://agriculture.gov.au/nexdoc/AmendRexSoap_1.0" xmlns:com="http://agriculture.gov.au/nexdoc/common/CommonTypes_1.0" xmlns:com1="http://agriculture.gov.au/nexdoc/common/rex/CommonTypes_1.0" xmlns:fis="http://agriculture.gov.au/nexdoc/common/rex/FishTypes_1.0" xmlns:wool="http://agriculture.gov.au/nexdoc/common/rex/WoolTypes_1.0" xmlns:skin="http://agriculture.gov.au/nexdoc/common/rex/SkinsAndHidesTypes_1.0" xmlns:ined="http://agriculture.gov.au/nexdoc/common/rex/InedibleMeatTypes_1.0">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <amen:AmendRex>
+         <amen:identification>
+            <com:rexNumber>?</com:rexNumber>
+            <com1:lastAmendDateTime>?</com1:lastAmendDateTime>
+         </amen:identification>
+         <!--Optional:-->
+         <amen:exportDetails>
+            <!-- same structure as LodgeRex exportDetails -->
+         </amen:exportDetails>
+         <!--Optional:-->
+         <amen:certificateDetails>
+            <!-- same structure as LodgeRex certificateDetails -->
+         </amen:certificateDetails>
+         <!--Optional:-->
+         <amen:productLines>
+            <!-- same structure as LodgeRex productLines -->
+         </amen:productLines>
+         <!--Optional:-->
+         <amen:manufacturers>
+            <!-- same structure as LodgeRex manufacturers -->
+         </amen:manufacturers>
+         <!--Optional:-->
+         <amen:attachments>
+            <!-- same structure as LodgeRex attachments -->
+         </amen:attachments>
+         <!--Optional:-->
+         <amen:additionalTexts>
+            <!-- same structure as LodgeRex additionalTexts -->
+         </amen:additionalTexts>
+         <!--Optional:-->
+         <amen:euTransit>
+            <!-- same structure as LodgeRex euTransit -->
+         </amen:euTransit>
+         <!--Optional:-->
+         <amen:submitAmendmentRequest>?</amen:submitAmendmentRequest>
+         <!--Optional:-->
+         <amen:amendmentReason>?</amen:amendmentReason>
+      </amen:AmendRex>
+   </soapenv:Body>
+</soapenv:Envelope>

@@ -1,0 +1,38 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ord="http://agriculture.gov.au/nexdoc/OrderRexSoap_1.0" xmlns:com="http://agriculture.gov.au/nexdoc/common/CommonTypes_1.0" xmlns:com1="http://agriculture.gov.au/nexdoc/common/rex/CommonTypes_1.0" xmlns:fis="http://agriculture.gov.au/nexdoc/common/rex/FishTypes_1.0" xmlns:wool="http://agriculture.gov.au/nexdoc/common/rex/WoolTypes_1.0" xmlns:skin="http://agriculture.gov.au/nexdoc/common/rex/SkinsAndHidesTypes_1.0" xmlns:ined="http://agriculture.gov.au/nexdoc/common/rex/InedibleMeatTypes_1.0">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ord:OrderRex>
+         <!--Optional:-->
+         <ord:identification>
+            <com:rexNumber>?</com:rexNumber>
+            <com1:lastAmendDateTime>?</com1:lastAmendDateTime>
+         </ord:identification>
+         <ord:exportDetails>
+            <!-- same structure as LodgeRex exportDetails — MANDATORY for ORDER -->
+         </ord:exportDetails>
+         <!--Optional:-->
+         <ord:certificateDetails>
+            <!-- same structure as LodgeRex certificateDetails -->
+         </ord:certificateDetails>
+         <ord:productLines>
+            <!-- same structure as LodgeRex productLines — MANDATORY for ORDER -->
+         </ord:productLines>
+         <!--Optional:-->
+         <ord:manufacturers>
+            <!-- same structure as LodgeRex manufacturers -->
+         </ord:manufacturers>
+         <!--Optional:-->
+         <ord:attachments>
+            <!-- same structure as LodgeRex attachments -->
+         </ord:attachments>
+         <!--Optional:-->
+         <ord:additionalTexts>
+            <!-- same structure as LodgeRex additionalTexts -->
+         </ord:additionalTexts>
+         <!--Optional:-->
+         <ord:euTransit>
+            <!-- same structure as LodgeRex euTransit -->
+         </ord:euTransit>
+      </ord:OrderRex>
+   </soapenv:Body>
+</soapenv:Envelope>

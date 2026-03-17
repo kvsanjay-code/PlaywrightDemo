@@ -1,0 +1,44 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:rex="http://agriculture.gov.au/nexdoc/RexCertificateSoap_1.0" xmlns:com="http://agriculture.gov.au/nexdoc/common/CommonTypes_1.0" xmlns:com1="http://agriculture.gov.au/nexdoc/common/rex/CommonTypes_1.0" xmlns:fis="http://agriculture.gov.au/nexdoc/common/rex/FishTypes_1.0" xmlns:wool="http://agriculture.gov.au/nexdoc/common/rex/WoolTypes_1.0" xmlns:skin="http://agriculture.gov.au/nexdoc/common/rex/SkinsAndHidesTypes_1.0" xmlns:ined="http://agriculture.gov.au/nexdoc/common/rex/InedibleMeatTypes_1.0">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <rex:ReplaceCertificate>
+         <rex:reason>?</rex:reason>
+         <rex:rexDetails>
+            <rex:identification>
+               <com:rexNumber>?</com:rexNumber>
+               <com1:lastAmendDateTime>?</com1:lastAmendDateTime>
+            </rex:identification>
+            <!--Optional:-->
+            <rex:exportDetails>
+               <!-- same structure as LodgeRex exportDetails -->
+            </rex:exportDetails>
+            <!--Optional:-->
+            <rex:certificateDetails>
+               <!-- same structure as LodgeRex certificateDetails -->
+            </rex:certificateDetails>
+            <!--Optional:-->
+            <rex:productLines>
+               <!-- same structure as LodgeRex productLines -->
+            </rex:productLines>
+            <!--Optional:-->
+            <rex:manufacturers>
+               <!-- same structure as LodgeRex manufacturers -->
+            </rex:manufacturers>
+            <!--Optional:-->
+            <rex:attachments>
+               <!-- same structure as LodgeRex attachments -->
+            </rex:attachments>
+            <!--Optional:-->
+            <rex:additionalTexts>
+               <!-- same structure as LodgeRex additionalTexts -->
+            </rex:additionalTexts>
+            <!--Optional:-->
+            <rex:newProductLinesOnly>?</rex:newProductLinesOnly>
+            <!--Optional:-->
+            <rex:euTransit>
+               <!-- same structure as LodgeRex euTransit -->
+            </rex:euTransit>
+         </rex:rexDetails>
+      </rex:ReplaceCertificate>
+   </soapenv:Body>
+</soapenv:Envelope>
