@@ -7,6 +7,15 @@
 const ALPHANUMERIC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
 /**
+ * Returns an ISO date string (YYYY-MM-DD) for a date N days from today.
+ */
+export function futureDateISO(daysFromNow: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + daysFromNow);
+  return d.toISOString().split('T')[0];
+}
+
+/**
  * Generates a random alphanumeric string of the given length.
  * Suitable for use as an exporterReference or any unique string field.
  *

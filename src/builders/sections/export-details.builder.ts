@@ -120,8 +120,8 @@ function buildExporterDeclaration(details: ExportDetails): string {
   const ed = details.exporterDeclaration;
   if (!ed) return '';
   const inner = optElem('com1:exporterDeclaration', ed.exporterDeclaration) +
-    (ed.exporterDeclarationCode
-      ? optElem('com1:exporterDeclarationCode', ed.exporterDeclarationCode)
+    (ed.exporterDeclarationCode?.length
+      ? ed.exporterDeclarationCode.map(c => optElem('com1:exporterDeclarationCode', c)).join('')
       : `<com1:removeExistingSet>${ed.removeExistingSet ?? false}</com1:removeExistingSet>`);
   return elem('com1:exporterDeclaration', inner);
 }

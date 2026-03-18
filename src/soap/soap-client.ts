@@ -57,6 +57,10 @@ export class SoapClient {
     return buildLodgeRexPayload(payload, this.header);
   }
 
+  serializeOrderRex(payload: OrderRexPayload): string {
+    return buildOrderRexPayload(payload, this.header);
+  }
+
   async amendRex(payload: AmendRexPayload): Promise<SoapResult> {
     const xml = buildAmendRexPayload(payload, this.header);
     return this.send(this.config.rexSubmissionServiceUrl, SOAP_ACTIONS.amendRex, xml);

@@ -14,11 +14,9 @@
 
 import { test, expect } from '../src/fixtures';
 import { SoapResult }   from '../src/soap';
-import {
-  buildHortLodgePayload,
-  futureDateISO,
-  PRODUCT_TYPE,
-} from './data/horticulture.data';
+import { buildLodgePayload } from './data/lodge.data';
+import { PRODUCT_TYPE }      from './data/rex-defaults';
+import { futureDateISO }     from '../src/helpers';
 
 // Departure date well beyond the 28-day threshold
 const DEPARTURE_DATE = futureDateISO(35);
@@ -36,7 +34,7 @@ test.describe('BR-002-01 — Mango exempt from 28-day departure limit', () => {
   for (const { tc, country } of mangoExemptCases) {
     test(`${tc} — Mango → ${country}, departure +35 days → accepted`, async ({ soapClient }) => {
       const lodgeResult = await soapClient.lodgeRex(
-        buildHortLodgePayload(country, PRODUCT_TYPE.MANGO, DEPARTURE_DATE),
+        buildLodgePayload(country, PRODUCT_TYPE.MANGO, DEPARTURE_DATE),
       );
 
       expect(lodgeResult.success, `LODGE failed for Mango → ${country}: ${formatFault(lodgeResult)}`).toBe(true);
@@ -62,7 +60,7 @@ test.describe('BR-002-01 — TUR rejected when departure exceeds 28-day limit', 
   for (const { tc, country } of turRejectedCases) {
     test(`${tc} — TUR → ${country}, departure +35 days → rejected (fault 1115)`, async ({ soapClient }) => {
       const lodgeResult = await soapClient.lodgeRex(
-        buildHortLodgePayload(country, PRODUCT_TYPE.TUR, DEPARTURE_DATE),
+        buildLodgePayload(country, PRODUCT_TYPE.TUR, DEPARTURE_DATE),
       );
 
       expect(lodgeResult.success, `Expected LODGE to fail for TUR → ${country} but it succeeded`).toBe(false);
