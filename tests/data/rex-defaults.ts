@@ -6,8 +6,9 @@
  * that accept a CommodityDefaults so each commodity can supply its own values.
  */
 
-import { ExportDetails, ProductLines, PrintIndicator } from '../../src/interfaces';
-import { randomExporterReference, futureDateISO } from '../../src/helpers';
+import { ExportDetails, ProductLines, PrintIndicator, LodgeRexPayload, OrderRexPayload, AmendRexPayload } from '../../src/interfaces';
+import { randomExporterReference, futureDateISO, RexState, toIdentification } from '../../src/helpers';
+import { config } from '../../src/config/environment';
 import { PayloadOverrides, o } from './payload-overrides';
 
 // ─── Transport modes ──────────────────────────────────────────────────────────
@@ -46,8 +47,10 @@ export interface CommodityDefaults {
   batchCode:           string;
   durabilityDaysStart: number;
   durabilityDaysEnd:   number;
-  containerNumber:     string;
-  exporterPrefix:      string;
+  containerNumber:                 string;
+  exporterPrefix:                  string;
+  ownerExporterId:                 string;
+  certificateRequiredClientGroup:  string;
 }
 
 // ─── Shared base defaults (overridden per commodity) ─────────────────────────
@@ -75,7 +78,9 @@ export const BASE_DEFAULTS: Omit<CommodityDefaults, 'commodityType' | 'defaultPr
   batchCode:           'BATCH-001',
   durabilityDaysStart: 1,
   durabilityDaysEnd:   30,
-  containerNumber:     'CONT-001',
+  containerNumber:                'CONT-001',
+  ownerExporterId:                config.ownerExporterId,
+  certificateRequiredClientGroup: config.certificateRequiredClientGroup,
 };
 
 // ─── Generic section builders ─────────────────────────────────────────────────
@@ -110,6 +115,67 @@ export function buildDefaultExportDetails(d: CommodityDefaults, overrides: Paylo
   };
 }
 
+type AmendOverrides = PayloadOverrides & { amendmentReason?: string | null; submitAmendmentRequest?: string | null };
+
+export function createCommodityBuilders(d: CommodityDefaults) {
+  return {
+    buildOrderPayload(destinationCountry: string, productType: string, departureDate: string): OrderRexPayload {
+      return {
+        exportDetails: { commodityType: d.commodityType, destinationCountry, departureDate },
+        productLines: {
+          productLine: [{ lineNumber: '1', productDetails: { productType, packType: d.packType, preservationType: d.preservationType } }],
+        },
+      };
+    },
+
+    buildLodgePayload(destinationCountry: string, productType: string, departureDate: string): LodgeRexPayload {
+      return {
+        payloadType: 'LODGE',
+        exportDetails: { commodityType: d.commodityType, destinationCountry, departureDate },
+        productLines: {
+          productLine: [{ lineNumber: '1', productDetails: { productType, packType: d.packType, preservationType: d.preservationType } }],
+        },
+      };
+    },
+
+    buildDefaultOrderPayload(overrides: PayloadOverrides = {}): OrderRexPayload {
+      const transportMode = o(d.transportMode, overrides.transportMode)!;
+      return {
+        exportDetails: buildDefaultExportDetails(d, overrides),
+        productLines:  buildDefaultProductLines(d, overrides, transportMode),
+      };
+    },
+
+    buildDefaultLodgePayload(overrides: PayloadOverrides = {}): LodgeRexPayload {
+      const transportMode  = o(d.transportMode,  overrides.transportMode)!;
+      const printIndicator = o(d.printIndicator, overrides.printIndicator);
+      return {
+        payloadType:    'LODGE',
+        exportDetails:  buildDefaultExportDetails(d, overrides),
+        certificateDetails: {
+          certificatePrintControls: { certificatePrintIndicator: printIndicator },
+        },
+        productLines:   buildDefaultProductLines(d, overrides, transportMode),
+      };
+    },
+
+    buildDefaultAmendPayload(rexState: RexState, overrides: AmendOverrides = {}): AmendRexPayload {
+      const transportMode  = o(d.transportMode,  overrides.transportMode)!;
+      const printIndicator = o(d.printIndicator, overrides.printIndicator);
+      return {
+        identification:     toIdentification(rexState),
+        exportDetails:      buildDefaultExportDetails(d, overrides),
+        certificateDetails: {
+          certificatePrintControls: { certificatePrintIndicator: printIndicator },
+        },
+        productLines:       buildDefaultProductLines(d, overrides, transportMode),
+        amendmentReason:    o(undefined, overrides.amendmentReason)        ?? undefined,
+        submitAmendmentRequest: o(undefined, overrides.submitAmendmentRequest) ?? undefined,
+      };
+    },
+  };
+}
+
 export function buildDefaultProductLines(d: CommodityDefaults, overrides: PayloadOverrides, transportMode: string): ProductLines {
   const productType = o(d.defaultProductType, overrides.productType)!;
   const packType    = o(d.packType,           overrides.packType)!;
@@ -133,7 +199,7 @@ export function buildDefaultProductLines(d: CommodityDefaults, overrides: Payloa
           },
         },
         containers,
-        batchCode:           o(d.batchCode,                          overrides.batchCode),
+        batchCode:           o(d.batchCode, overrides.batchCode),
         durabilityStartDate: o(futureDateISO(d.durabilityDaysStart), overrides.durabilityStartDate),
         durabilityEndDate:   o(futureDateISO(d.durabilityDaysEnd),   overrides.durabilityEndDate),
       },

@@ -22,6 +22,10 @@ export interface EnvironmentConfig {
   staffPortalUrl: string;
   staffUsername: string;
   staffPassword: string;
+
+  // Payload identifiers
+  ownerExporterId:                   string;
+  certificateRequiredClientGroup:    string;
 }
 
 function loadConfig(): EnvironmentConfig {
@@ -40,9 +44,11 @@ function loadConfig(): EnvironmentConfig {
     rexSubmissionServiceUrl:  requireEnv('REX_SUBMISSION_SERVICE_URL'),
     rexCertificateServiceUrl: requireEnv('REX_CERTIFICATE_SERVICE_URL'),
     readRexServiceUrl:        requireEnv('READ_REX_SERVICE_URL'),
-    staffPortalUrl:           requireEnv('STAFF_PORTAL_URL'),
-    staffUsername:            requireEnv('STAFF_USERNAME'),
-    staffPassword:            requireEnv('STAFF_PASSWORD'),
+    staffPortalUrl:                    requireEnv('STAFF_PORTAL_URL'),
+    staffUsername:                     requireEnv('STAFF_USERNAME'),
+    staffPassword:                     requireEnv('STAFF_PASSWORD'),
+    ownerExporterId:                   requireEnv('OWNER_EXPORTER_ID'),
+    certificateRequiredClientGroup:    requireEnv('CERTIFICATE_REQUIRED_CLIENT_GROUP'),
   };
 }
 

@@ -5,10 +5,7 @@
  * TODO: Replace placeholder codes with confirmed values from the service WSDL / test team.
  */
 
-import { LodgeRexPayload, OrderRexPayload, AmendRexPayload } from '../../../src/interfaces';
-import { RexState, toIdentification } from '../../../src/helpers';
-import { PayloadOverrides, o } from '../payload-overrides';
-import { CommodityDefaults, BASE_DEFAULTS, buildDefaultExportDetails, buildDefaultProductLines } from '../rex-defaults';
+import { CommodityDefaults, BASE_DEFAULTS, createCommodityBuilders } from '../rex-defaults';
 
 // ─── Commodity codes ──────────────────────────────────────────────────────────
 
@@ -32,64 +29,12 @@ export const DEFAULTS: CommodityDefaults = {
   destinationCountry: 'CN',    // Common grain export destination
 };
 
-// ─── Minimal builders ─────────────────────────────────────────────────────────
+// ─── Builders ─────────────────────────────────────────────────────────────────
 
-export function buildOrderPayload(destinationCountry: string, productType: string, departureDate: string): OrderRexPayload {
-  return {
-    exportDetails: { commodityType: COMMODITY_TYPE, destinationCountry, departureDate },
-    productLines: {
-      productLine: [{ lineNumber: '1', productDetails: { productType, packType: DEFAULTS.packType, preservationType: DEFAULTS.preservationType } }],
-    },
-  };
-}
-
-export function buildLodgePayload(destinationCountry: string, productType: string, departureDate: string): LodgeRexPayload {
-  return {
-    payloadType: 'LODGE',
-    exportDetails: { commodityType: COMMODITY_TYPE, destinationCountry, departureDate },
-    productLines: {
-      productLine: [{ lineNumber: '1', productDetails: { productType, packType: DEFAULTS.packType, preservationType: DEFAULTS.preservationType } }],
-    },
-  };
-}
-
-// ─── Default builders ─────────────────────────────────────────────────────────
-
-export function buildDefaultOrderPayload(overrides: PayloadOverrides = {}): OrderRexPayload {
-  const transportMode = o(DEFAULTS.transportMode, overrides.transportMode)!;
-  return {
-    exportDetails: buildDefaultExportDetails(DEFAULTS, overrides),
-    productLines:  buildDefaultProductLines(DEFAULTS, overrides, transportMode),
-  };
-}
-
-export function buildDefaultLodgePayload(overrides: PayloadOverrides = {}): LodgeRexPayload {
-  const transportMode  = o(DEFAULTS.transportMode,  overrides.transportMode)!;
-  const printIndicator = o(DEFAULTS.printIndicator, overrides.printIndicator);
-  return {
-    payloadType:    'LODGE',
-    exportDetails:  buildDefaultExportDetails(DEFAULTS, overrides),
-    certificateDetails: {
-      certificatePrintControls: { certificatePrintIndicator: printIndicator },
-    },
-    productLines:   buildDefaultProductLines(DEFAULTS, overrides, transportMode),
-  };
-}
-
-export function buildDefaultAmendPayload(
-  rexState: RexState,
-  overrides: PayloadOverrides & { amendmentReason?: string | null; submitAmendmentRequest?: string | null } = {},
-): AmendRexPayload {
-  const transportMode  = o(DEFAULTS.transportMode,  overrides.transportMode)!;
-  const printIndicator = o(DEFAULTS.printIndicator, overrides.printIndicator);
-  return {
-    identification:     toIdentification(rexState),
-    exportDetails:      buildDefaultExportDetails(DEFAULTS, overrides),
-    certificateDetails: {
-      certificatePrintControls: { certificatePrintIndicator: printIndicator },
-    },
-    productLines:       buildDefaultProductLines(DEFAULTS, overrides, transportMode),
-    amendmentReason:    o(undefined, overrides.amendmentReason)        ?? undefined,
-    submitAmendmentRequest: o(undefined, overrides.submitAmendmentRequest) ?? undefined,
-  };
-}
+export const {
+  buildOrderPayload,
+  buildLodgePayload,
+  buildDefaultOrderPayload,
+  buildDefaultLodgePayload,
+  buildDefaultAmendPayload,
+} = createCommodityBuilders(DEFAULTS);

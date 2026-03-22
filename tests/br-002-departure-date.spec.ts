@@ -14,8 +14,8 @@
 
 import { test, expect } from '../src/fixtures';
 import { SoapResult }   from '../src/soap';
-import { buildLodgePayload } from './data/lodge.data';
-import { PRODUCT_TYPE }      from './data/rex-defaults';
+import { buildLodgePayload } from './data/commodities/horticulture';
+import { PRODUCT_TYPE }      from './data/commodities/horticulture';
 import { futureDateISO }     from '../src/helpers';
 
 // Departure date well beyond the 28-day threshold

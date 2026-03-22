@@ -4,9 +4,9 @@
  */
 
 import { test } from 'src/fixtures';
-import { buildDefaultOrderPayload } from './data/order.data';
-import { buildDefaultLodgePayload } from './data/lodge.data';
-import { buildDefaultAmendPayload } from './data/amend.data';
+import { buildDefaultOrderPayload, buildDefaultAmendPayload, buildDefaultLodgePayload as buildHorticultureLodgePayload } from './data/commodities/horticulture';
+import { buildDefaultLodgePayload as buildGrainLodgePayload, buildDefaultOrderPayload as buildGrainOrderPayload } from './data/commodities/grain';
+import { buildDefaultLodgePayload as buildMeatLodgePayload,  buildDefaultOrderPayload as buildMeatOrderPayload }  from './data/commodities/meat';
 import { lodgeStep } from 'src/helpers';
 import { PrintIndicator } from 'src/interfaces';
 import { PRODUCT_TYPE } from './data/commodities/horticulture';
@@ -25,8 +25,64 @@ test('debug — inspect full ORDER payload', async ({ soapClient }) => {
   console.log('Result:\n', JSON.stringify(result, null, 2));
 });
 
-test('debug — inspect full LODGE payload', async ({ soapClient }) => {
-  const payload = buildDefaultLodgePayload({ destinationCountry: 'GB', printIndicator: PrintIndicator.Manual });
+test('debug — inspect Horticulture LODGE payload', async ({ soapClient }) => {
+  const payload = buildHorticultureLodgePayload({ destinationCountry: 'GB', printIndicator: PrintIndicator.Manual });
+
+  console.log('Payload object:\n', JSON.stringify(payload, null, 2));
+
+  const xml = soapClient.serializeLodgeRex(payload);
+
+  console.log('Serialized XML:\n', xml);
+
+  const result = await soapClient.lodgeRex(payload);
+
+  console.log('Result:\n', JSON.stringify(result, null, 2));
+});
+
+test('debug — inspect Grain ORDER payload', async ({ soapClient }) => {
+  const payload = buildGrainOrderPayload({ destinationCountry: 'CN' });
+
+  console.log('Payload object:\n', JSON.stringify(payload, null, 2));
+
+  const xml = soapClient.serializeOrderRex(payload);
+
+  console.log('Serialized XML:\n', xml);
+
+  const result = await soapClient.orderRex(payload);
+
+  console.log('Result:\n', JSON.stringify(result, null, 2));
+});
+
+test('debug — inspect Meat ORDER payload', async ({ soapClient }) => {
+  const payload = buildMeatOrderPayload({ destinationCountry: 'JP' });
+
+  console.log('Payload object:\n', JSON.stringify(payload, null, 2));
+
+  const xml = soapClient.serializeOrderRex(payload);
+
+  console.log('Serialized XML:\n', xml);
+
+  const result = await soapClient.orderRex(payload);
+
+  console.log('Result:\n', JSON.stringify(result, null, 2));
+});
+
+test('debug — inspect Grain LODGE payload', async ({ soapClient }) => {
+  const payload = buildGrainLodgePayload({ destinationCountry: 'CN' });
+
+  console.log('Payload object:\n', JSON.stringify(payload, null, 2));
+
+  const xml = soapClient.serializeLodgeRex(payload);
+
+  console.log('Serialized XML:\n', xml);
+
+  const result = await soapClient.lodgeRex(payload);
+
+  console.log('Result:\n', JSON.stringify(result, null, 2));
+});
+
+test('debug — inspect Meat LODGE payload', async ({ soapClient }) => {
+  const payload = buildMeatLodgePayload({ destinationCountry: 'JP' });
 
   console.log('Payload object:\n', JSON.stringify(payload, null, 2));
 
@@ -41,7 +97,7 @@ test('debug — inspect full LODGE payload', async ({ soapClient }) => {
 
 test('debug — inspect full AMEND payload', async ({ soapClient }) => {
   // Step 1 — LODGE to get rexNumber + lastAmendmentTimestamp
-  const lodgeState = await lodgeStep(soapClient, buildDefaultLodgePayload({ destinationCountry: 'GB' }));
+  const lodgeState = await lodgeStep(soapClient, buildHorticultureLodgePayload({ destinationCountry: 'GB' }));
 
   console.log('Lodge state:\n', JSON.stringify(lodgeState, null, 2));
 
