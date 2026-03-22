@@ -1,33 +1,59 @@
 /**
  * rex-defaults.ts
  *
- * Shared commodity codes, default field values, and section builders
- * reused across ORDER, LODGE, and AMEND payload builders.
- *
- * TODO: Replace placeholder codes with confirmed values from the service WSDL / test team.
+ * Generic infrastructure for all commodity payload builders.
+ * Defines CommodityDefaults interface, shared base defaults, and section builders
+ * that accept a CommodityDefaults so each commodity can supply its own values.
  */
 
 import { ExportDetails, ProductLines, PrintIndicator } from '../../src/interfaces';
 import { randomExporterReference, futureDateISO } from '../../src/helpers';
 import { PayloadOverrides, o } from './payload-overrides';
 
-// ─── Commodity & product codes ────────────────────────────────────────────────
+// ─── Transport modes ──────────────────────────────────────────────────────────
 
-export const COMMODITY_TYPE = 'H';   // TODO: confirm
-
-export const PRODUCT_TYPE = {
-  MANGO: 'MAN',
-  TUR:   'TUR',
+export const TRANSPORT_MODE = {
+  SEA: 'SEA',
+  AIR: 'AIR',
 } as const;
 
-export const PACK_TYPE    = 'CTN';   // Carton
-export const PRESERVATION = 'FRE';   // Fresh
+// ─── CommodityDefaults interface ──────────────────────────────────────────────
 
-// ─── Default field values ─────────────────────────────────────────────────────
+export interface CommodityDefaults {
+  commodityType:        string;
+  defaultProductType:   string;
+  packType:             string;
+  preservationType:     string;
+  destinationCountry:   string;
+  departureDaysFromNow: number;
+  consigneeName:        string;
+  consigneeAddress: {
+    streetLine: string;
+    city:       string;
+    country:    string;
+    postalCode: string;
+  };
+  consigneePhone:      string;
+  transportMode:       string;
+  voyageNumber:        string;
+  vesselName:          string;
+  shippingCompany:     string;
+  loadingPort:         string;
+  dischargePort:       string;
+  netWeightKg:         string;
+  outerPackQty:        string;
+  printIndicator:      PrintIndicator;
+  batchCode:           string;
+  durabilityDaysStart: number;
+  durabilityDaysEnd:   number;
+  containerNumber:     string;
+  exporterPrefix:      string;
+}
 
-export const DEFAULTS = {
+// ─── Shared base defaults (overridden per commodity) ─────────────────────────
+
+export const BASE_DEFAULTS: Omit<CommodityDefaults, 'commodityType' | 'defaultProductType' | 'packType' | 'preservationType' | 'exporterPrefix'> = {
   destinationCountry:   'SG',
-  productType:          PRODUCT_TYPE.MANGO,
   departureDaysFromNow: 5,
   consigneeName:        'ABC Importer Pte Ltd',
   consigneeAddress: {
@@ -37,7 +63,7 @@ export const DEFAULTS = {
     postalCode: '123456',
   },
   consigneePhone:      '+6512345678',
-  transportMode:       'SEA',
+  transportMode:       TRANSPORT_MODE.SEA,
   voyageNumber:        'V001',
   vesselName:          'MV Example',
   shippingCompany:     'Example Shipping Co',
@@ -49,43 +75,49 @@ export const DEFAULTS = {
   batchCode:           'BATCH-001',
   durabilityDaysStart: 1,
   durabilityDaysEnd:   30,
+  containerNumber:     'CONT-001',
 };
 
-// ─── Shared section builders ──────────────────────────────────────────────────
+// ─── Generic section builders ─────────────────────────────────────────────────
 
-export function buildDefaultExportDetails(overrides: PayloadOverrides): ExportDetails {
-  const destinationCountry = o(DEFAULTS.destinationCountry, overrides.destinationCountry)!;
+export function buildDefaultExportDetails(d: CommodityDefaults, overrides: PayloadOverrides): ExportDetails {
+  const destinationCountry = o(d.destinationCountry, overrides.destinationCountry)!;
 
   return {
-    commodityType:      COMMODITY_TYPE,
+    commodityType:      d.commodityType,
     destinationCountry,
-    departureDate:      o(futureDateISO(DEFAULTS.departureDaysFromNow), overrides.departureDate),
-    exporterReference:  o(randomExporterReference('REX'),               overrides.exporterReference),
+    departureDate:      o(futureDateISO(d.departureDaysFromNow), overrides.departureDate),
+    exporterReference:  o(randomExporterReference(d.exporterPrefix), overrides.exporterReference),
 
     consigneeDetails: {
-      consigneeName:        o(DEFAULTS.consigneeName,  overrides.consigneeName),
-      consigneeAddress:     DEFAULTS.consigneeAddress,
-      consigneePhoneNumber: o(DEFAULTS.consigneePhone, overrides.consigneePhone),
+      consigneeName:        o(d.consigneeName,  overrides.consigneeName),
+      consigneeAddress:     d.consigneeAddress,
+      consigneePhoneNumber: o(d.consigneePhone, overrides.consigneePhone),
     },
 
     transportDetails: {
-      transportMode:        o(DEFAULTS.transportMode,   overrides.transportMode),
-      voyageOrFlightNumber: o(DEFAULTS.voyageNumber,    overrides.voyageNumber),
-      vesselName:           o(DEFAULTS.vesselName,      overrides.vesselName),
-      shippingCompany:      o(DEFAULTS.shippingCompany, overrides.shippingCompany),
+      transportMode:        o(d.transportMode,   overrides.transportMode),
+      voyageOrFlightNumber: o(d.voyageNumber,    overrides.voyageNumber),
+      vesselName:           o(d.vesselName,      overrides.vesselName),
+      shippingCompany:      o(d.shippingCompany, overrides.shippingCompany),
     },
 
-    loadingPorts:   { loadingPort:   [o(DEFAULTS.loadingPort,   overrides.loadingPort)!] },
-    dischargePorts: { dischargePort: [o(DEFAULTS.dischargePort, overrides.dischargePort)!] },
+    loadingPorts:   { loadingPort:   [o(d.loadingPort,   overrides.loadingPort)!] },
+    dischargePorts: { dischargePort: [o(d.dischargePort, overrides.dischargePort)!] },
 
     importedProductFlag:                            'N',
     manufacturedTreatedPackagedLabelledInAustralia: 'Y',
   };
 }
 
-export function buildDefaultProductLines(overrides: PayloadOverrides): ProductLines {
-  const productType = o(DEFAULTS.productType, overrides.productType)!;
-  const packType    = o(PACK_TYPE,            overrides.packType)!;
+export function buildDefaultProductLines(d: CommodityDefaults, overrides: PayloadOverrides, transportMode: string): ProductLines {
+  const productType = o(d.defaultProductType, overrides.productType)!;
+  const packType    = o(d.packType,           overrides.packType)!;
+
+  // Containers are mandatory for SEA, not required for AIR
+  const containers = transportMode === TRANSPORT_MODE.SEA
+    ? { container: [{ containerNumber: o(d.containerNumber, overrides.containerNumber)! }] }
+    : undefined;
 
   return {
     productLine: [
@@ -94,15 +126,16 @@ export function buildDefaultProductLines(overrides: PayloadOverrides): ProductLi
         productDetails: {
           productType,
           packType,
-          preservationType: o(PRESERVATION,          overrides.preservationType)!,
-          netMetricWeight:  { value: o(DEFAULTS.netWeightKg, overrides.netWeightKg)!, unit: 'KG' },
+          preservationType: o(d.preservationType,  overrides.preservationType)!,
+          netMetricWeight:  { value: o(d.netWeightKg, overrides.netWeightKg)!, unit: 'KG' },
           outerProductPackaging: {
-            quantity: { value: o(DEFAULTS.outerPackQty, overrides.outerPackQty)!,  packageType: packType },
+            quantity: { value: o(d.outerPackQty, overrides.outerPackQty)!, packageType: packType },
           },
         },
-        batchCode:           o(DEFAULTS.batchCode,                          overrides.batchCode),
-        durabilityStartDate: o(futureDateISO(DEFAULTS.durabilityDaysStart), overrides.durabilityStartDate),
-        durabilityEndDate:   o(futureDateISO(DEFAULTS.durabilityDaysEnd),   overrides.durabilityEndDate),
+        containers,
+        batchCode:           o(d.batchCode,                          overrides.batchCode),
+        durabilityStartDate: o(futureDateISO(d.durabilityDaysStart), overrides.durabilityStartDate),
+        durabilityEndDate:   o(futureDateISO(d.durabilityDaysEnd),   overrides.durabilityEndDate),
       },
     ],
   };

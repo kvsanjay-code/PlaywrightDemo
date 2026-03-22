@@ -27,7 +27,7 @@ export interface PayloadOverrides {
   exporterReference?:  Nullable<string>;
   consigneeName?:      Nullable<string>;
   consigneePhone?:     Nullable<string>;
-  transportMode?:      Nullable<string>;
+  transportMode?:      Nullable<'SEA' | 'AIR'>;
   voyageNumber?:       Nullable<string>;
   vesselName?:         Nullable<string>;
   shippingCompany?:    Nullable<string>;
@@ -42,6 +42,7 @@ export interface PayloadOverrides {
   batchCode?:          Nullable<string>;
   durabilityStartDate?: Nullable<string>;
   durabilityEndDate?:   Nullable<string>;
+  containerNumber?:    Nullable<string>;
   // Certificate
   printIndicator?:     Nullable<PrintIndicator>;
 }

@@ -1,0 +1,13 @@
+
+# Playwright
+node_modules/
+
+# Environment files contain credentials — never commit these
+.env.sit
+.env.sit2
+.env.vnd
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

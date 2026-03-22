@@ -9,7 +9,7 @@ import { buildDefaultLodgePayload } from './data/lodge.data';
 import { buildDefaultAmendPayload } from './data/amend.data';
 import { lodgeStep } from 'src/helpers';
 import { PrintIndicator } from 'src/interfaces';
-import { PRODUCT_TYPE } from './data/rex-defaults';
+import { PRODUCT_TYPE } from './data/commodities/horticulture';
 
 test('debug — inspect full ORDER payload', async ({ soapClient }) => {
   const payload = buildDefaultOrderPayload({ destinationCountry: 'GB' });
