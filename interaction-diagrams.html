@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>REX Test Automation — Interaction Diagrams</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      padding: 40px 24px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #64748b;
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+    }
+
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 48px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+      gap: 28px;
+      max-width: 1400px;
+      margin: 0 auto 28px;
+    }
+
+    .full {
+      max-width: 1400px;
+      margin: 0 auto 28px;
+    }
+
+    .card {
+      background: #1e2330;
+      border: 1px solid #2d3448;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid #2d3448;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    .blue   { background: #1e3a8a; color: #93c5fd; }
+    .purple { background: #4c1d95; color: #c4b5fd; }
+    .green  { background: #14532d; color: #86efac; }
+    .amber  { background: #78350f; color: #fcd34d; }
+
+    .card-header h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    .card-body {
+      padding: 32px;
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+
+    .mermaid { width: 100%; }
+    .mermaid svg { max-width: 100%; height: auto; }
+
+    .description {
+      padding: 12px 24px;
+      background: #161b27;
+      border-top: 1px solid #2d3448;
+      font-size: 0.8rem;
+      color: #64748b;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>REX Test Automation</h1>
+  <p class="subtitle">Interaction &amp; Behaviour Diagrams</p>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#93c5fd"></div>Sequence — message exchange over time</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#c4b5fd"></div>State — REX lifecycle transitions</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#86efac"></div>ER — payload data relationships</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fcd34d"></div>Activity — business rule decision logic</div>
+  </div>
+
+  <!-- ── SEQUENCE 1: LODGE / AMEND ─────────────────────────────────── -->
+  <div class="full">
+    <div class="card">
+      <div class="card-header">
+        <span class="badge blue">Sequence</span>
+        <h2>LODGE → AMEND Interaction</h2>
+      </div>
+      <div class="card-body">
+        <div class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {'primaryColor':'#1e3a8a','primaryTextColor':'#f1f5f9','primaryBorderColor':'#3b82f6','lineColor':'#64748b','secondaryColor':'#1e2330','noteBkgColor':'#1e3a8a','noteTextColor':'#bfdbfe','activationBkgColor':'#1e40af','activationBorderColor':'#3b82f6'}}}%%
+sequenceDiagram
+  autonumber
+  actor Test
+  participant Builder as CommodityBuilders
+  participant Client as SoapClient
+  participant Parser as ResponseParser
+  participant Service as RexSubmissionService
+
+  Note over Test,Service: ── LODGE Phase ──────────────────────────────────
+
+  Test->>Builder: buildDefaultLodgePayload(overrides)
+  Builder-->>Test: LodgeRexPayload
+
+  Test->>Client: lodgeRex(payload)
+  Client->>Client: buildLodgeRexPayload(payload, header)
+  Note right of Client: Serialise to SOAP XML
+  Client->>Service: HTTP POST /RexSubmissionService
+  Service-->>Client: SOAP XML response
+
+  Client->>Parser: parseSoapResponse(xml)
+  alt success
+    Parser-->>Client: SoapSuccessResult { rexNumber, lastAmendmentTimestamp }
+  else fault
+    Parser-->>Client: SoapFaultResult { faultCode, faultString }
+  end
+
+  Client-->>Test: SoapResult
+
+  Note over Test,Service: ── AMEND Phase ──────────────────────────────────
+
+  Test->>Test: lodgeStep() → RexState { rexNumber, lastAmendmentTimestamp }
+  Test->>Builder: buildDefaultAmendPayload(rexState, overrides)
+  Builder->>Builder: toIdentification(rexState)
+  Builder-->>Test: AmendRexPayload
+
+  Test->>Client: amendRex(payload)
+  Client->>Service: HTTP POST /RexSubmissionService
+  Service-->>Client: SOAP XML response
+  Client->>Parser: parseSoapResponse(xml)
+  Parser-->>Client: SoapResult
+  Client-->>Test: SoapResult
+
+  Test->>Test: expect(result.success).toBe(true)
+        </div>
+      </div>
+      <div class="description">
+        Shows how a test builds a LODGE payload via CommodityBuilders, sends it through SoapClient, and uses the returned rexNumber + lastAmendmentTimestamp to construct and send an AMEND request.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SEQUENCE 2: REPLACE Hybrid ────────────────────────────────── -->
+  <div class="full">
+    <div class="card">
+      <div class="card-header">
+        <span class="badge blue">Sequence</span>
+        <h2>REPLACE Hybrid Flow — SOAP + Staff Portal (Phase 9)</h2>
+      </div>
+      <div class="card-body">
+        <div class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {'primaryColor':'#1e3a8a','primaryTextColor':'#f1f5f9','primaryBorderColor':'#3b82f6','lineColor':'#64748b','secondaryColor':'#1e2330','noteBkgColor':'#1e3a8a','noteTextColor':'#bfdbfe','activationBkgColor':'#1e40af','activationBorderColor':'#3b82f6'}}}%%
+sequenceDiagram
+  autonumber
+  actor Test
+  participant Client as SoapClient
+  participant Submit as RexSubmissionService
+  participant Read as ReadRexService
+  participant Portal as StaffPortalPage
+  participant Cert as REXCertificateService
+
+  Note over Test,Cert: ── Step 1: ORDER ───────────────────────────────
+
+  Test->>Client: orderRex(orderPayload)
+  Client->>Submit: HTTP POST ORDER
+  Submit-->>Client: SoapSuccessResult
+  Client-->>Test: rexNumber
+
+  Note over Test,Cert: ── Step 2: LODGE ───────────────────────────────
+
+  Test->>Client: lodgeRex(lodgePayload)
+  Client->>Submit: HTTP POST LODGE
+  Submit-->>Client: SoapSuccessResult { rexNumber, lastAmendmentTimestamp }
+  Client-->>Test: RexState
+
+  Note over Test,Cert: ── Step 3: Staff Portal ────────────────────────
+
+  Test->>Portal: login(username, password)
+  Portal-->>Test: authenticated
+
+  Test->>Portal: findByREXNumber(rexNumber)
+  Portal-->>Test: REX record displayed
+
+  Test->>Portal: addInspectionDetails(...)
+  Test->>Portal: authorise(comments)
+  Portal-->>Test: REX status = CertificateReady
+
+  Note over Test,Cert: ── Step 4: READ (sync timestamp) ───────────────
+
+  Test->>Client: readRex({ rexNumber })
+  Client->>Read: HTTP POST READ
+  Read-->>Client: latest lastAmendmentTimestamp
+  Client-->>Test: updated RexState
+
+  Note over Test,Cert: ── Step 5: REPLACE ─────────────────────────────
+
+  Test->>Client: replaceCertificate(replacePayload)
+  Client->>Cert: HTTP POST REPLACE
+  Cert-->>Client: SoapSuccessResult
+  Client-->>Test: SoapResult
+
+  Test->>Test: expect(result.success).toBe(true)
+        </div>
+      </div>
+      <div class="description">
+        End-to-end hybrid flow combining SOAP calls with Staff Portal UI steps. READ REX is always called after any staff portal action to synchronise the lastAmendmentTimestamp before the next SOAP request.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STATE + ER ─────────────────────────────────────────────────── -->
+  <div class="grid-2">
+
+    <!-- STATE DIAGRAM -->
+    <div class="card">
+      <div class="card-header">
+        <span class="badge purple">State</span>
+        <h2>REX Lifecycle — State Transitions</h2>
+      </div>
+      <div class="card-body">
+        <div class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {'primaryColor':'#4c1d95','primaryTextColor':'#f1f5f9','primaryBorderColor':'#7c3aed','lineColor':'#64748b','secondaryColor':'#1e2330'}}}%%
+stateDiagram-v2
+  direction TB
+
+  [*] --> Ordered : ORDER accepted
+
+  Ordered --> Lodged : LODGE accepted\n(rexNumber issued)
+
+  Lodged --> Amended : AMEND accepted
+
+  Amended --> Amended : further AMENDs
+
+  Lodged    --> PendingAuthorisation : Staff Portal\nInspection added
+  Amended   --> PendingAuthorisation : Staff Portal\nInspection added
+
+  PendingAuthorisation --> CertificateReady : Staff Portal\nAuthorise
+
+  CertificateReady --> Replaced : REPLACE accepted
+
+  Replaced --> [*]
+
+  Lodged  --> Rejected : LODGE fault\n(faultCode returned)
+  Ordered --> Rejected : ORDER fault
+  Amended --> Rejected : AMEND fault
+  Rejected --> [*]
+        </div>
+      </div>
+      <div class="description">
+        Shows all valid REX states and the transitions triggered by SOAP operations or Staff Portal actions.
+      </div>
+    </div>
+
+    <!-- ER DIAGRAM -->
+    <div class="card">
+      <div class="card-header">
+        <span class="badge green">ER Diagram</span>
+        <h2>Payload Data Structure</h2>
+      </div>
+      <div class="card-body">
+        <div class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {'primaryColor':'#14532d','primaryTextColor':'#f1f5f9','primaryBorderColor':'#22c55e','lineColor':'#64748b','secondaryColor':'#1e2330'}}}%%
+erDiagram
+
+  LodgeRexPayload {
+    string payloadType
+  }
+
+  ExportDetails {
+    string commodityType
+    string destinationCountry
+    string departureDate
+    string exporterReference
+    string importedProductFlag
+  }
+
+  ConsigneeDetails {
+    string consigneeName
+    string consigneePhoneNumber
+  }
+
+  Address {
+    string streetLine
+    string city
+    string country
+    string postalCode
+  }
+
+  TransportDetails {
+    string transportMode
+    string voyageOrFlightNumber
+    string vesselName
+    string shippingCompany
+  }
+
+  ProductLine {
+    string lineNumber
+    string productType
+    string packType
+    string preservationType
+    string batchCode
+    string durabilityStartDate
+    string durabilityEndDate
+  }
+
+  ProductDetails {
+    string netMetricWeight
+    string outerPackQty
+  }
+
+  Container {
+    string containerNumber
+  }
+
+  CertificateDetails {
+    string certificatePrintIndicator
+  }
+
+  Identification {
+    string rexNumber
+    string lastAmendDateTime
+  }
+
+  LodgeRexPayload  ||--||  ExportDetails        : has
+  LodgeRexPayload  ||--o|  CertificateDetails   : has
+  LodgeRexPayload  ||--|{  ProductLine          : contains
+  ExportDetails    ||--||  ConsigneeDetails     : has
+  ExportDetails    ||--||  TransportDetails     : has
+  ConsigneeDetails ||--||  Address              : has
+  ProductLine      ||--||  ProductDetails       : has
+  ProductLine      ||--o{  Container            : has
+  AmendRexPayload  ||--||  Identification       : requires
+        </div>
+      </div>
+      <div class="description">
+        Structural relationships between payload sections. AmendRexPayload extends LodgeRexPayload with a mandatory Identification block. Containers are only present for SEA transport.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── ACTIVITY: BR-002 ───────────────────────────────────────────── -->
+  <div class="full">
+    <div class="card">
+      <div class="card-header">
+        <span class="badge amber">Activity</span>
+        <h2>BR-002-01 — Departure Date Business Rule Decision Logic</h2>
+      </div>
+      <div class="card-body">
+        <div class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {'primaryColor':'#78350f','primaryTextColor':'#f1f5f9','primaryBorderColor':'#f59e0b','lineColor':'#64748b','secondaryColor':'#1e2330'}}}%%
+flowchart TD
+  A([LODGE request received]) --> B{Destination country\nSG · HK · MY · MV?}
+
+  B -->|No - other country| C[✅ No date restriction\napplies]
+  B -->|Yes| D{Product type\n= Mango?}
+
+  D -->|Yes - Mango exempt| E[✅ Departure date\nrestriction waived]
+  D -->|No| F{Departure date within\n28 days of lodgement?}
+
+  F -->|Yes ≤ 28 days| G[✅ LODGE accepted\nrexNumber returned]
+  F -->|No > 28 days| H[❌ LODGE rejected\nfaultCode 1115 returned]
+
+  C --> I([End])
+  E --> I
+  G --> I
+  H --> I
+
+  style C fill:#14532d,color:#86efac,stroke:#22c55e
+  style E fill:#14532d,color:#86efac,stroke:#22c55e
+  style G fill:#14532d,color:#86efac,stroke:#22c55e
+  style H fill:#7f1d1d,color:#fca5a5,stroke:#ef4444
+        </div>
+      </div>
+      <div class="description">
+        Decision logic for BR-002-01. TC01–TC04 exercise the Mango exemption path (exempt → accepted). TC05–TC08 exercise the TUR rejection path (> 28 days → faultCode 1115).
+      </div>
+    </div>
+  </div>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true, securityLevel: 'loose' });
+  </script>
+</body>
+</html>
