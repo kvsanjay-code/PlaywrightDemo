@@ -11,9 +11,10 @@
     "rootDir": ".",
     "baseUrl": ".",
     "paths": {
-      "src/*": ["./src/*"]
+      "src/*":       ["./src/*"],
+      "test-data/*": ["./test-data/*"]
     }
   },
-  "include": ["src/**/*", "tests/**/*", "playwright.config.ts"],
+  "include": ["src/**/*", "tests/**/*", "test-data/**/*", "playwright.config.ts"],
   "exclude": ["node_modules", "dist"]
 }

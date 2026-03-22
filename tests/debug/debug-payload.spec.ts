@@ -4,12 +4,11 @@
  */
 
 import { test } from 'src/fixtures';
-import { buildDefaultOrderPayload, buildDefaultAmendPayload, buildDefaultLodgePayload as buildHorticultureLodgePayload } from './data/commodities/horticulture';
-import { buildDefaultLodgePayload as buildGrainLodgePayload, buildDefaultOrderPayload as buildGrainOrderPayload } from './data/commodities/grain';
-import { buildDefaultLodgePayload as buildMeatLodgePayload,  buildDefaultOrderPayload as buildMeatOrderPayload }  from './data/commodities/meat';
+import { buildDefaultOrderPayload, buildDefaultAmendPayload, buildDefaultLodgePayload as buildHorticultureLodgePayload, PRODUCT_TYPE } from 'test-data/commodities/horticulture';
+import { buildDefaultLodgePayload as buildGrainLodgePayload, buildDefaultOrderPayload as buildGrainOrderPayload } from 'test-data/commodities/grain';
+import { buildDefaultLodgePayload as buildMeatLodgePayload,  buildDefaultOrderPayload as buildMeatOrderPayload }  from 'test-data/commodities/meat';
 import { lodgeStep } from 'src/helpers';
 import { PrintIndicator } from 'src/interfaces';
-import { PRODUCT_TYPE } from './data/commodities/horticulture';
 
 test('debug — inspect full ORDER payload', async ({ soapClient }) => {
   const payload = buildDefaultOrderPayload({ destinationCountry: 'GB' });

@@ -6,9 +6,9 @@
  * that accept a CommodityDefaults so each commodity can supply its own values.
  */
 
-import { ExportDetails, ProductLines, PrintIndicator, LodgeRexPayload, OrderRexPayload, AmendRexPayload } from '../../src/interfaces';
-import { randomExporterReference, futureDateISO, RexState, toIdentification } from '../../src/helpers';
-import { config } from '../../src/config/environment';
+import { ExportDetails, ProductLines, PrintIndicator, LodgeRexPayload, OrderRexPayload, AmendRexPayload } from 'src/interfaces';
+import { randomExporterReference, futureDateISO, RexState, toIdentification } from 'src/helpers';
+import { config } from 'src/config/environment';
 import { PayloadOverrides, o } from './payload-overrides';
 
 // ─── Transport modes ──────────────────────────────────────────────────────────

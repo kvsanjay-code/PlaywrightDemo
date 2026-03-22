@@ -20,7 +20,7 @@ export const PRODUCT_TYPE = {
 // ─── Commodity defaults ───────────────────────────────────────────────────────
 
 export const DEFAULTS: CommodityDefaults = {
-  ...BASE_DEFAULTS,
+  ...BASE_DEFAULTS, 
   commodityType:      COMMODITY_TYPE,
   defaultProductType: PRODUCT_TYPE.WHEAT,
   packType:           'BLK',   // Bulk — TODO: confirm

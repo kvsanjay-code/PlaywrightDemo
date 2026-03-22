@@ -9,7 +9,7 @@
  *   - Pass null    → explicitly omit the field from the payload (e.g. no departureDate)
  */
 
-import { PrintIndicator } from '../../src/interfaces';
+import { PrintIndicator } from 'src/interfaces';
 
 /**
  * Wraps a type to also allow null, which signals "omit this field from the payload".
@@ -27,7 +27,7 @@ export interface PayloadOverrides {
   exporterReference?:  Nullable<string>;
   consigneeName?:      Nullable<string>;
   consigneePhone?:     Nullable<string>;
-  transportMode?:      Nullable<'SEA' | 'AIR'>;
+  transportMode?:      Nullable<'S'|'A'>;
   voyageNumber?:       Nullable<string>;
   vesselName?:         Nullable<string>;
   shippingCompany?:    Nullable<string>;

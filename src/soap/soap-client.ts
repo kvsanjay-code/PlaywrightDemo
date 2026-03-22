@@ -13,7 +13,7 @@ import {
   buildAmendRexPayload,
   buildReplaceCertificatePayload,
   buildReadRexPayload,
-} from '../builders';
+} from './builders';
 import { parseSoapResponse, parseReadRexResponse, SoapResult } from './response-parser';
 
 // ─── SOAP Action constants ────────────────────────────────────────────────────
