@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>REX Test Automation — Flow Diagrams</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      padding: 40px 24px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #64748b;
+      font-size: 0.9rem;
+      margin-bottom: 48px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(560px, 1fr));
+      gap: 28px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #1e2330;
+      border: 1px solid #2d3448;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .card.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .card-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid #2d3448;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-header .badge {
+      background: #3b4fd8;
+      color: #c7d2fe;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .card-header h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    .card-body {
+      padding: 28px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 320px;
+    }
+
+    .mermaid {
+      width: 100%;
+    }
+
+    /* Override mermaid dark theme labels */
+    .mermaid svg { max-width: 100%; height: auto; }
+  </style>
+</head>
+<body>
+
+  <h1>REX Test Automation</h1>
+  <p class="subtitle">Flow Diagrams — Playwright + TypeScript SOAP Framework</p>
+
+  <div class="grid">
+
+    <!-- Diagram 1 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="badge">Flow 1</span>
+        <h2>REX Test Flow — ORDER / LODGE / AMEND</h2>
+      </div>
+      <div class="card-body">
+        <div class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {'primaryColor': '#3b4fd8', 'primaryTextColor': '#f1f5f9', 'primaryBorderColor': '#4f63e8', 'lineColor': '#64748b', 'secondaryColor': '#1e2330', 'tertiaryColor': '#2d3448'}}}%%
+flowchart TD
+    A([Test starts]) --> B{Payload type}
+
+    B -->|ORDER only| C[buildDefaultOrderPayload]
+    B -->|LODGE| D[buildDefaultLodgePayload]
+    B -->|AMEND| E[buildDefaultLodgePayload]
+
+    C --> F[soapClient.orderRex]
+    D --> G[soapClient.lodgeRex]
+    E --> H[lodgeStep\nLODGE → rexNumber\n+ lastAmendmentTimestamp]
+    H --> I[buildDefaultAmendPayload\nwith RexState]
+    I --> J[soapClient.amendRex]
+
+    F --> K{SoapResult}
+    G --> K
+    J --> K
+
+    K -->|success = true| L[Assert rexNumber\n+ timestamp]
+    K -->|success = false| M[Assert faultCode]
+
+    L --> N([Test passes])
+    M --> N
+        </div>
+      </div>
+    </div>
+
+    <!-- Diagram 2 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="badge">Flow 2</span>
+        <h2>REPLACE Hybrid Flow — Phase 9</h2>
+      </div>
+      <div class="card-body">
+        <div class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {'primaryColor': '#3b4fd8', 'primaryTextColor': '#f1f5f9', 'primaryBorderColor': '#4f63e8', 'lineColor': '#64748b', 'secondaryColor': '#1e2330', 'tertiaryColor': '#2d3448'}}}%%
+flowchart TD
+    A([Test starts]) --> B[ORDER]
+    B --> C[LODGE\nget rexNumber]
+    C --> D[Staff Portal login]
+    D --> E[Find by REXNumber]
+    E --> F[Add inspection details]
+    F --> G[Authorise]
+    G --> H[READ REX\nget latest timestamp]
+    H --> I{REX Status?}
+    I -->|CertificateReady| J[REPLACE]
+    I -->|INSPECTION| K[Assert REPLACE blocked]
+    J --> L[Assert REPLACE response]
+    L --> M([Test passes])
+    K --> M
+        </div>
+      </div>
+    </div>
+
+    <!-- Diagram 3 -->
+    <div class="card full-width">
+      <div class="card-header">
+        <span class="badge">Flow 3</span>
+        <h2>Project Architecture</h2>
+      </div>
+      <div class="card-body">
+        <div class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {'primaryColor': '#3b4fd8', 'primaryTextColor': '#f1f5f9', 'primaryBorderColor': '#4f63e8', 'lineColor': '#64748b', 'secondaryColor': '#1e2330', 'tertiaryColor': '#2d3448'}}}%%
+flowchart LR
+    subgraph tests["tests/"]
+        BR["br-002/\nbr-002-departure-date.spec.ts"]
+        DBG["debug/\ndebug-payload.spec.ts"]
+    end
+
+    subgraph testdata["test-data/"]
+        COM["commodities/\nhorticulture · grain · meat"]
+        RD["rex-defaults.ts\ncreateBuilders factory"]
+        PO["payload-overrides.ts"]
+    end
+
+    subgraph src["src/"]
+        FIX["fixtures/"]
+        HLP["helpers/"]
+        INT["interfaces/"]
+        CFG["config/\nenvironment.ts"]
+        subgraph soap["soap/"]
+            SC["soap-client.ts"]
+            RP["response-parser.ts"]
+            BLD["builders/"]
+            XML["payloads/\n*.template.xml"]
+        end
+    end
+
+    tests --> testdata
+    tests --> src
+    testdata --> src
+    SC --> BLD
+    SC --> RP
+    BLD --> XML
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true, securityLevel: 'loose' });
+  </script>
+</body>
+</html>
