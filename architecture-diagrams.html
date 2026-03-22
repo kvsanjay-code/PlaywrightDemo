@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>REX Test Automation — Architecture Diagrams</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      padding: 40px 24px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #64748b;
+      font-size: 0.9rem;
+      margin-bottom: 48px;
+    }
+
+    .section {
+      max-width: 1400px;
+      margin: 0 auto 48px;
+    }
+
+    .card {
+      background: #1e2330;
+      border: 1px solid #2d3448;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid #2d3448;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-blue  { background: #3b4fd8; color: #c7d2fe; }
+    .badge-green { background: #166534; color: #bbf7d0; }
+
+    .card-header h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    .card-body {
+      padding: 32px;
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+
+    .mermaid { width: 100%; }
+    .mermaid svg { max-width: 100%; height: auto; }
+  </style>
+</head>
+<body>
+
+  <h1>REX Test Automation</h1>
+  <p class="subtitle">Architecture Diagrams — Class Structure &amp; Layered Architecture</p>
+
+  <!-- ── CLASS DIAGRAM ───────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="card">
+      <div class="card-header">
+        <span class="badge badge-blue">Class Diagram</span>
+        <h2>Class &amp; Interface Structure</h2>
+      </div>
+      <div class="card-body">
+        <div class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {'primaryColor': '#3b4fd8', 'primaryTextColor': '#f1f5f9', 'primaryBorderColor': '#4f63e8', 'lineColor': '#64748b', 'secondaryColor': '#1e2330', 'tertiaryColor': '#2d3448', 'classText': '#f1f5f9'}}}%%
+classDiagram
+
+  %% ── Config ──────────────────────────────────────────────
+  class EnvironmentConfig {
+    +env: Environment
+    +vendorToken: string
+    +clientGroupToken: string
+    +clientToken: string
+    +soapUsername: string
+    +soapPassword: string
+    +rexSubmissionServiceUrl: string
+    +rexCertificateServiceUrl: string
+    +readRexServiceUrl: string
+    +staffPortalUrl: string
+    +ownerExporterId: string
+    +certificateRequiredClientGroup: string
+  }
+
+  %% ── SOAP Client ─────────────────────────────────────────
+  class SoapClient {
+    -config: EnvironmentConfig
+    +orderRex(payload) Promise~SoapResult~
+    +lodgeRex(payload) Promise~SoapResult~
+    +amendRex(payload) Promise~SoapResult~
+    +replaceCertificate(payload) Promise~SoapResult~
+    +readRex(payload) Promise~SoapResult~
+    +serializeOrderRex(payload) string
+    +serializeLodgeRex(payload) string
+    -send(url, action, body) Promise~SoapResult~
+  }
+
+  %% ── Response Types ──────────────────────────────────────
+  class SoapSuccessResult {
+    +success: true
+    +rexNumber: string
+    +lastAmendmentTimestamp: string
+    +messages: ParsedMessage[]
+  }
+
+  class SoapFaultResult {
+    +success: false
+    +faultCode: string
+    +faultString: string
+    +validationErrors: ParsedValidationError[]
+  }
+
+  class ParsedMessage {
+    +messageCode: string
+    +messageText: string
+  }
+
+  %% ── Workflow Helpers ────────────────────────────────────
+  class RexState {
+    +rexNumber: string
+    +lastAmendmentTimestamp: string
+  }
+
+  class RexWorkflow {
+    +orderStep(client, payload) Promise~RexState~
+    +lodgeStep(client, payload) Promise~RexState~
+    +readRexStep(client, rexNumber) Promise~RexState~
+    +amendStep(client, payload) Promise~RexState~
+    +replaceStep(client, payload) Promise~RexState~
+    +toIdentification(state) Identification
+  }
+
+  %% ── Test Data ───────────────────────────────────────────
+  class CommodityDefaults {
+    +commodityType: string
+    +defaultProductType: string
+    +packType: string
+    +preservationType: string
+    +destinationCountry: string
+    +transportMode: string
+    +exporterPrefix: string
+    +ownerExporterId: string
+    +certificateRequiredClientGroup: string
+  }
+
+  class CommodityBuilders {
+    +buildOrderPayload(dest, type, date) OrderRexPayload
+    +buildLodgePayload(dest, type, date) LodgeRexPayload
+    +buildDefaultOrderPayload(overrides?) OrderRexPayload
+    +buildDefaultLodgePayload(overrides?) LodgeRexPayload
+    +buildDefaultAmendPayload(state, overrides?) AmendRexPayload
+  }
+
+  class PayloadOverrides {
+    +destinationCountry?: Nullable~string~
+    +productType?: Nullable~string~
+    +transportMode?: Nullable~string~
+    +printIndicator?: Nullable~PrintIndicator~
+    +amendmentReason?: Nullable~string~
+  }
+
+  %% ── Payload Interfaces ──────────────────────────────────
+  class OrderRexPayload {
+    +exportDetails: ExportDetails
+    +productLines: ProductLines
+  }
+
+  class LodgeRexPayload {
+    +payloadType: LODGE
+    +exportDetails: ExportDetails
+    +certificateDetails?: CertificateDetails
+    +productLines: ProductLines
+  }
+
+  class AmendRexPayload {
+    +identification: Identification
+    +exportDetails: ExportDetails
+    +certificateDetails?: CertificateDetails
+    +productLines: ProductLines
+    +amendmentReason?: string
+  }
+
+  %% ── Relationships ───────────────────────────────────────
+  SoapClient --> EnvironmentConfig : uses
+  SoapClient --> SoapSuccessResult : returns
+  SoapClient --> SoapFaultResult   : returns
+  SoapSuccessResult --> ParsedMessage : contains
+  RexWorkflow --> SoapClient   : calls
+  RexWorkflow --> RexState     : returns
+  CommodityBuilders --> CommodityDefaults  : built from
+  CommodityBuilders --> PayloadOverrides   : accepts
+  CommodityBuilders --> OrderRexPayload    : produces
+  CommodityBuilders --> LodgeRexPayload    : produces
+  CommodityBuilders --> AmendRexPayload    : produces
+  SoapClient --> OrderRexPayload  : consumes
+  SoapClient --> LodgeRexPayload  : consumes
+  SoapClient --> AmendRexPayload  : consumes
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LAYERED ARCHITECTURE ───────────────────────────────────────── -->
+  <div class="section">
+    <div class="card">
+      <div class="card-header">
+        <span class="badge badge-green">Layered Architecture</span>
+        <h2>System Layers &amp; Dependencies</h2>
+      </div>
+      <div class="card-body">
+        <div class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {'primaryColor': '#3b4fd8', 'primaryTextColor': '#f1f5f9', 'primaryBorderColor': '#4f63e8', 'lineColor': '#64748b', 'secondaryColor': '#1e2330', 'tertiaryColor': '#2d3448'}}}%%
+flowchart TB
+
+  subgraph L1["Layer 1 — Test Specs"]
+    direction LR
+    T1["tests/br-002/\nbr-002-departure-date.spec.ts"]
+    T2["tests/debug/\ndebug-payload.spec.ts"]
+  end
+
+  subgraph L2["Layer 2 — Test Data"]
+    direction LR
+    subgraph commodities["test-data/commodities/"]
+      H["horticulture.ts"]
+      G["grain.ts"]
+      M["meat.ts"]
+    end
+    RD["rex-defaults.ts\ncreateCommodityBuilders()"]
+    PO["payload-overrides.ts\no() resolver"]
+  end
+
+  subgraph L3["Layer 3 — Fixtures &amp; Workflow Helpers"]
+    direction LR
+    FX["src/fixtures/\nPlaywright test + soapClient fixture"]
+    WF["src/helpers/rex-workflow.ts\norderStep · lodgeStep · amendStep\nreadRexStep · replaceStep"]
+    SU["src/helpers/string-utils.ts\nfutureDateISO · randomExporterReference"]
+  end
+
+  subgraph L4["Layer 4 — SOAP Layer"]
+    direction LR
+    SC["src/soap/soap-client.ts\nSoapClient"]
+    RP["src/soap/response-parser.ts\nparseSoapResponse · parseReadRexResponse"]
+    subgraph builders["src/soap/builders/"]
+      BM["buildOrderRexPayload\nbuildLodgeRexPayload\nbuildAmendRexPayload"]
+      BS["sections/\nexport-details · product-lines\ncertificate-details · address"]
+    end
+    XML["src/soap/payloads/\n*.template.xml"]
+  end
+
+  subgraph L5["Layer 5 — Foundation"]
+    direction LR
+    INT["src/interfaces/\nOrderRexPayload · LodgeRexPayload\nAmendRexPayload · SoapResult\nExportDetails · ProductLines · ..."]
+    CFG["src/config/environment.ts\nEnvironmentConfig · loadConfig()\n.env.sit · .env.sit2 · .env.vnd"]
+  end
+
+  subgraph L6["Layer 6 — External Services"]
+    direction LR
+    S1["RexSubmissionService\nORDER · LODGE · AMEND"]
+    S2["REXCertificateService\nREPLACE"]
+    S3["ReadRexService\nREAD"]
+    S4["Staff Portal\nUI — Phase 8"]
+  end
+
+  L1 --> L2
+  L1 --> L3
+  L2 --> L5
+  L3 --> L4
+  L3 --> L5
+  L4 --> L5
+  L4 --> L6
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true, securityLevel: 'loose' });
+  </script>
+</body>
+</html>
