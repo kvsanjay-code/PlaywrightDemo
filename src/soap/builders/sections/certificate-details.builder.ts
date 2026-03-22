@@ -1,4 +1,4 @@
-import { CertificateDetails, CertificateEntry } from '../../interfaces';
+import { CertificateDetails, CertificateEntry } from 'src/interfaces';
 import { optElem, elem } from '../xml-utils';
 
 export function buildCertificateDetails(details: CertificateDetails | undefined): string {

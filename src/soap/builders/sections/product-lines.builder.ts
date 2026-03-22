@@ -1,4 +1,4 @@
-import { ProductLines, ProductLine, ProductDetails, ProductPackaging } from '../../interfaces';
+import { ProductLines, ProductLine, ProductDetails, ProductPackaging } from 'src/interfaces';
 import { optElem, elem } from '../xml-utils';
 import { buildAddress } from './address.builder';
 

@@ -1,4 +1,4 @@
-import { ExportDetails } from '../../interfaces';
+import { ExportDetails } from 'src/interfaces';
 import { optElem, reqElem, elem } from '../xml-utils';
 import { buildAddress, buildAddressSection } from './address.builder';
 

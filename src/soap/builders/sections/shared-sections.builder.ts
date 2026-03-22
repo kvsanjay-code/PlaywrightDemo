@@ -1,6 +1,6 @@
 // Builds attachments, additionalTexts and euTransit — shared across all payload types
 
-import { Attachment, AdditionalText, EuTransit } from '../../interfaces';
+import { Attachment, AdditionalText, EuTransit } from 'src/interfaces';
 import { optElem, elem } from '../xml-utils';
 import { buildAddress } from './address.builder';
 

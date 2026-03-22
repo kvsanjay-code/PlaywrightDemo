@@ -1,4 +1,4 @@
-import { ReadRexPayload, SoapHeader } from '../interfaces';
+import { ReadRexPayload, SoapHeader } from 'src/interfaces';
 import { buildSoapHeader, SOAP_HEADER_NAMESPACES } from './soap-header.builder';
 
 const NAMESPACES = [

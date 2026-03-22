@@ -1,4 +1,4 @@
-import { ReplaceCertificatePayload, SoapHeader } from '../interfaces';
+import { ReplaceCertificatePayload, SoapHeader } from 'src/interfaces';
 import { buildExportDetails } from './sections/export-details.builder';
 import { buildCertificateDetails } from './sections/certificate-details.builder';
 import { buildProductLines } from './sections/product-lines.builder';

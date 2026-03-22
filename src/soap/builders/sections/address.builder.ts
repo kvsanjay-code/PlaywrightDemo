@@ -1,4 +1,4 @@
-import { Address } from '../../interfaces';
+import { Address } from 'src/interfaces';
 import { optElem, elem } from '../xml-utils';
 
 export function buildAddress(addr: Address | undefined, prefix = 'com'): string {

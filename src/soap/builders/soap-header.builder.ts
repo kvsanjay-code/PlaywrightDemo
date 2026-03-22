@@ -1,4 +1,4 @@
-import { SoapHeader } from '../interfaces';
+import { SoapHeader } from 'src/interfaces';
 
 // Namespace declarations added to every SOAP envelope
 export const SOAP_HEADER_NAMESPACES = [

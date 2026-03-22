@@ -12,10 +12,10 @@
  * TC05–TC08: TUR   → {SG, HK, MY, MV}, departure +35 days → Rejected
  */
 
-import { test, expect } from '../src/fixtures';
-import { SoapResult }   from '../src/soap';
+import { test, expect } from 'src/fixtures';
+import { SoapResult }   from 'src/soap';
 import { buildLodgePayload, PRODUCT_TYPE } from 'test-data/commodities/horticulture';
-import { futureDateISO }     from '../src/helpers';
+import { futureDateISO }     from 'src/helpers';
 
 // Departure date well beyond the 28-day threshold
 const DEPARTURE_DATE = futureDateISO(35);

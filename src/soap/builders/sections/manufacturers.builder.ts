@@ -1,4 +1,4 @@
-import { Manufacturers } from '../../interfaces';
+import { Manufacturers } from 'src/interfaces';
 import { elem } from '../xml-utils';
 import { buildAddress } from './address.builder';
 
