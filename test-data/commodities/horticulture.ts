@@ -25,6 +25,11 @@ export const DEFAULTS: CommodityDefaults = {
   packType:           'CTN',   // Carton
   preservationType:   'FRE',   // Fresh
   exporterPrefix:     'HORT',
+
+  // Plant-specific fields — not set on Grain or Meat
+  treatmentCode: 'HT',                                      // Heat Treatment
+  treatmentInfo: 'Heat treated at 47°C for 20 minutes',
+  farmCode:      'FARM-001',
 };
 
 // ─── Builders ─────────────────────────────────────────────────────────────────
@@ -35,4 +40,5 @@ export const {
   buildDefaultOrderPayload,
   buildDefaultLodgePayload,
   buildDefaultAmendPayload,
+  buildDefaultReplacePayload,
 } = createCommodityBuilders(DEFAULTS);

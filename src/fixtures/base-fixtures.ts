@@ -11,6 +11,7 @@
 
 import { test as base } from '@playwright/test';
 import { SoapClient } from '../soap';
+import { StaffPortalPage } from '../pages';
 import { config } from '../config/environment';
 
 // ─── Fixture type declarations ────────────────────────────────────────────────
@@ -18,6 +19,8 @@ import { config } from '../config/environment';
 type RexFixtures = {
   /** SOAP client pre-configured with credentials from the active environment (.env.sit / .env.sit2 / .env.vnd). */
   soapClient: SoapClient;
+  /** Staff Portal page object for hybrid SOAP + UI test flows. */
+  staffPortalPage: StaffPortalPage;
 };
 
 // ─── Extended test object ─────────────────────────────────────────────────────
@@ -25,6 +28,10 @@ type RexFixtures = {
 export const test = base.extend<RexFixtures>({
   soapClient: async ({}, use) => {
     await use(new SoapClient(config));
+  },
+
+  staffPortalPage: async ({ page }, use) => {
+    await use(new StaffPortalPage(page, config.staffPortalUrl));
   },
 });
 

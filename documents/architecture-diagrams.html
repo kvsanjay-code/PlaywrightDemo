@@ -240,56 +240,52 @@ classDiagram
       </div>
       <div class="card-body">
         <div class="mermaid">
-%%{init: {'theme': 'dark', 'themeVariables': {'primaryColor': '#3b4fd8', 'primaryTextColor': '#f1f5f9', 'primaryBorderColor': '#4f63e8', 'lineColor': '#64748b', 'secondaryColor': '#1e2330', 'tertiaryColor': '#2d3448'}}}%%
+%%{init: {'theme': 'dark', 'themeVariables': {'primaryColor': '#1e3a8a', 'primaryTextColor': '#f1f5f9', 'primaryBorderColor': '#3b82f6', 'lineColor': '#475569', 'secondaryColor': '#1e2330', 'tertiaryColor': '#2d3448', 'clusterBkg': '#161b27', 'clusterBorder': '#2d3448', 'titleColor': '#94a3b8'}}}%%
 flowchart TB
 
-  subgraph L1["Layer 1 — Test Specs"]
+  subgraph L1["▸ Layer 1 — Test Specs"]
     direction LR
-    T1["tests/br-002/\nbr-002-departure-date.spec.ts"]
-    T2["tests/debug/\ndebug-payload.spec.ts"]
+    T1["tests/br-002/br-002-departure-date.spec.ts"]
+    T2["tests/debug/debug-payload.spec.ts"]
   end
 
-  subgraph L2["Layer 2 — Test Data"]
+  subgraph L2["▸ Layer 2 — Test Data"]
     direction LR
-    subgraph commodities["test-data/commodities/"]
-      H["horticulture.ts"]
-      G["grain.ts"]
-      M["meat.ts"]
-    end
-    RD["rex-defaults.ts\ncreateCommodityBuilders()"]
-    PO["payload-overrides.ts\no() resolver"]
+    H["test-data/commodities/horticulture.ts"]
+    G["test-data/commodities/grain.ts"]
+    M["test-data/commodities/meat.ts"]
+    RD["test-data/rex-defaults.ts · createCommodityBuilders()"]
+    PO["test-data/payload-overrides.ts · o() resolver"]
   end
 
-  subgraph L3["Layer 3 — Fixtures &amp; Workflow Helpers"]
+  subgraph L3["▸ Layer 3 — Fixtures & Workflow Helpers"]
     direction LR
-    FX["src/fixtures/\nPlaywright test + soapClient fixture"]
-    WF["src/helpers/rex-workflow.ts\norderStep · lodgeStep · amendStep\nreadRexStep · replaceStep"]
-    SU["src/helpers/string-utils.ts\nfutureDateISO · randomExporterReference"]
+    FX["src/fixtures/ · Playwright test + soapClient fixture"]
+    WF["src/helpers/rex-workflow.ts · orderStep · lodgeStep · amendStep · readRexStep · replaceStep"]
+    SU["src/helpers/string-utils.ts · futureDateISO · randomExporterReference"]
   end
 
-  subgraph L4["Layer 4 — SOAP Layer"]
+  subgraph L4["▸ Layer 4 — SOAP Layer"]
     direction LR
-    SC["src/soap/soap-client.ts\nSoapClient"]
-    RP["src/soap/response-parser.ts\nparseSoapResponse · parseReadRexResponse"]
-    subgraph builders["src/soap/builders/"]
-      BM["buildOrderRexPayload\nbuildLodgeRexPayload\nbuildAmendRexPayload"]
-      BS["sections/\nexport-details · product-lines\ncertificate-details · address"]
-    end
-    XML["src/soap/payloads/\n*.template.xml"]
+    SC["src/soap/soap-client.ts · SoapClient"]
+    RP["src/soap/response-parser.ts · parseSoapResponse · parseReadRexResponse"]
+    BM["src/soap/builders/ · buildOrderRexPayload · buildLodgeRexPayload · buildAmendRexPayload"]
+    BS["src/soap/builders/sections/ · export-details · product-lines · certificate-details · address"]
+    XML["src/soap/payloads/ · *.template.xml"]
   end
 
-  subgraph L5["Layer 5 — Foundation"]
+  subgraph L5["▸ Layer 5 — Foundation"]
     direction LR
-    INT["src/interfaces/\nOrderRexPayload · LodgeRexPayload\nAmendRexPayload · SoapResult\nExportDetails · ProductLines · ..."]
-    CFG["src/config/environment.ts\nEnvironmentConfig · loadConfig()\n.env.sit · .env.sit2 · .env.vnd"]
+    INT["src/interfaces/ · OrderRexPayload · LodgeRexPayload · AmendRexPayload · SoapResult · ExportDetails · ProductLines"]
+    CFG["src/config/environment.ts · EnvironmentConfig · loadConfig() · .env.sit · .env.sit2 · .env.vnd"]
   end
 
-  subgraph L6["Layer 6 — External Services"]
+  subgraph L6["▸ Layer 6 — External Services"]
     direction LR
-    S1["RexSubmissionService\nORDER · LODGE · AMEND"]
-    S2["REXCertificateService\nREPLACE"]
-    S3["ReadRexService\nREAD"]
-    S4["Staff Portal\nUI — Phase 8"]
+    S1["RexSubmissionService · ORDER · LODGE · AMEND"]
+    S2["REXCertificateService · REPLACE"]
+    S3["ReadRexService · READ"]
+    S4["Staff Portal · UI Phase 8"]
   end
 
   L1 --> L2

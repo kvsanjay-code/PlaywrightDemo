@@ -1,13 +1,13 @@
 /**
  * Scratch tests — inspect ORDER and LODGE payload construction.
- * No assertions. Run with --debug and set breakpoints freely.
+ * Run with --debug and set breakpoints freely.
  */
 
-import { test } from 'src/fixtures';
-import { buildDefaultOrderPayload, buildDefaultAmendPayload, buildDefaultLodgePayload as buildHorticultureLodgePayload, PRODUCT_TYPE } from 'test-data/commodities/horticulture';
+import { test, expect } from 'src/fixtures';
+import { buildDefaultOrderPayload, buildDefaultAmendPayload, buildDefaultLodgePayload as buildHorticultureLodgePayload, buildLodgePayload, PRODUCT_TYPE } from 'test-data/commodities/horticulture';
 import { buildDefaultLodgePayload as buildGrainLodgePayload, buildDefaultOrderPayload as buildGrainOrderPayload } from 'test-data/commodities/grain';
 import { buildDefaultLodgePayload as buildMeatLodgePayload,  buildDefaultOrderPayload as buildMeatOrderPayload }  from 'test-data/commodities/meat';
-import { lodgeStep } from 'src/helpers';
+import { lodgeStep, futureDateISO } from 'src/helpers';
 import { PrintIndicator } from 'src/interfaces';
 
 test('debug — inspect full ORDER payload', async ({ soapClient }) => {
@@ -112,4 +112,35 @@ test('debug — inspect full AMEND payload', async ({ soapClient }) => {
   const result = await soapClient.amendRex(payload);
 
   console.log('Result:\n', JSON.stringify(result, null, 2));
+});
+
+// ── BR-002 fault assertions ───────────────────────────────────────────────────
+
+const DEPARTURE_BEYOND_28_DAYS = futureDateISO(35);
+
+const faultCases = [
+  { tc: 'TC-F01', country: 'SG' },
+  { tc: 'TC-F02', country: 'HK' },
+  { tc: 'TC-F03', country: 'MY' },
+  { tc: 'TC-F04', country: 'MV' },
+];
+
+test.describe('BR-002-01 — fault 1115 when departure exceeds 28 days', () => {
+  for (const { tc, country } of faultCases) {
+    test(`${tc} — TUR → ${country}, departure +35 days → fault 1115`, async ({ soapClient }) => {
+      const result = await soapClient.lodgeRex(
+        buildLodgePayload(country, PRODUCT_TYPE.TUR, DEPARTURE_BEYOND_28_DAYS),
+      );
+
+      console.log(`${tc} result:\n`, JSON.stringify(result, null, 2));
+
+      expect(result.success, `Expected LODGE to fail for TUR → ${country}`).toBe(false);
+
+      if (!result.success) {
+        expect(result.faultCode, 'Expected fault code 1115').toBe('1115');
+        expect(result.faultString, 'Expected fault message about 28-day departure limit')
+          .toContain('departure date cannot be more than 28 days');
+      }
+    });
+  }
 });

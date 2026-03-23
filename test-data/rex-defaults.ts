@@ -6,7 +6,7 @@
  * that accept a CommodityDefaults so each commodity can supply its own values.
  */
 
-import { ExportDetails, ProductLines, PrintIndicator, LodgeRexPayload, OrderRexPayload, AmendRexPayload } from 'src/interfaces';
+import { ExportDetails, ProductLines, PrintIndicator, LodgeRexPayload, OrderRexPayload, AmendRexPayload, ReplaceCertificatePayload } from 'src/interfaces';
 import { randomExporterReference, futureDateISO, RexState, toIdentification } from 'src/helpers';
 import { config } from 'src/config/environment';
 import { PayloadOverrides, o } from './payload-overrides';
@@ -51,6 +51,11 @@ export interface CommodityDefaults {
   exporterPrefix:                  string;
   ownerExporterId:                 string;
   certificateRequiredClientGroup:  string;
+
+  // ── Plant / Horticulture-specific (optional — omit for Grain, Meat, etc.) ──
+  treatmentCode?: string;   // e.g. 'HT' = Heat Treatment, 'MB' = Methyl Bromide
+  treatmentInfo?: string;   // human-readable treatment description
+  farmCode?:      string;   // farm registration code on the product line
 }
 
 // ─── Shared base defaults (overridden per commodity) ─────────────────────────
@@ -116,6 +121,7 @@ export function buildDefaultExportDetails(d: CommodityDefaults, overrides: Paylo
 }
 
 type AmendOverrides = PayloadOverrides & { amendmentReason?: string | null; submitAmendmentRequest?: string | null };
+type ReplaceOverrides = PayloadOverrides & { reason?: string | null };
 
 export function createCommodityBuilders(d: CommodityDefaults) {
   return {
@@ -173,6 +179,25 @@ export function createCommodityBuilders(d: CommodityDefaults) {
         submitAmendmentRequest: o(undefined, overrides.submitAmendmentRequest) ?? undefined,
       };
     },
+
+    buildDefaultReplacePayload(rexState: RexState, overrides: ReplaceOverrides = {}): ReplaceCertificatePayload {
+      const transportMode  = o(d.transportMode,  overrides.transportMode)!;
+      const printIndicator = o(d.printIndicator, overrides.printIndicator);
+      return {
+        reason: o('Certificate replacement', overrides.reason)!,
+        rexDetails: {
+          identification: {
+            rexNumber:         rexState.rexNumber,
+            lastAmendDateTime: rexState.lastAmendmentTimestamp,
+          },
+          exportDetails:      buildDefaultExportDetails(d, overrides),
+          certificateDetails: {
+            certificatePrintControls: { certificatePrintIndicator: printIndicator },
+          },
+          productLines:       buildDefaultProductLines(d, overrides, transportMode),
+        },
+      };
+    },
   };
 }
 
@@ -183,6 +208,11 @@ export function buildDefaultProductLines(d: CommodityDefaults, overrides: Payloa
   // Containers are mandatory for SEA, not required for AIR
   const containers = transportMode === TRANSPORT_MODE.SEA
     ? { container: [{ containerNumber: o(d.containerNumber, overrides.containerNumber)! }] }
+    : undefined;
+
+  // Treatments are plant/horticulture-specific — only included when treatmentCode is set
+  const treatments = d.treatmentCode
+    ? { treatmentType: [{ treatmentCode: d.treatmentCode, treatmentStartDate: futureDateISO(1), treatmentInformation: d.treatmentInfo ?? '' }] }
     : undefined;
 
   return {
@@ -197,8 +227,10 @@ export function buildDefaultProductLines(d: CommodityDefaults, overrides: Payloa
           outerProductPackaging: {
             quantity: { value: o(d.outerPackQty, overrides.outerPackQty)!, packageType: packType },
           },
+          farmCode: d.farmCode,   // plant-specific — undefined for Grain, Meat
         },
         containers,
+        treatments,              // plant-specific — undefined for Grain, Meat
         batchCode:           o(d.batchCode, overrides.batchCode),
         durabilityStartDate: o(futureDateISO(d.durabilityDaysStart), overrides.durabilityStartDate),
         durabilityEndDate:   o(futureDateISO(d.durabilityDaysEnd),   overrides.durabilityEndDate),

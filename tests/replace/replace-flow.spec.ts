@@ -1,0 +1,158 @@
+/**
+ * replace-flow.spec.ts
+ *
+ * Phase 8 — Hybrid REPLACE test cases.
+ * End-to-end flows combining SOAP operations with Staff Portal UI actions.
+ *
+ * Flow: ORDER -> LODGE -> Staff Portal (inspect + authorise) -> READ REX -> REPLACE
+ */
+
+import { test, expect } from 'src/fixtures';
+import { lodgeStep, readRexStep, replaceStep } from 'src/helpers';
+import {
+  buildDefaultLodgePayload,
+  buildDefaultReplacePayload,
+} from 'test-data/commodities/horticulture';
+
+// ─── TC-R01: Full REPLACE flow — happy path ────────────────────────────────────
+
+test('TC-R01 — full REPLACE flow: LODGE -> authorise -> REPLACE', async ({ soapClient, staffPortalPage }) => {
+  // Step 1 — LODGE
+  const lodgeState = await lodgeStep(soapClient, buildDefaultLodgePayload());
+  console.log('LODGE complete:', lodgeState);
+
+  // Step 3 — Staff Portal: login, find REX, add inspection, authorise
+  await staffPortalPage.login(
+    process.env.STAFF_USERNAME!,
+    process.env.STAFF_PASSWORD!,
+  );
+  await staffPortalPage.findByREXNumber(lodgeState.rexNumber);
+  await staffPortalPage.addInspectionDetails({
+    startDate: new Date().toISOString().split('T')[0],
+    endDate:   new Date().toISOString().split('T')[0],
+    inspectorName: 'Auto Test Inspector',
+    comments: 'Automated inspection for REPLACE flow test',
+  });
+  await staffPortalPage.authorise('Authorised for REPLACE test — TC-R01');
+
+  // Step 4 — Assert status is CertificateReady before REPLACE
+  await staffPortalPage.assertREXStatus('CertificateReady');
+  console.log('REX status confirmed: CertificateReady');
+
+  // Step 5 — READ REX to get latest timestamp after portal actions
+  const currentState = await readRexStep(soapClient, lodgeState.rexNumber);
+  console.log('READ REX complete:', currentState);
+
+  // Step 6 — REPLACE
+  const replacePayload = buildDefaultReplacePayload(currentState, {
+    reason: 'Certificate replacement — TC-R01 automated test',
+  });
+  const replaceState = await replaceStep(soapClient, replacePayload);
+  console.log('REPLACE complete:', replaceState);
+
+  // Assertions
+  expect(replaceState.rexNumber, 'REPLACE should return same REX number').toBe(currentState.rexNumber);
+  expect(replaceState.lastAmendmentTimestamp, 'REPLACE should return updated timestamp').toBeTruthy();
+  expect(replaceState.lastAmendmentTimestamp).not.toBe(currentState.lastAmendmentTimestamp);
+});
+
+// ─── TC-R02: Assert CertificateReady status before REPLACE ─────────────────────
+
+test('TC-R02 — verify REX status transitions to CertificateReady after authorisation', async ({ soapClient, staffPortalPage }) => {
+  // Step 1 — LODGE
+  const lodgeState = await lodgeStep(soapClient, buildDefaultLodgePayload());
+  console.log('LODGE complete:', lodgeState);
+
+  // Step 2 — Staff Portal: authorise
+  await staffPortalPage.login(
+    process.env.STAFF_USERNAME!,
+    process.env.STAFF_PASSWORD!,
+  );
+  await staffPortalPage.findByREXNumber(lodgeState.rexNumber);
+  await staffPortalPage.addInspectionDetails({
+    startDate: new Date().toISOString().split('T')[0],
+    endDate:   new Date().toISOString().split('T')[0],
+  });
+  await staffPortalPage.authorise('Authorised — TC-R02');
+
+  // Step 3 — Assert CertificateReady
+  const status = await staffPortalPage.getREXStatus();
+  expect(status, 'REX should be CertificateReady after authorisation').toBe('CertificateReady');
+});
+
+// ─── TC-R03: REPLACE response assertions ────────────────────────────────────────
+
+test('TC-R03 — REPLACE response contains rexNumber and updated timestamp', async ({ soapClient, staffPortalPage }) => {
+  // Setup — ORDER + LODGE + authorise
+  const lodgeState = await lodgeStep(soapClient, buildDefaultLodgePayload());
+
+  await staffPortalPage.login(
+    process.env.STAFF_USERNAME!,
+    process.env.STAFF_PASSWORD!,
+  );
+  await staffPortalPage.findByREXNumber(lodgeState.rexNumber);
+  await staffPortalPage.addInspectionDetails({
+    startDate: new Date().toISOString().split('T')[0],
+    endDate:   new Date().toISOString().split('T')[0],
+  });
+  await staffPortalPage.authorise('Authorised — TC-R03');
+
+  // READ REX
+  const preReplaceState = await readRexStep(soapClient, lodgeState.rexNumber);
+
+  // REPLACE
+  const replacePayload = buildDefaultReplacePayload(preReplaceState);
+  const result = await soapClient.replaceCertificate(replacePayload);
+
+  console.log('REPLACE result:', JSON.stringify(result, null, 2));
+
+  // Assertions on raw SOAP result
+  expect(result.success, 'REPLACE should succeed').toBe(true);
+  if (result.success) {
+    expect(result.rexNumber, 'Response should contain rexNumber').toBeTruthy();
+    expect(result.lastAmendmentTimestamp, 'Response should contain lastAmendmentTimestamp').toBeTruthy();
+    expect(result.rexNumber).toBe(lodgeState.rexNumber);
+  }
+});
+
+// ─── TC-R04: REPLACE blocked when REX is not authorised (INSPECTION status) ────
+
+test('TC-R04 — REPLACE rejected when REX is in INSPECTION status (not authorised)', async ({ soapClient, staffPortalPage }) => {
+  // Setup — ORDER + LODGE only (no authorisation)
+  const lodgeState = await lodgeStep(soapClient, buildDefaultLodgePayload());
+  console.log('LODGE complete (no authorisation):', lodgeState);
+
+  // Staff Portal — login and add inspection but do NOT authorise
+  await staffPortalPage.login(
+    process.env.STAFF_USERNAME!,
+    process.env.STAFF_PASSWORD!,
+  );
+  await staffPortalPage.findByREXNumber(lodgeState.rexNumber);
+  await staffPortalPage.addInspectionDetails({
+    startDate: new Date().toISOString().split('T')[0],
+    endDate:   new Date().toISOString().split('T')[0],
+    comments: 'Inspection added but NOT authorised — TC-R04',
+  });
+
+  // Verify REX is in INSPECTION status (not CertificateReady)
+  const status = await staffPortalPage.getREXStatus();
+  expect(status, 'REX should be in INSPECTION status').toBe('INSPECTION');
+
+  // READ REX to get current timestamp
+  const currentState = await readRexStep(soapClient, lodgeState.rexNumber);
+
+  // Attempt REPLACE — should be rejected
+  const replacePayload = buildDefaultReplacePayload(currentState, {
+    reason: 'Attempting REPLACE on non-authorised REX — TC-R04',
+  });
+  const result = await soapClient.replaceCertificate(replacePayload);
+
+  console.log('REPLACE result (expected failure):', JSON.stringify(result, null, 2));
+
+  // Assertions — REPLACE should fail
+  expect(result.success, 'REPLACE should be rejected for non-authorised REX').toBe(false);
+  if (!result.success) {
+    expect(result.faultCode, 'Should return a fault code').toBeTruthy();
+    console.log(`Fault: [${result.faultCode}] ${result.faultString}`);
+  }
+});

@@ -38,4 +38,5 @@ export const {
   buildDefaultOrderPayload,
   buildDefaultLodgePayload,
   buildDefaultAmendPayload,
+  buildDefaultReplacePayload,
 } = createCommodityBuilders(DEFAULTS);

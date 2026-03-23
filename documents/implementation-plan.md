@@ -102,53 +102,38 @@
 
 ---
 
-## Phase 7 — Test Cases (TC09–TC16)
-**Goal:** Implement BR-003 — certificate requirement, print indicator, information message 750.
-
-**Test Cases:**
-- [ ] TC09 — Mango → GB, Print Indicator = Auto → COMP, Message 750 displayed
-- [ ] TC10 — Mango → GB, Print Indicator = Manual → COMP, Message 750 displayed
-- [ ] TC11 — Mango → GB, Print Indicator = None → COMP, Message 750 NOT displayed
-- [ ] TC12 — TBC product → TBC destination, Print Indicator = Auto → Message 750 NOT displayed
-- [ ] TC13 — TBC product → TBC destination, Print Indicator = Manual → Message 750 NOT displayed
-- [ ] TC14 — TBC product → TBC destination, Print Indicator = None → Message 750 NOT displayed
-- [ ] TC15 — Lodge Mango → GB, Amend to BAN, Print Indicator = Auto → Message 750 displayed
-- [ ] TC16 — Lodge Mango → GB, Amend to BAN, Print Indicator = Manual → Message 750 displayed
-
-**Status:** Not Started
-
----
-
-## Phase 8 — Staff Portal Page Object
+## Phase 7 — Staff Portal Page Object
 **Goal:** Reusable Page Object for all staff portal interactions.
 
 **Tasks:**
-- [ ] Create `StaffPortalPage` class
-- [ ] Implement `login(username, password)` method
-- [ ] Implement `findByREXNumber(rexNumber)` method
-- [ ] Implement `addInspectionDetails(startDate, endDate, ...fields)` method
-- [ ] Implement `authorise(comments)` method — click authorise link + enter comments + submit
-- [ ] Implement `getREXStatus()` method — returns current status (CertificateReady / INSPECTION)
-- [ ] Implement `assertREXStatus(expectedStatus)` assertion helper
+- [x] Create `StaffPortalPage` class
+- [x] Implement `login(username, password)` method
+- [x] Implement `findByREXNumber(rexNumber)` method
+- [x] Implement `addInspectionDetails(startDate, endDate, ...fields)` method
+- [x] Implement `authorise(comments)` method — click authorise link + enter comments + submit
+- [x] Implement `getREXStatus()` method — returns current status (CertificateReady / INSPECTION)
+- [x] Implement `assertREXStatus(expectedStatus)` assertion helper
 
-**Status:** Not Started
+**Status:** Complete
 
 ---
 
-## Phase 9 — Hybrid Test Cases (REPLACE flow)
+## Phase 8 — Hybrid Test Cases (REPLACE flow)
 **Goal:** Implement end-to-end REPLACE test cases combining SOAP + staff portal steps.
 
 **Tasks:**
-- [ ] Implement full REPLACE flow: ORDER → LODGE → Staff Portal (authorise) → REPLACE
-- [ ] Assert REX status = CertificateReady before REPLACE
-- [ ] Assert REPLACE response after successful authorisation
-- [ ] Implement INSPECTION status scenario (missing consignee/voyage) — REPLACE blocked
+- [x] Implement full REPLACE flow: ORDER → LODGE → Staff Portal (authorise) → READ REX → REPLACE (TC-R01)
+- [x] Assert REX status = CertificateReady before REPLACE (TC-R02)
+- [x] Assert REPLACE response after successful authorisation (TC-R03)
+- [x] Implement INSPECTION status scenario — REPLACE blocked when not authorised (TC-R04)
+- [x] Add `buildDefaultReplacePayload` to `createCommodityBuilders` factory
+- [x] Export `buildDefaultReplacePayload` from all commodity files (horticulture, grain, meat)
 
-**Status:** Not Started
+**Status:** Complete
 
 ---
 
-## Phase 10 — Reporting & CI Config
+## Phase 9 — Reporting & CI Config
 **Goal:** Polish reporting and enable environment switching via CLI.
 
 **Tasks:**
