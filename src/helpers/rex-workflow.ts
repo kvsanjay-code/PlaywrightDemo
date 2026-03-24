@@ -28,6 +28,12 @@ export interface RexState {
   lastAmendmentTimestamp: string;
 }
 
+/** Result returned by replaceStep — REPLACE response has no rexNumber/timestamp. */
+export interface ReplaceResult {
+  serviceRequestId: string;
+  notices: { noticeId: string; noticeType: string; noticeMessage: string }[];
+}
+
 // ─── Internal helpers ─────────────────────────────────────────────────────────
 
 /**
@@ -118,10 +124,13 @@ export async function amendStep(client: SoapClient, payload: AmendRexPayload): P
 /**
  * Sends a REPLACE request.
  * rexDetails.identification must be built via toIdentification(currentState).
- * Returns updated rexNumber + lastAmendmentTimestamp.
+ * Returns serviceRequestId and validation notices.
  */
-export async function replaceStep(client: SoapClient, payload: ReplaceCertificatePayload): Promise<RexState> {
+export async function replaceStep(client: SoapClient, payload: ReplaceCertificatePayload): Promise<ReplaceResult> {
   const result = await client.replaceCertificate(payload);
   assertSuccess('REPLACE', result);
-  return toState('REPLACE', result);
+  return {
+    serviceRequestId: requireField('REPLACE', 'serviceRequestId', result.serviceRequestId),
+    notices: result.notices,
+  };
 }

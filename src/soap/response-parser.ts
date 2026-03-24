@@ -29,6 +29,7 @@ export interface SoapSuccessResult {
   complianceStatus?: string;
   exporterReferences?: string;
   permitNumber?: string;          // present when complianceStatus = 'COMP'
+  serviceRequestId?: string;      // present in REPLACE response
   notices: ParsedNotice[];
   rexLines: ParsedRexLine[];
   rawXml: string;
@@ -129,6 +130,7 @@ function parseSuccess(xml: string): SoapSuccessResult {
 
   const exporterReferences = extractTag(xml, 'exporterReferences');
   const permitNumber       = extractTag(xml, 'permitNumber');
+  const serviceRequestId   = extractTag(xml, 'ServiceRequestId');
 
   return {
     success: true,
@@ -137,6 +139,7 @@ function parseSuccess(xml: string): SoapSuccessResult {
     complianceStatus,
     exporterReferences,
     permitNumber,
+    serviceRequestId,
     notices:  parseNotices(xml),
     rexLines: parseRexLines(xml),
     rawXml: xml,

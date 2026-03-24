@@ -47,13 +47,11 @@ test('TC-R01 — full REPLACE flow: LODGE -> authorise -> REPLACE', async ({ soa
   const replacePayload = buildDefaultReplacePayload(currentState, {
     reason: 'Certificate replacement — TC-R01 automated test',
   });
-  const replaceState = await replaceStep(soapClient, replacePayload);
-  console.log('REPLACE complete:', replaceState);
+  const replaceResult = await replaceStep(soapClient, replacePayload);
+  console.log('REPLACE complete:', replaceResult);
 
   // Assertions
-  expect(replaceState.rexNumber, 'REPLACE should return same REX number').toBe(currentState.rexNumber);
-  expect(replaceState.lastAmendmentTimestamp, 'REPLACE should return updated timestamp').toBeTruthy();
-  expect(replaceState.lastAmendmentTimestamp).not.toBe(currentState.lastAmendmentTimestamp);
+  expect(replaceResult.serviceRequestId, 'REPLACE should return a serviceRequestId').toBeTruthy();
 });
 
 // ─── TC-R02: Assert CertificateReady status before REPLACE ─────────────────────
@@ -82,7 +80,7 @@ test('TC-R02 — verify REX status transitions to CertificateReady after authori
 
 // ─── TC-R03: REPLACE response assertions ────────────────────────────────────────
 
-test('TC-R03 — REPLACE response contains rexNumber and updated timestamp', async ({ soapClient, staffPortalPage }) => {
+test('TC-R03 — REPLACE response contains serviceRequestId and notices', async ({ soapClient, staffPortalPage }) => {
   // Setup — ORDER + LODGE + authorise
   const lodgeState = await lodgeStep(soapClient, buildDefaultLodgePayload());
 
@@ -109,9 +107,9 @@ test('TC-R03 — REPLACE response contains rexNumber and updated timestamp', asy
   // Assertions on raw SOAP result
   expect(result.success, 'REPLACE should succeed').toBe(true);
   if (result.success) {
-    expect(result.rexNumber, 'Response should contain rexNumber').toBeTruthy();
-    expect(result.lastAmendmentTimestamp, 'Response should contain lastAmendmentTimestamp').toBeTruthy();
-    expect(result.rexNumber).toBe(lodgeState.rexNumber);
+    expect(result.serviceRequestId, 'Response should contain serviceRequestId').toBeTruthy();
+    console.log('ServiceRequestId:', result.serviceRequestId);
+    console.log('Notices:', result.notices);
   }
 });
 
