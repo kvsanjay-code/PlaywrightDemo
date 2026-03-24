@@ -98,7 +98,10 @@ export async function lodgeStep(client: SoapClient, payload: LodgeRexPayload): P
 export async function readRexStep(client: SoapClient, rexNumber: string): Promise<RexState> {
   const result = await client.readRex({ rexNumber });
   assertSuccess('READ_REX', result);
-  return toState('READ_REX', result);
+  return {
+    rexNumber,
+    lastAmendmentTimestamp: requireField('READ_REX', 'lastAmendmentTimestamp', result.lastAmendmentTimestamp),
+  };
 }
 
 /**
