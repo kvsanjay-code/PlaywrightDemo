@@ -30,7 +30,7 @@ export interface RexState {
 
 /** Result returned by replaceStep — REPLACE response has no rexNumber/timestamp. */
 export interface ReplaceResult {
-  serviceRequestId: string;
+  serviceRequestId?: string;
   notices: { noticeId: string; noticeType: string; noticeMessage: string }[];
 }
 
@@ -130,7 +130,7 @@ export async function replaceStep(client: SoapClient, payload: ReplaceCertificat
   const result = await client.replaceCertificate(payload);
   assertSuccess('REPLACE', result);
   return {
-    serviceRequestId: requireField('REPLACE', 'serviceRequestId', result.serviceRequestId),
+    serviceRequestId: result.serviceRequestId,
     notices: result.notices,
   };
 }
