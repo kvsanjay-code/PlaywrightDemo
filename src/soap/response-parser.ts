@@ -1,24 +1,36 @@
 // Parses raw SOAP XML responses into typed result objects.
 // Uses regex-based extraction to avoid adding an XML library dependency.
 
-export interface ParsedMessage {
-  messageId: string;
-  messageText: string;
-  messageType: 'INFO' | 'WARNING' | 'ERROR';
+// ─── Shared types ────────────────────────────────────────────────────────────
+
+export interface ParsedNotice {
+  noticeId: string;
+  noticeType: 'I' | 'W' | 'E';   // I=Informational, W=Warning, E=Error
+  noticeMessage: string;
 }
 
-export interface ParsedValidationError {
-  errorCode: string;
-  errorMessage: string;
-  fieldPath?: string;
+export interface ParsedFaultItem {
+  faultCode: string;
+  faultReason: 'ERROR' | 'INFORMATIONAL' | 'WARNING';
+  faultMessage: string;
+}
+
+export interface ParsedRexLine {
+  lineNumber: string;
+  healthCertificateDescription?: string;
+  templateCode?: string;
+  endorsementNumber?: string;
 }
 
 export interface SoapSuccessResult {
   success: true;
   rexNumber?: string;
   lastAmendmentTimestamp?: string;
-  status?: string;
-  messages: ParsedMessage[];
+  complianceStatus?: string;
+  exporterReferences?: string;
+  permitNumber?: string;          // present when complianceStatus = 'COMP'
+  notices: ParsedNotice[];
+  rexLines: ParsedRexLine[];
   rawXml: string;
 }
 
@@ -26,7 +38,7 @@ export interface SoapFaultResult {
   success: false;
   faultCode: string;
   faultString: string;
-  validationErrors: ParsedValidationError[];
+  faultItems: ParsedFaultItem[];
   rawXml: string;
 }
 
@@ -71,22 +83,31 @@ function isFault(xml: string): boolean {
 
 function parseFault(xml: string): SoapFaultResult {
   const faultCode   = extractTag(xml, 'faultcode')   ?? extractTag(xml, 'Code')   ?? 'UNKNOWN';
-  const faultString = extractTag(xml, 'faultstring') ?? extractTag(xml, 'Reason') ?? 'Unknown fault';
+  const faultString = extractTag(xml, 'faultstring') ?? extractTag(xml, 'faultString') ?? extractTag(xml, 'Reason') ?? 'Unknown fault';
 
-  const validationErrors: ParsedValidationError[] = extractAll(xml, 'validationError').map(errXml => ({
-    errorCode:    extractTag(errXml, 'errorCode')    ?? '',
-    errorMessage: extractTag(errXml, 'errorMessage') ?? '',
-    fieldPath:    extractTag(errXml, 'fieldPath'),
+  const faultItems: ParsedFaultItem[] = extractAll(xml, 'NexdocSoapFaultItem').map(itemXml => ({
+    faultCode:    extractTag(itemXml, 'FaultCode')    ?? '',
+    faultReason:  (extractTag(itemXml, 'FaultReason') ?? 'ERROR') as ParsedFaultItem['faultReason'],
+    faultMessage: extractTag(itemXml, 'FaultMessage') ?? '',
   }));
 
-  return { success: false, faultCode, faultString, validationErrors, rawXml: xml };
+  return { success: false, faultCode, faultString, faultItems, rawXml: xml };
 }
 
-function parseMessages(xml: string): ParsedMessage[] {
-  return extractAll(xml, 'message').map(msgXml => ({
-    messageId:   extractTag(msgXml, 'messageId')   ?? '',
-    messageText: extractTag(msgXml, 'messageText') ?? '',
-    messageType: (extractTag(msgXml, 'messageType') ?? 'INFO') as ParsedMessage['messageType'],
+function parseNotices(xml: string): ParsedNotice[] {
+  return extractAll(xml, 'notice').map(noticeXml => ({
+    noticeId:      extractTag(noticeXml, 'noticeId')      ?? '',
+    noticeType:    (extractTag(noticeXml, 'noticeType')    ?? 'I') as ParsedNotice['noticeType'],
+    noticeMessage: extractTag(noticeXml, 'noticeMessage')  ?? '',
+  }));
+}
+
+function parseRexLines(xml: string): ParsedRexLine[] {
+  return extractAll(xml, 'rexLine').map(lineXml => ({
+    lineNumber:                   extractTag(lineXml, 'lineNumber')                   ?? '',
+    healthCertificateDescription: extractTag(lineXml, 'healthCertificateDescription'),
+    templateCode:                 extractTag(lineXml, 'templateCode'),
+    endorsementNumber:            extractTag(lineXml, 'endorsementNumber'),
   }));
 }
 
@@ -101,14 +122,23 @@ function parseSuccess(xml: string): SoapSuccessResult {
     extractTag(xml, 'lastAmendmentTimestamp') ??
     extractTag(xml, 'lastAmendDateTime');
 
-  const status = extractTag(xml, 'status');
+  // Note: actual response has a typo — <complianceStaus> (missing 't')
+  const complianceStatus =
+    extractTag(xml, 'complianceStatus') ??
+    extractTag(xml, 'complianceStaus');
+
+  const exporterReferences = extractTag(xml, 'exporterReferences');
+  const permitNumber       = extractTag(xml, 'permitNumber');
 
   return {
     success: true,
     rexNumber,
     lastAmendmentTimestamp,
-    status,
-    messages: parseMessages(xml),
+    complianceStatus,
+    exporterReferences,
+    permitNumber,
+    notices:  parseNotices(xml),
+    rexLines: parseRexLines(xml),
     rawXml: xml,
   };
 }

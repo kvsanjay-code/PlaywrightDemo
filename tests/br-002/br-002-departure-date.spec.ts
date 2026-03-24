@@ -65,7 +65,8 @@ test.describe('BR-002-01 — TUR rejected when departure exceeds 28-day limit', 
       expect(lodgeResult.success, `Expected LODGE to fail for TUR → ${country} but it succeeded`).toBe(false);
 
       if (!lodgeResult.success) {
-        expect(lodgeResult.faultCode, `Expected fault code 1115 for TUR → ${country}`).toBe('1115');
+        const item1115 = lodgeResult.faultItems.find(i => i.faultCode === '1115');
+        expect(item1115, `Expected NexdocSoapFaultItem with code 1115 for TUR → ${country}`).toBeTruthy();
       }
     });
   }
@@ -75,5 +76,6 @@ test.describe('BR-002-01 — TUR rejected when departure exceeds 28-day limit', 
 
 function formatFault(result: SoapResult): string {
   if (result.success) return '';
-  return `[${result.faultCode}] ${result.faultString}`;
+  const items = result.faultItems.map(i => `[${i.faultCode}] ${i.faultMessage} (${i.faultReason})`).join('\n  ');
+  return `[${result.faultCode}] ${result.faultString}${items ? '\n  ' + items : ''}`;
 }

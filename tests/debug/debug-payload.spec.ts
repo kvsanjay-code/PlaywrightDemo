@@ -137,8 +137,9 @@ test.describe('BR-002-01 — fault 1115 when departure exceeds 28 days', () => {
       expect(result.success, `Expected LODGE to fail for TUR → ${country}`).toBe(false);
 
       if (!result.success) {
-        expect(result.faultCode, 'Expected fault code 1115').toBe('1115');
-        expect(result.faultString, 'Expected fault message about 28-day departure limit')
+        const item1115 = result.faultItems.find(i => i.faultCode === '1115');
+        expect(item1115, 'Expected NexdocSoapFaultItem with code 1115').toBeTruthy();
+        expect(item1115!.faultMessage, 'Expected fault message about 28-day departure limit')
           .toContain('departure date cannot be more than 28 days');
       }
     });

@@ -104,7 +104,7 @@ export class SoapClient {
         success: false,
         faultCode: 'NETWORK_ERROR',
         faultString: message,
-        validationErrors: [],
+        faultItems: [],
         rawXml: '',
       };
     }
@@ -118,7 +118,7 @@ export class SoapClient {
         success: false,
         faultCode: `HTTP_${httpStatus}`,
         faultString: `Non-SOAP response received (HTTP ${httpStatus})`,
-        validationErrors: [],
+        faultItems: [],
         rawXml: responseText,
       };
     }

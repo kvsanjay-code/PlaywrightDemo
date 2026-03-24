@@ -36,8 +36,8 @@ export interface RexState {
  */
 function assertSuccess(operation: string, result: SoapResult): asserts result is SoapSuccessResult {
   if (!result.success) {
-    const errors = result.validationErrors.length
-      ? '\n  ' + result.validationErrors.map(e => `[${e.errorCode}] ${e.errorMessage}${e.fieldPath ? ` (${e.fieldPath})` : ''}`).join('\n  ')
+    const errors = result.faultItems.length
+      ? '\n  ' + result.faultItems.map(e => `[${e.faultCode}] ${e.faultMessage} (${e.faultReason})`).join('\n  ')
       : '';
     throw new Error(`${operation} SOAP fault — [${result.faultCode}] ${result.faultString}${errors}`);
   }
