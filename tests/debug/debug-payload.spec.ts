@@ -7,7 +7,7 @@ import { test, expect } from 'src/fixtures';
 import { buildDefaultOrderPayload, buildDefaultAmendPayload, buildDefaultLodgePayload as buildHorticultureLodgePayload, buildLodgePayload, PRODUCT_TYPE } from 'test-data/commodities/horticulture';
 import { buildDefaultLodgePayload as buildGrainLodgePayload, buildDefaultOrderPayload as buildGrainOrderPayload } from 'test-data/commodities/grain';
 import { buildDefaultLodgePayload as buildMeatLodgePayload,  buildDefaultOrderPayload as buildMeatOrderPayload }  from 'test-data/commodities/meat';
-import { lodgeStep, futureDateISO } from 'src/helpers';
+import { lodgeStep, readRexStep, futureDateISO } from 'src/helpers';
 import { PrintIndicator } from 'src/interfaces';
 
 test('debug — inspect full ORDER payload', async ({ soapClient }) => {
@@ -112,6 +112,19 @@ test('debug — inspect full AMEND payload', async ({ soapClient }) => {
   const result = await soapClient.amendRex(payload);
 
   console.log('Result:\n', JSON.stringify(result, null, 2));
+});
+
+test('debug — LODGE then READ REX', async ({ soapClient }) => {
+  // Step 1 — LODGE
+  const lodgePayload = buildHorticultureLodgePayload({ destinationCountry: 'GB' });
+  const lodgeState = await lodgeStep(soapClient, lodgePayload);
+
+  console.log('LODGE state:\n', JSON.stringify(lodgeState, null, 2));
+
+  // Step 2 — READ REX
+  const readState = await readRexStep(soapClient, lodgeState.rexNumber);
+
+  console.log('READ REX state:\n', JSON.stringify(readState, null, 2));
 });
 
 // ── BR-002 fault assertions ───────────────────────────────────────────────────
