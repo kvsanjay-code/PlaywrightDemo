@@ -31,7 +31,7 @@ export const test = base.extend<RexFixtures>({
   },
 
   staffPortalPage: async ({ page }, use) => {
-    await use(new StaffPortalPage(page, config.staffPortalUrl));
+    await use(new StaffPortalPage(page, config.staffPortalUrl, config.env));
   },
 });
 

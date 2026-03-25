@@ -9,6 +9,7 @@
  */
 
 import { Page, expect } from '@playwright/test';
+import { Environment } from '../config/environment';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -34,6 +35,7 @@ export class StaffPortalPage {
   constructor(
     private readonly page: Page,
     private readonly baseUrl: string,
+    private readonly env: Environment,
   ) {}
 
   // ── login ──────────────────────────────────────────────────────────────────
@@ -44,10 +46,16 @@ export class StaffPortalPage {
    */
   async login(username: string, password: string): Promise<void> {
     await this.page.goto(this.baseUrl);
-    await this.page.getByLabel('Username').fill(username);
-    await this.page.getByLabel('Password').fill(password);
+
+    if (this.env === 'sit2') {
+      await this.page.getByRole('textbox', { name: 'Email or Client ID' }).fill(username);
+      await this.page.getByRole('textbox', { name: 'password' }).fill(password);
+    } else {
+      await this.page.getByLabel('Username').fill(username);
+      await this.page.getByLabel('Password').fill(password);
+    }
+
     await this.page.getByRole('button', { name: 'Login' }).click();
-    // Wait for the portal home — confirm selector against actual portal
     await this.page.waitForURL(`${this.baseUrl}/**`, { waitUntil: 'networkidle' });
   }
 
