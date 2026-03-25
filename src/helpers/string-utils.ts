@@ -30,12 +30,7 @@ export function randomAlphanumeric(length: number = 8): string {
   return result;
 }
 
-/**
- * Generates a random exporter reference with an optional prefix.
- *
- * @param prefix - Optional prefix e.g. 'REF' → 'REF-A3FX92BK'
- * @returns Reference string e.g. "REF-A3FX92BK"
- */
+
 /**
  * Returns today's date formatted as DD/MM/YYYY (e.g. '25/03/2026').
  * Optionally accepts a daysFromNow offset.
@@ -49,6 +44,12 @@ export function formatDateDDMMYYYY(daysFromNow: number = 0): string {
   return `${dd}/${mm}/${yyyy}`;
 }
 
+/**
+ * Generates a random exporter reference with an optional prefix.
+ *
+ * @param prefix - Optional prefix e.g. 'REF' → 'REF-A3FX92BK'
+ * @returns Reference string e.g. "REF-A3FX92BK"
+ */
 export function randomExporterReference(prefix: string = 'REF'): string {
   return `${prefix}-${randomAlphanumeric(8)}`;
 }
