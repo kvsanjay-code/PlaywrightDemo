@@ -4,7 +4,7 @@
  * Phase 8 — Hybrid REPLACE test cases.
  * End-to-end flows combining SOAP operations with Staff Portal UI actions.
  *
- * Flow: ORDER -> LODGE -> Staff Portal (inspect + authorise) -> READ REX -> REPLACE
+ * Flow: LODGE -> Staff Portal (inspect + authorise) -> READ REX -> REPLACE
  */
 
 import { test, expect } from 'src/fixtures';
@@ -16,34 +16,31 @@ import {
 
 // ─── TC-R01: Full REPLACE flow — happy path ────────────────────────────────────
 
-test('TC-R01 — full REPLACE flow: LODGE -> authorise -> REPLACE', async ({ soapClient, staffPortalPage }) => {
+test('TC-R01 — full REPLACE flow: LODGE -> authorise -> REPLACE', async ({ soapClient, loginPage, rexSearchPage, rexDetailPage }) => {
   // Step 1 — LODGE
   const lodgeState = await lodgeStep(soapClient, buildDefaultLodgePayload());
   console.log('LODGE complete:', lodgeState);
 
-  // Step 3 — Staff Portal: login, find REX, add inspection, authorise
-  await staffPortalPage.login(
-    process.env.STAFF_USERNAME!,
-    process.env.STAFF_PASSWORD!,
-  );
-  await staffPortalPage.findByREXNumber(lodgeState.rexNumber);
-  await staffPortalPage.addInspectionDetails({
+  // Step 2 — Staff Portal: login, find REX, add inspection, authorise
+  await loginPage.login(process.env.STAFF_USERNAME!, process.env.STAFF_PASSWORD!);
+  await rexSearchPage.searchByRexNumber(lodgeState.rexNumber);
+  await rexDetailPage.addInspectionDetails({
     startDate: new Date().toISOString().split('T')[0],
     endDate:   new Date().toISOString().split('T')[0],
     inspectorName: 'Auto Test Inspector',
     comments: 'Automated inspection for REPLACE flow test',
   });
-  await staffPortalPage.authorise('Authorised for REPLACE test — TC-R01');
+  await rexDetailPage.authorise('Authorised for REPLACE test — TC-R01');
 
-  // Step 4 — Assert status is CertificateReady before REPLACE
-  await staffPortalPage.assertREXStatus('CertificateReady');
+  // Step 3 — Assert status is CertificateReady before REPLACE
+  await rexDetailPage.assertREXStatus('CertificateReady');
   console.log('REX status confirmed: CertificateReady');
 
-  // Step 5 — READ REX to get latest timestamp after portal actions
+  // Step 4 — READ REX to get latest timestamp after portal actions
   const currentState = await readRexStep(soapClient, lodgeState.rexNumber);
   console.log('READ REX complete:', currentState);
 
-  // Step 6 — REPLACE
+  // Step 5 — REPLACE
   const replacePayload = buildDefaultReplacePayload(currentState, {
     reason: 'Certificate replacement — TC-R01 automated test',
   });
@@ -56,44 +53,38 @@ test('TC-R01 — full REPLACE flow: LODGE -> authorise -> REPLACE', async ({ soa
 
 // ─── TC-R02: Assert CertificateReady status before REPLACE ─────────────────────
 
-test('TC-R02 — verify REX status transitions to CertificateReady after authorisation', async ({ soapClient, staffPortalPage }) => {
+test('TC-R02 — verify REX status transitions to CertificateReady after authorisation', async ({ soapClient, loginPage, rexSearchPage, rexDetailPage }) => {
   // Step 1 — LODGE
   const lodgeState = await lodgeStep(soapClient, buildDefaultLodgePayload());
   console.log('LODGE complete:', lodgeState);
 
   // Step 2 — Staff Portal: authorise
-  await staffPortalPage.login(
-    process.env.STAFF_USERNAME!,
-    process.env.STAFF_PASSWORD!,
-  );
-  await staffPortalPage.findByREXNumber(lodgeState.rexNumber);
-  await staffPortalPage.addInspectionDetails({
+  await loginPage.login(process.env.STAFF_USERNAME!, process.env.STAFF_PASSWORD!);
+  await rexSearchPage.searchByRexNumber(lodgeState.rexNumber);
+  await rexDetailPage.addInspectionDetails({
     startDate: new Date().toISOString().split('T')[0],
     endDate:   new Date().toISOString().split('T')[0],
   });
-  await staffPortalPage.authorise('Authorised — TC-R02');
+  await rexDetailPage.authorise('Authorised — TC-R02');
 
   // Step 3 — Assert CertificateReady
-  const status = await staffPortalPage.getREXStatus();
+  const status = await rexDetailPage.getREXStatus();
   expect(status, 'REX should be CertificateReady after authorisation').toBe('CertificateReady');
 });
 
 // ─── TC-R03: REPLACE response assertions ────────────────────────────────────────
 
-test('TC-R03 — REPLACE response contains serviceRequestId and notices', async ({ soapClient, staffPortalPage }) => {
-  // Setup — ORDER + LODGE + authorise
+test('TC-R03 — REPLACE response contains serviceRequestId and notices', async ({ soapClient, loginPage, rexSearchPage, rexDetailPage }) => {
+  // Setup — LODGE + authorise
   const lodgeState = await lodgeStep(soapClient, buildDefaultLodgePayload());
 
-  await staffPortalPage.login(
-    process.env.STAFF_USERNAME!,
-    process.env.STAFF_PASSWORD!,
-  );
-  await staffPortalPage.findByREXNumber(lodgeState.rexNumber);
-  await staffPortalPage.addInspectionDetails({
+  await loginPage.login(process.env.STAFF_USERNAME!, process.env.STAFF_PASSWORD!);
+  await rexSearchPage.searchByRexNumber(lodgeState.rexNumber);
+  await rexDetailPage.addInspectionDetails({
     startDate: new Date().toISOString().split('T')[0],
     endDate:   new Date().toISOString().split('T')[0],
   });
-  await staffPortalPage.authorise('Authorised — TC-R03');
+  await rexDetailPage.authorise('Authorised — TC-R03');
 
   // READ REX
   const preReplaceState = await readRexStep(soapClient, lodgeState.rexNumber);
@@ -115,25 +106,22 @@ test('TC-R03 — REPLACE response contains serviceRequestId and notices', async 
 
 // ─── TC-R04: REPLACE blocked when REX is not authorised (INSPECTION status) ────
 
-test('TC-R04 — REPLACE rejected when REX is in INSPECTION status (not authorised)', async ({ soapClient, staffPortalPage }) => {
-  // Setup — ORDER + LODGE only (no authorisation)
+test('TC-R04 — REPLACE rejected when REX is in INSPECTION status (not authorised)', async ({ soapClient, loginPage, rexSearchPage, rexDetailPage }) => {
+  // Setup — LODGE only (no authorisation)
   const lodgeState = await lodgeStep(soapClient, buildDefaultLodgePayload());
   console.log('LODGE complete (no authorisation):', lodgeState);
 
   // Staff Portal — login and add inspection but do NOT authorise
-  await staffPortalPage.login(
-    process.env.STAFF_USERNAME!,
-    process.env.STAFF_PASSWORD!,
-  );
-  await staffPortalPage.findByREXNumber(lodgeState.rexNumber);
-  await staffPortalPage.addInspectionDetails({
+  await loginPage.login(process.env.STAFF_USERNAME!, process.env.STAFF_PASSWORD!);
+  await rexSearchPage.searchByRexNumber(lodgeState.rexNumber);
+  await rexDetailPage.addInspectionDetails({
     startDate: new Date().toISOString().split('T')[0],
     endDate:   new Date().toISOString().split('T')[0],
     comments: 'Inspection added but NOT authorised — TC-R04',
   });
 
   // Verify REX is in INSPECTION status (not CertificateReady)
-  const status = await staffPortalPage.getREXStatus();
+  const status = await rexDetailPage.getREXStatus();
   expect(status, 'REX should be in INSPECTION status').toBe('INSPECTION');
 
   // READ REX to get current timestamp

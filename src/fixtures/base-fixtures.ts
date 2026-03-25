@@ -3,7 +3,10 @@
  *
  * Extends Playwright's base `test` with fixtures shared across all REX tests:
  *
- *   soapClient   — a SoapClient initialised with the active environment credentials.
+ *   soapClient     — a SoapClient initialised with the active environment credentials.
+ *   loginPage      — LoginPage (handles SIT/SIT2 login variants).
+ *   rexSearchPage  — RexSearchPage (search by REX number).
+ *   rexDetailPage  — RexDetailPage (inspect, authorise, status).
  *
  * All tests should import { test, expect } from '../fixtures' rather than
  * from '@playwright/test' directly so they automatically get these fixtures.
@@ -11,7 +14,7 @@
 
 import { test as base } from '@playwright/test';
 import { SoapClient } from '../soap';
-import { StaffPortalPage } from '../pages';
+import { LoginPage, RexSearchPage, RexDetailPage } from '../pages';
 import { config } from '../config/environment';
 
 // ─── Fixture type declarations ────────────────────────────────────────────────
@@ -19,8 +22,12 @@ import { config } from '../config/environment';
 type RexFixtures = {
   /** SOAP client pre-configured with credentials from the active environment (.env.sit / .env.sit2 / .env.vnd). */
   soapClient: SoapClient;
-  /** Staff Portal page object for hybrid SOAP + UI test flows. */
-  staffPortalPage: StaffPortalPage;
+  /** Login page object — handles SIT and SIT2 login form variants. */
+  loginPage: LoginPage;
+  /** REX search page object — search by REX number. */
+  rexSearchPage: RexSearchPage;
+  /** REX detail page object — inspection, authorisation, status. */
+  rexDetailPage: RexDetailPage;
 };
 
 // ─── Extended test object ─────────────────────────────────────────────────────
@@ -30,8 +37,16 @@ export const test = base.extend<RexFixtures>({
     await use(new SoapClient(config));
   },
 
-  staffPortalPage: async ({ page }, use) => {
-    await use(new StaffPortalPage(page, config.staffPortalUrl, config.env));
+  loginPage: async ({ page }, use) => {
+    await use(new LoginPage(page, config.staffPortalUrl, config.env));
+  },
+
+  rexSearchPage: async ({ page }, use) => {
+    await use(new RexSearchPage(page));
+  },
+
+  rexDetailPage: async ({ page }, use) => {
+    await use(new RexDetailPage(page));
   },
 });
 
