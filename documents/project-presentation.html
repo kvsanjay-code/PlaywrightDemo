@@ -142,6 +142,7 @@
 │   │   └── <span class="file">index.ts</span> <span class="desc">............. Barrel export</span><br>
 │   ├── <span class="folder">helpers/</span> <span class="desc">................. Utility functions</span><br>
 │   │   ├── <span class="file">rex-workflow.ts</span> <span class="desc">...... Step helpers (orderStep, lodgeStep, readRexStep...)</span><br>
+│   │   ├── <span class="file">portal-workflow.ts</span> <span class="desc">... portalAuthoriseFlow — reusable login→search→inspect→authorise</span><br>
 │   │   ├── <span class="file">string-utils.ts</span> <span class="desc">...... Date formatting, random strings</span><br>
 │   │   └── <span class="file">index.ts</span><br>
 │   ├── <span class="folder">interfaces/</span> <span class="desc">.............. TypeScript type definitions</span><br>
@@ -217,7 +218,7 @@ graph TB
 
   subgraph "Infrastructure"
     ENV["environment.ts<br/>.env.sit | .env.sit2 | .env.vnd"]
-    H["Helpers<br/>rex-workflow | string-utils"]
+    H["Helpers<br/>rex-workflow | portal-workflow | string-utils"]
   end
 
   T1 & T2 & T3 --> F
@@ -326,15 +327,14 @@ sequenceDiagram
   API-->>SC: rexNumber + timestamp
   SC-->>Test: lodgeState
 
-  Note over Test: Step 2 — Staff Portal Actions
+  Note over Test: Step 2 — Staff Portal (one helper call)
+  Test->>Test: portalAuthoriseFlow(loginPage, rexSearchPage, rexDetailPage, rexNumber)
   Test->>LP: login(username, password)
   LP->>Portal: Fill credentials + click Login
   Test->>SP: searchByRexNumber(rexNumber)
   SP->>Portal: Search + click result
-  Test->>DP: addInspectionDetails(...)
-  DP->>Portal: Fill form + Save
-  Test->>DP: authorise(comments)
-  DP->>Portal: Click Authorise + Submit
+  Test->>DP: inspectAndAuthorise(details, comments)
+  DP->>Portal: Fill inspection + Save + Authorise + Submit
   Test->>DP: assertREXStatus('CertificateReady')
 
   Note over Test: Step 3 — READ REX (get latest timestamp)
@@ -500,7 +500,7 @@ graph LR
 
   subgraph "RexDetailPage"
     D1["Locators:<br/>addInspectionLink()<br/>startDateField()<br/>authoriseLink()<br/>statusLabel()<br/>..."]
-    D2["Actions:<br/>addInspectionDetails()<br/>authorise()<br/>getREXStatus()<br/>assertREXStatus()"]
+    D2["Actions:<br/>addInspectionDetails()<br/>authorise()<br/>inspectAndAuthorise()<br/>getREXStatus()<br/>assertREXStatus()"]
   end
 
   L2 -->|"after login"| S2
@@ -526,12 +526,45 @@ graph LR
 
   <h3>How Tests Use Page Objects</h3>
   <div class="diagram-box" style="background: var(--bg); font-family: 'Cascadia Code', monospace; font-size: 0.85rem; line-height: 1.8; padding: 1rem 1.5rem;">
-    <span style="color: var(--border);">// In the test:</span><br>
+    <span style="color: var(--border);">// Individual page object calls:</span><br>
     <span style="color: var(--cyan);">await</span> <span style="color: var(--green);">loginPage</span>.login(username, password);<br>
     <span style="color: var(--cyan);">await</span> <span style="color: var(--green);">rexSearchPage</span>.searchByRexNumber(rexNumber);<br>
     <span style="color: var(--cyan);">await</span> <span style="color: var(--green);">rexDetailPage</span>.addInspectionDetails({ startDate, endDate });<br>
     <span style="color: var(--cyan);">await</span> <span style="color: var(--green);">rexDetailPage</span>.authorise(<span style="color: var(--orange);">'Authorised'</span>);<br>
     <span style="color: var(--cyan);">await</span> <span style="color: var(--green);">rexDetailPage</span>.assertREXStatus(<span style="color: var(--orange);">'CertificateReady'</span>);<br>
+  </div>
+
+  <h3>Reusable Workflow Helper</h3>
+  <p>Since login → search → inspect → authorise is repeated across many tests, a single helper wraps all four steps:</p>
+  <div class="diagram-box" style="background: var(--bg); font-family: 'Cascadia Code', monospace; font-size: 0.85rem; line-height: 1.8; padding: 1rem 1.5rem;">
+    <span style="color: var(--border);">// One line replaces four repeated steps:</span><br>
+    <span style="color: var(--cyan);">await</span> <span style="color: var(--green);">portalAuthoriseFlow</span>(loginPage, rexSearchPage, rexDetailPage, rexNumber, {<br>
+    &nbsp;&nbsp;authoriseComments: <span style="color: var(--orange);">'Authorised — TC-R01'</span>,<br>
+    });<br>
+    <br>
+    <span style="color: var(--border);">// Or with custom inspection details:</span><br>
+    <span style="color: var(--cyan);">await</span> <span style="color: var(--green);">portalAuthoriseFlow</span>(loginPage, rexSearchPage, rexDetailPage, rexNumber, {<br>
+    &nbsp;&nbsp;inspection: { inspectorName: <span style="color: var(--orange);">'Inspector Smith'</span>, comments: <span style="color: var(--orange);">'All clear'</span> },<br>
+    &nbsp;&nbsp;authoriseComments: <span style="color: var(--orange);">'Approved'</span>,<br>
+    });<br>
+  </div>
+
+  <div class="diagram-box">
+    <div class="mermaid">
+graph LR
+  PF["portalAuthoriseFlow()"] --> L["loginPage.login()"]
+  L --> S["rexSearchPage.searchByRexNumber()"]
+  S --> IA["rexDetailPage.inspectAndAuthorise()"]
+  IA --> I["addInspectionDetails()"]
+  IA --> A["authorise()"]
+
+  style PF fill:#bb9af7,color:#1a1b26
+  style L fill:#9ece6a,color:#1a1b26
+  style S fill:#9ece6a,color:#1a1b26
+  style IA fill:#7aa2f7,color:#1a1b26
+  style I fill:#7dcfff,color:#1a1b26
+  style A fill:#7dcfff,color:#1a1b26
+    </div>
   </div>
 </div>
 
