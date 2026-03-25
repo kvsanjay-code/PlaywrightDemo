@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>REX Export Permit — Test Automation Framework</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg:       #1a1b26;
+      --surface:  #24283b;
+      --border:   #414868;
+      --text:     #c0caf5;
+      --heading:  #7aa2f7;
+      --accent:   #bb9af7;
+      --green:    #9ece6a;
+      --orange:   #ff9e64;
+      --red:      #f7768e;
+      --cyan:     #7dcfff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 { color: var(--heading); font-size: 2.2rem; margin-bottom: 0.5rem; border-bottom: 3px solid var(--accent); padding-bottom: 0.5rem; }
+    h2 { color: var(--accent); font-size: 1.6rem; margin: 2.5rem 0 1rem; border-left: 4px solid var(--accent); padding-left: 0.8rem; }
+    h3 { color: var(--cyan); font-size: 1.2rem; margin: 1.5rem 0 0.5rem; }
+    p, li { margin-bottom: 0.5rem; }
+    ul, ol { padding-left: 1.5rem; }
+
+    .subtitle { color: var(--border); font-size: 1rem; margin-bottom: 2rem; }
+
+    .section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem 2rem; margin-bottom: 2rem; }
+
+    .diagram-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; overflow-x: auto; }
+    .diagram-box .mermaid { display: flex; justify-content: center; }
+
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    th { background: var(--border); color: var(--heading); text-align: left; padding: 0.6rem 1rem; font-size: 0.9rem; }
+    td { border-bottom: 1px solid var(--border); padding: 0.5rem 1rem; font-size: 0.9rem; }
+    tr:hover td { background: rgba(122, 162, 247, 0.05); }
+
+    code { background: var(--bg); color: var(--green); padding: 0.15rem 0.4rem; border-radius: 4px; font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.85rem; }
+
+    .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+    .badge-green  { background: rgba(158,206,106,0.2); color: var(--green); }
+    .badge-orange { background: rgba(255,158,100,0.2); color: var(--orange); }
+    .badge-cyan   { background: rgba(125,207,255,0.2); color: var(--cyan); }
+    .badge-red    { background: rgba(247,118,142,0.2); color: var(--red); }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .toc { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem 2rem; margin-bottom: 2rem; }
+    .toc a { color: var(--cyan); text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+    .toc ol { counter-reset: toc; list-style: none; padding-left: 0; }
+    .toc li { counter-increment: toc; margin-bottom: 0.4rem; }
+    .toc li::before { content: counter(toc) ". "; color: var(--accent); font-weight: 600; }
+
+    .folder-tree { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.85rem; line-height: 1.8; color: var(--text); background: var(--bg); padding: 1rem 1.5rem; border-radius: 8px; border: 1px solid var(--border); }
+    .folder-tree .folder { color: var(--heading); }
+    .folder-tree .file { color: var(--green); }
+    .folder-tree .desc { color: var(--border); }
+  </style>
+</head>
+<body>
+
+<h1>REX Export Permit — Test Automation Framework</h1>
+<p class="subtitle">Playwright + TypeScript | SOAP API + Staff Portal Hybrid Testing</p>
+
+<!-- ─── TABLE OF CONTENTS ──────────────────────────────────────────────── -->
+
+<div class="toc">
+  <h3>Contents</h3>
+  <ol>
+    <li><a href="#overview">What Does This Framework Do?</a></li>
+    <li><a href="#stack">Technology Stack</a></li>
+    <li><a href="#structure">Project Structure</a></li>
+    <li><a href="#environments">Environments</a></li>
+    <li><a href="#test-flow">How a Test Runs (End-to-End Flow)</a></li>
+    <li><a href="#payload">How Payloads Are Constructed</a></li>
+    <li><a href="#commodities">Multi-Commodity Support</a></li>
+    <li><a href="#pom">Page Object Model (Staff Portal)</a></li>
+    <li><a href="#response">Response Parsing</a></li>
+    <li><a href="#business-rules">Business Rule Testing</a></li>
+    <li><a href="#test-cases">Test Case Inventory</a></li>
+    <li><a href="#phases">Implementation Phases</a></li>
+    <li><a href="#run">How to Run Tests</a></li>
+  </ol>
+</div>
+
+<!-- ─── 1. OVERVIEW ────────────────────────────────────────────────────── -->
+
+<h2 id="overview">1. What Does This Framework Do?</h2>
+<div class="section">
+  <p>This framework <strong>automates testing</strong> of the <strong>REX Export Permit system</strong> — the government system that Australian exporters use to lodge, amend, and replace export certificates for commodities like horticulture, grain, and meat.</p>
+
+  <h3>Key Capabilities</h3>
+  <ul>
+    <li><strong>SOAP API Testing</strong> — Sends real SOAP requests (ORDER, LODGE, AMEND, REPLACE, READ) to the REX services and validates responses</li>
+    <li><strong>Staff Portal UI Testing</strong> — Automates the staff portal login, inspection, and authorisation workflows</li>
+    <li><strong>Hybrid Flows</strong> — Combines SOAP + UI in a single test (e.g. LODGE via API → authorise via portal → REPLACE via API)</li>
+    <li><strong>Business Rule Validation</strong> — Tests specific rules like departure date limits, certificate requirements</li>
+    <li><strong>Multi-Environment</strong> — Runs against SIT, SIT2, or VND with a single command</li>
+    <li><strong>Multi-Commodity</strong> — Supports Horticulture, Grain, and Meat with shared builder logic</li>
+  </ul>
+</div>
+
+<!-- ─── 2. STACK ───────────────────────────────────────────────────────── -->
+
+<h2 id="stack">2. Technology Stack</h2>
+<div class="section">
+  <table>
+    <tr><th>Component</th><th>Technology</th><th>Why</th></tr>
+    <tr><td>Test Framework</td><td><code>Playwright</code></td><td>Handles both API calls and browser automation in one framework</td></tr>
+    <tr><td>Language</td><td><code>TypeScript</code></td><td>Strong typing catches payload errors at compile time, not runtime</td></tr>
+    <tr><td>SOAP Client</td><td>Custom <code>SoapClient</code></td><td>Builds XML payloads, sends HTTP requests, parses responses</td></tr>
+    <tr><td>Config</td><td><code>dotenv</code></td><td>Environment-specific credentials via .env files (gitignored)</td></tr>
+    <tr><td>Reporting</td><td>Playwright HTML Reporter</td><td>Built-in detailed reports with request/response on failure</td></tr>
+  </table>
+</div>
+
+<!-- ─── 3. STRUCTURE ───────────────────────────────────────────────────── -->
+
+<h2 id="structure">3. Project Structure</h2>
+<div class="section">
+  <div class="diagram-box">
+    <div class="folder-tree">
+<span class="folder">PlaywrightDemo/</span><br>
+├── <span class="folder">src/</span> <span class="desc">........................ Production source code</span><br>
+│   ├── <span class="folder">config/</span> <span class="desc">.................. Environment configuration</span><br>
+│   │   └── <span class="file">environment.ts</span> <span class="desc">....... Loads .env.sit / .env.sit2 / .env.vnd</span><br>
+│   ├── <span class="folder">fixtures/</span> <span class="desc">................ Playwright test fixtures</span><br>
+│   │   ├── <span class="file">base-fixtures.ts</span> <span class="desc">..... soapClient, loginPage, rexSearchPage, rexDetailPage</span><br>
+│   │   └── <span class="file">index.ts</span> <span class="desc">............. Barrel export</span><br>
+│   ├── <span class="folder">helpers/</span> <span class="desc">................. Utility functions</span><br>
+│   │   ├── <span class="file">rex-workflow.ts</span> <span class="desc">...... Step helpers (orderStep, lodgeStep, readRexStep...)</span><br>
+│   │   ├── <span class="file">string-utils.ts</span> <span class="desc">...... Date formatting, random strings</span><br>
+│   │   └── <span class="file">index.ts</span><br>
+│   ├── <span class="folder">interfaces/</span> <span class="desc">.............. TypeScript type definitions</span><br>
+│   │   ├── <span class="file">lodge-rex.types.ts</span> <span class="desc">... LodgeRexPayload, response types</span><br>
+│   │   ├── <span class="file">order-rex.types.ts</span> <span class="desc">... OrderRexPayload</span><br>
+│   │   ├── <span class="file">amend-rex.types.ts</span> <span class="desc">... AmendRexPayload</span><br>
+│   │   ├── <span class="file">replace-certificate.types.ts</span><br>
+│   │   ├── <span class="file">read-rex.types.ts</span><br>
+│   │   └── <span class="file">... (+ common, export-details, product-line, certificate-details)</span><br>
+│   ├── <span class="folder">pages/</span> <span class="desc">................... Page Objects (POM pattern)</span><br>
+│   │   ├── <span class="file">login.page.ts</span> <span class="desc">........ LoginPage (SIT / SIT2 variants)</span><br>
+│   │   ├── <span class="file">rex-search.page.ts</span> <span class="desc">... RexSearchPage</span><br>
+│   │   ├── <span class="file">rex-detail.page.ts</span> <span class="desc">... RexDetailPage (inspect, authorise, status)</span><br>
+│   │   └── <span class="file">index.ts</span><br>
+│   └── <span class="folder">soap/</span> <span class="desc">.................... SOAP layer</span><br>
+│       ├── <span class="file">soap-client.ts</span> <span class="desc">....... HTTP client — sends SOAP requests</span><br>
+│       ├── <span class="file">response-parser.ts</span> <span class="desc">... Parses XML responses → typed objects</span><br>
+│       └── <span class="folder">builders/</span> <span class="desc">............ XML payload builders</span><br>
+│           ├── <span class="file">lodge-rex.builder.ts</span><br>
+│           ├── <span class="file">order-rex.builder.ts</span><br>
+│           ├── <span class="file">amend-rex.builder.ts</span><br>
+│           ├── <span class="file">replace-certificate.builder.ts</span><br>
+│           ├── <span class="file">soap-header.builder.ts</span><br>
+│           └── <span class="folder">sections/</span> <span class="desc">........ Reusable XML fragments</span><br>
+├── <span class="folder">test-data/</span> <span class="desc">................... Test data & payload defaults</span><br>
+│   ├── <span class="file">rex-defaults.ts</span> <span class="desc">.......... BASE_DEFAULTS + createCommodityBuilders factory</span><br>
+│   ├── <span class="file">payload-overrides.ts</span> <span class="desc">..... Override mechanism for test-specific values</span><br>
+│   └── <span class="folder">commodities/</span> <span class="desc">............. Per-commodity defaults</span><br>
+│       ├── <span class="file">horticulture.ts</span> <span class="desc">...... Mango, TUR, plant treatments</span><br>
+│       ├── <span class="file">grain.ts</span> <span class="desc">............. Wheat, Barley, Canola</span><br>
+│       └── <span class="file">meat.ts</span> <span class="desc">.............. Beef, Lamb, Pork</span><br>
+├── <span class="folder">tests/</span> <span class="desc">....................... Test spec files only</span><br>
+│   ├── <span class="folder">br-002/</span> <span class="desc">.................. Business rule: departure date</span><br>
+│   │   └── <span class="file">br-002-departure-date.spec.ts</span><br>
+│   ├── <span class="folder">debug/</span> <span class="desc">................... Debug / scratch tests</span><br>
+│   │   └── <span class="file">debug-payload.spec.ts</span><br>
+│   └── <span class="folder">replace/</span> <span class="desc">................. Hybrid REPLACE flow tests</span><br>
+│       └── <span class="file">replace-flow.spec.ts</span><br>
+└── <span class="folder">documents/</span> <span class="desc">................... Diagrams, plans, requirements</span>
+    </div>
+  </div>
+
+  <div class="diagram-box">
+    <h3>Layered Architecture</h3>
+    <div class="mermaid">
+graph TB
+  subgraph "Test Layer"
+    T1["tests/br-002/*.spec.ts"]
+    T2["tests/replace/*.spec.ts"]
+    T3["tests/debug/*.spec.ts"]
+  end
+
+  subgraph "Fixture Layer"
+    F["base-fixtures.ts<br/>soapClient | loginPage | rexSearchPage | rexDetailPage"]
+  end
+
+  subgraph "Test Data Layer"
+    TD["test-data/commodities/*<br/>Horticulture | Grain | Meat"]
+    RD["rex-defaults.ts<br/>createCommodityBuilders()"]
+  end
+
+  subgraph "Page Object Layer"
+    LP["LoginPage"]
+    SP["RexSearchPage"]
+    DP["RexDetailPage"]
+  end
+
+  subgraph "SOAP Layer"
+    SC["SoapClient"]
+    B["XML Builders"]
+    RP["Response Parser"]
+  end
+
+  subgraph "Infrastructure"
+    ENV["environment.ts<br/>.env.sit | .env.sit2 | .env.vnd"]
+    H["Helpers<br/>rex-workflow | string-utils"]
+  end
+
+  T1 & T2 & T3 --> F
+  F --> SC & LP & SP & DP
+  T1 & T2 & T3 --> TD
+  TD --> RD
+  SC --> B & RP
+  F --> ENV
+  T1 & T2 & T3 --> H
+
+  style T1 fill:#7aa2f7,color:#1a1b26
+  style T2 fill:#7aa2f7,color:#1a1b26
+  style T3 fill:#7aa2f7,color:#1a1b26
+  style SC fill:#bb9af7,color:#1a1b26
+  style LP fill:#9ece6a,color:#1a1b26
+  style SP fill:#9ece6a,color:#1a1b26
+  style DP fill:#9ece6a,color:#1a1b26
+    </div>
+  </div>
+</div>
+
+<!-- ─── 4. ENVIRONMENTS ────────────────────────────────────────────────── -->
+
+<h2 id="environments">4. Environments</h2>
+<div class="section">
+  <div class="diagram-box">
+    <div class="mermaid">
+graph LR
+  CMD["ENV=sit npx playwright test"] --> DOTENV[".env.sit"]
+  CMD2["ENV=sit2 npx playwright test"] --> DOTENV2[".env.sit2"]
+  CMD3["ENV=vnd npx playwright test"] --> DOTENV3[".env.vnd"]
+
+  DOTENV  --> CONFIG["environment.ts<br/>loadConfig()"]
+  DOTENV2 --> CONFIG
+  DOTENV3 --> CONFIG
+
+  CONFIG --> SOAP["SOAP URLs<br/>+ Credentials"]
+  CONFIG --> PORTAL["Staff Portal URL<br/>+ Login Credentials"]
+  CONFIG --> IDS["Exporter ID<br/>+ Client Group"]
+
+  style CMD fill:#7aa2f7,color:#1a1b26
+  style CMD2 fill:#bb9af7,color:#1a1b26
+  style CMD3 fill:#ff9e64,color:#1a1b26
+  style CONFIG fill:#9ece6a,color:#1a1b26
+    </div>
+  </div>
+
+  <table>
+    <tr><th>Environment</th><th>Purpose</th><th>Config File</th><th>Login Page</th></tr>
+    <tr><td><span class="badge badge-cyan">SIT</span></td><td>System Integration Testing</td><td><code>.env.sit</code></td><td>Username + Password</td></tr>
+    <tr><td><span class="badge badge-orange">SIT2</span></td><td>Secondary integration env</td><td><code>.env.sit2</code></td><td>Email or Client ID + Password</td></tr>
+    <tr><td><span class="badge badge-red">VND</span></td><td>Vendor testing</td><td><code>.env.vnd</code></td><td>Username + Password</td></tr>
+  </table>
+  <p>All <code>.env.*</code> files are <strong>gitignored</strong> — credentials never enter source control.</p>
+</div>
+
+<!-- ─── 5. TEST FLOW ───────────────────────────────────────────────────── -->
+
+<h2 id="test-flow">5. How a Test Runs (End-to-End Flow)</h2>
+<div class="section">
+  <h3>Simple SOAP Test (API Only)</h3>
+  <div class="diagram-box">
+    <div class="mermaid">
+sequenceDiagram
+  participant Test as Test Spec
+  participant Fix as Fixtures
+  participant TD as Test Data
+  participant SC as SoapClient
+  participant B as XML Builder
+  participant API as REX Service
+
+  Test->>Fix: request soapClient
+  Fix->>Fix: load .env config
+  Fix-->>Test: soapClient ready
+
+  Test->>TD: buildDefaultLodgePayload()
+  TD-->>Test: TypeScript payload object
+
+  Test->>SC: lodgeRex(payload)
+  SC->>B: buildLodgeRexPayload(payload, header)
+  B-->>SC: SOAP XML string
+  SC->>API: HTTP POST (SOAP XML)
+  API-->>SC: SOAP XML response
+  SC->>SC: parseSoapResponse(xml)
+  SC-->>Test: SoapResult {success, rexNumber, notices...}
+
+  Test->>Test: assert result.success === true
+    </div>
+  </div>
+
+  <h3>Hybrid Test (SOAP + Staff Portal)</h3>
+  <div class="diagram-box">
+    <div class="mermaid">
+sequenceDiagram
+  participant Test as Test Spec
+  participant SC as SoapClient
+  participant API as REX Service
+  participant LP as LoginPage
+  participant SP as RexSearchPage
+  participant DP as RexDetailPage
+  participant Portal as Staff Portal
+
+  Note over Test: Step 1 — LODGE via API
+  Test->>SC: lodgeRex(payload)
+  SC->>API: SOAP LODGE request
+  API-->>SC: rexNumber + timestamp
+  SC-->>Test: lodgeState
+
+  Note over Test: Step 2 — Staff Portal Actions
+  Test->>LP: login(username, password)
+  LP->>Portal: Fill credentials + click Login
+  Test->>SP: searchByRexNumber(rexNumber)
+  SP->>Portal: Search + click result
+  Test->>DP: addInspectionDetails(...)
+  DP->>Portal: Fill form + Save
+  Test->>DP: authorise(comments)
+  DP->>Portal: Click Authorise + Submit
+  Test->>DP: assertREXStatus('CertificateReady')
+
+  Note over Test: Step 3 — READ REX (get latest timestamp)
+  Test->>SC: readRex(rexNumber)
+  SC->>API: SOAP READ request
+  API-->>SC: latest timestamp
+  SC-->>Test: currentState
+
+  Note over Test: Step 4 — REPLACE via API
+  Test->>SC: replaceCertificate(payload)
+  SC->>API: SOAP REPLACE request
+  API-->>SC: serviceRequestId
+  SC-->>Test: replaceResult
+
+  Test->>Test: assert serviceRequestId exists
+    </div>
+  </div>
+</div>
+
+<!-- ─── 6. PAYLOAD CONSTRUCTION ────────────────────────────────────────── -->
+
+<h2 id="payload">6. How Payloads Are Constructed</h2>
+<div class="section">
+  <p>Payloads go through <strong>3 stages</strong> before reaching the REX service:</p>
+
+  <div class="diagram-box">
+    <div class="mermaid">
+graph LR
+  subgraph "Stage 1: Test Data"
+    D["Commodity DEFAULTS<br/>(horticulture.ts)"]
+    O["Test Overrides<br/>{destinationCountry: 'GB'}"]
+  end
+
+  subgraph "Stage 2: Builder Factory"
+    F["createCommodityBuilders(DEFAULTS)"]
+    P["TypeScript Payload Object<br/>(LodgeRexPayload)"]
+  end
+
+  subgraph "Stage 3: SOAP Layer"
+    B["XML Builder<br/>(lodge-rex.builder.ts)"]
+    X["SOAP XML Envelope"]
+    H["SOAP Header<br/>(credentials)"]
+  end
+
+  D --> F
+  O --> F
+  F --> P
+  P --> B
+  H --> B
+  B --> X
+
+  style D fill:#9ece6a,color:#1a1b26
+  style O fill:#ff9e64,color:#1a1b26
+  style P fill:#7aa2f7,color:#1a1b26
+  style X fill:#bb9af7,color:#1a1b26
+    </div>
+  </div>
+
+  <h3>Stage 1 — Defaults + Overrides</h3>
+  <p>Each commodity file defines its <code>DEFAULTS</code> (product type, pack type, destination country, etc.). Tests can override any field:</p>
+  <table>
+    <tr><th>Source</th><th>Example Values</th></tr>
+    <tr><td>BASE_DEFAULTS (shared)</td><td>consigneeName: 'ABC Importer', transportMode: 'SEA', loadingPort: 'AUMEL'</td></tr>
+    <tr><td>Horticulture DEFAULTS</td><td>commodityType: 'H', productType: 'MAN', packType: 'CTN', treatmentCode: 'HT'</td></tr>
+    <tr><td>Test Override</td><td>{destinationCountry: 'GB', printIndicator: 'M'}</td></tr>
+  </table>
+
+  <h3>Stage 2 — Builder Factory</h3>
+  <p>The <code>createCommodityBuilders(DEFAULTS)</code> factory produces 6 builder functions. Each commodity file just calls the factory once — <strong>zero duplicated builder code</strong>.</p>
+  <table>
+    <tr><th>Builder Function</th><th>Returns</th><th>Used For</th></tr>
+    <tr><td><code>buildOrderPayload()</code></td><td>OrderRexPayload</td><td>Minimal ORDER (country + product)</td></tr>
+    <tr><td><code>buildLodgePayload()</code></td><td>LodgeRexPayload</td><td>Minimal LODGE (country + product)</td></tr>
+    <tr><td><code>buildDefaultOrderPayload()</code></td><td>OrderRexPayload</td><td>Full ORDER with all defaults</td></tr>
+    <tr><td><code>buildDefaultLodgePayload()</code></td><td>LodgeRexPayload</td><td>Full LODGE with all defaults</td></tr>
+    <tr><td><code>buildDefaultAmendPayload()</code></td><td>AmendRexPayload</td><td>Full AMEND (requires rexState)</td></tr>
+    <tr><td><code>buildDefaultReplacePayload()</code></td><td>ReplaceCertificatePayload</td><td>Full REPLACE (requires rexState)</td></tr>
+  </table>
+
+  <h3>Stage 3 — XML Serialization</h3>
+  <p>The XML builder converts the TypeScript object into a SOAP XML envelope with proper namespaces, credential headers, and conditional sections (e.g. containers only for SEA transport, treatments only for horticulture).</p>
+
+  <div class="diagram-box">
+    <div class="mermaid">
+graph TB
+  subgraph "SOAP Envelope"
+    HEADER["Header<br/>vendorToken | clientGroupToken<br/>clientToken | username | password"]
+    subgraph "Body"
+      ED["exportDetails<br/>commodityType | destinationCountry<br/>departureDate | consignee | transport"]
+      CD["certificateDetails<br/>printIndicator"]
+      PL["productLines<br/>productType | packType | weight<br/>containers? | treatments?"]
+    end
+  end
+
+  style HEADER fill:#ff9e64,color:#1a1b26
+  style ED fill:#7aa2f7,color:#1a1b26
+  style CD fill:#bb9af7,color:#1a1b26
+  style PL fill:#9ece6a,color:#1a1b26
+    </div>
+  </div>
+</div>
+
+<!-- ─── 7. COMMODITIES ─────────────────────────────────────────────────── -->
+
+<h2 id="commodities">7. Multi-Commodity Support</h2>
+<div class="section">
+  <p>Adding a new commodity requires <strong>one file, zero builder code</strong>:</p>
+
+  <div class="diagram-box">
+    <div class="mermaid">
+graph TB
+  RD["rex-defaults.ts<br/>createCommodityBuilders(defaults)"]
+
+  H["horticulture.ts<br/>DEFAULTS + exports"]
+  G["grain.ts<br/>DEFAULTS + exports"]
+  M["meat.ts<br/>DEFAULTS + exports"]
+  NEW["new-commodity.ts<br/>DEFAULTS + exports"]
+
+  RD --> H & G & M & NEW
+
+  style RD fill:#bb9af7,color:#1a1b26
+  style H fill:#9ece6a,color:#1a1b26
+  style G fill:#ff9e64,color:#1a1b26
+  style M fill:#f7768e,color:#1a1b26
+  style NEW fill:#7dcfff,color:#1a1b26,stroke-dasharray: 5 5
+    </div>
+  </div>
+
+  <table>
+    <tr><th>Commodity</th><th>Type</th><th>Default Product</th><th>Destination</th><th>Special Fields</th></tr>
+    <tr><td><span class="badge badge-green">Horticulture</span></td><td>H</td><td>MAN (Mango)</td><td>SG</td><td>treatmentCode, treatmentInfo, farmCode</td></tr>
+    <tr><td><span class="badge badge-orange">Grain</span></td><td>GR</td><td>WHT (Wheat)</td><td>CN</td><td>—</td></tr>
+    <tr><td><span class="badge badge-red">Meat</span></td><td>MT</td><td>BEEF</td><td>JP</td><td>—</td></tr>
+  </table>
+
+  <h3>To Add a New Commodity</h3>
+  <ol>
+    <li>Create <code>test-data/commodities/new-commodity.ts</code></li>
+    <li>Define <code>COMMODITY_TYPE</code>, <code>PRODUCT_TYPE</code>, and <code>DEFAULTS</code></li>
+    <li>Call <code>createCommodityBuilders(DEFAULTS)</code> and export the destructured builders</li>
+    <li>Done — all 6 builder functions are instantly available</li>
+  </ol>
+</div>
+
+<!-- ─── 8. POM ─────────────────────────────────────────────────────────── -->
+
+<h2 id="pom">8. Page Object Model (Staff Portal)</h2>
+<div class="section">
+  <p>The Staff Portal UI is split into <strong>3 page objects</strong>, each mapping to a real page:</p>
+
+  <div class="diagram-box">
+    <div class="mermaid">
+graph LR
+  subgraph "LoginPage"
+    L1["Locators:<br/>usernameField()<br/>passwordField()<br/>loginButton()"]
+    L2["Actions:<br/>navigate()<br/>login()"]
+  end
+
+  subgraph "RexSearchPage"
+    S1["Locators:<br/>rexNumberInput()<br/>searchButton()<br/>rexLink()"]
+    S2["Actions:<br/>searchByRexNumber()"]
+  end
+
+  subgraph "RexDetailPage"
+    D1["Locators:<br/>addInspectionLink()<br/>startDateField()<br/>authoriseLink()<br/>statusLabel()<br/>..."]
+    D2["Actions:<br/>addInspectionDetails()<br/>authorise()<br/>getREXStatus()<br/>assertREXStatus()"]
+  end
+
+  L2 -->|"after login"| S2
+  S2 -->|"after search"| D2
+
+  style L1 fill:#7aa2f7,color:#1a1b26
+  style L2 fill:#9ece6a,color:#1a1b26
+  style S1 fill:#7aa2f7,color:#1a1b26
+  style S2 fill:#9ece6a,color:#1a1b26
+  style D1 fill:#7aa2f7,color:#1a1b26
+  style D2 fill:#9ece6a,color:#1a1b26
+    </div>
+  </div>
+
+  <h3>POM Benefits</h3>
+  <table>
+    <tr><th>Principle</th><th>How We Apply It</th></tr>
+    <tr><td>Locators in one place</td><td>Each locator is a private method on its page class — change once, fixes all tests</td></tr>
+    <tr><td>No selectors in tests</td><td>Tests only call <code>loginPage.login()</code>, never <code>page.getByLabel()</code></td></tr>
+    <tr><td>One page = one class</td><td>LoginPage, RexSearchPage, RexDetailPage</td></tr>
+    <tr><td>Environment-aware</td><td>LoginPage uses different locators for SIT vs SIT2 automatically</td></tr>
+  </table>
+
+  <h3>How Tests Use Page Objects</h3>
+  <div class="diagram-box" style="background: var(--bg); font-family: 'Cascadia Code', monospace; font-size: 0.85rem; line-height: 1.8; padding: 1rem 1.5rem;">
+    <span style="color: var(--border);">// In the test:</span><br>
+    <span style="color: var(--cyan);">await</span> <span style="color: var(--green);">loginPage</span>.login(username, password);<br>
+    <span style="color: var(--cyan);">await</span> <span style="color: var(--green);">rexSearchPage</span>.searchByRexNumber(rexNumber);<br>
+    <span style="color: var(--cyan);">await</span> <span style="color: var(--green);">rexDetailPage</span>.addInspectionDetails({ startDate, endDate });<br>
+    <span style="color: var(--cyan);">await</span> <span style="color: var(--green);">rexDetailPage</span>.authorise(<span style="color: var(--orange);">'Authorised'</span>);<br>
+    <span style="color: var(--cyan);">await</span> <span style="color: var(--green);">rexDetailPage</span>.assertREXStatus(<span style="color: var(--orange);">'CertificateReady'</span>);<br>
+  </div>
+</div>
+
+<!-- ─── 9. RESPONSE PARSING ────────────────────────────────────────────── -->
+
+<h2 id="response">9. Response Parsing</h2>
+<div class="section">
+  <p>The <code>response-parser.ts</code> converts raw SOAP XML into typed TypeScript objects:</p>
+
+  <div class="grid-2">
+    <div>
+      <h3>Success Response</h3>
+      <table>
+        <tr><th>Field</th><th>Source Tag</th></tr>
+        <tr><td>rexNumber</td><td><code>&lt;rexNumber&gt;</code></td></tr>
+        <tr><td>lastAmendmentTimestamp</td><td><code>&lt;lastAmendDateTime&gt;</code></td></tr>
+        <tr><td>complianceStatus</td><td><code>&lt;complianceStaus&gt;</code></td></tr>
+        <tr><td>exporterReferences</td><td><code>&lt;exporterReferences&gt;</code></td></tr>
+        <tr><td>permitNumber</td><td><code>&lt;permitNumber&gt;</code></td></tr>
+        <tr><td>serviceRequestId</td><td><code>&lt;ServiceRequestId&gt;</code></td></tr>
+        <tr><td>notices[]</td><td><code>&lt;notice&gt;</code> elements</td></tr>
+        <tr><td>rexLines[]</td><td><code>&lt;rexLine&gt;</code> elements</td></tr>
+      </table>
+    </div>
+    <div>
+      <h3>Fault Response</h3>
+      <table>
+        <tr><th>Field</th><th>Source Tag</th></tr>
+        <tr><td>faultCode</td><td><code>&lt;faultcode&gt;</code></td></tr>
+        <tr><td>faultString</td><td><code>&lt;faultString&gt;</code></td></tr>
+        <tr><td>faultItems[]</td><td><code>&lt;NexdocSoapFaultItem&gt;</code></td></tr>
+        <tr><td>  .faultCode</td><td><code>&lt;FaultCode&gt;</code></td></tr>
+        <tr><td>  .faultReason</td><td><code>&lt;FaultReason&gt;</code></td></tr>
+        <tr><td>  .faultMessage</td><td><code>&lt;FaultMessage&gt;</code></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="diagram-box">
+    <div class="mermaid">
+graph LR
+  XML["Raw SOAP XML<br/>from REX Service"] --> CHECK{"Contains<br/>&lt;Fault&gt;?"}
+  CHECK -->|Yes| FAULT["parseFault()<br/>→ SoapFaultResult"]
+  CHECK -->|No| SUCCESS["parseSuccess()<br/>→ SoapSuccessResult"]
+
+  FAULT --> FI["faultItems[]<br/>NexdocSoapFaultItem"]
+  SUCCESS --> N["notices[]<br/>validation notices"]
+  SUCCESS --> RL["rexLines[]<br/>certificate info"]
+
+  style XML fill:#7aa2f7,color:#1a1b26
+  style FAULT fill:#f7768e,color:#1a1b26
+  style SUCCESS fill:#9ece6a,color:#1a1b26
+    </div>
+  </div>
+</div>
+
+<!-- ─── 10. BUSINESS RULES ─────────────────────────────────────────────── -->
+
+<h2 id="business-rules">10. Business Rule Testing</h2>
+<div class="section">
+  <h3>BR-002-01 — Departure Date Limit</h3>
+  <p>Non-exempt products cannot have a departure date more than 28 days in the future.</p>
+
+  <div class="diagram-box">
+    <div class="mermaid">
+flowchart TD
+  START["LODGE Request Received"] --> PRODUCT{"Product Type?"}
+  PRODUCT -->|"MAN (Mango)"| DEST{"Destination?"}
+  PRODUCT -->|"Other (e.g. TUR)"| DAYS{"Departure > 28 days?"}
+
+  DEST -->|"SG, HK, MY, MV"| EXEMPT["EXEMPT<br/>✅ Accepted regardless"]
+  DEST -->|"Other"| DAYS
+
+  DAYS -->|"Yes"| REJECT["❌ Fault 1115<br/>departure date cannot be<br/>more than 28 days"]
+  DAYS -->|"No"| ACCEPT["✅ Accepted"]
+
+  style EXEMPT fill:#9ece6a,color:#1a1b26
+  style ACCEPT fill:#9ece6a,color:#1a1b26
+  style REJECT fill:#f7768e,color:#1a1b26
+    </div>
+  </div>
+
+  <table>
+    <tr><th>Test Case</th><th>Product</th><th>Destination</th><th>Departure</th><th>Expected</th></tr>
+    <tr><td>TC01–TC04</td><td>MAN (Mango)</td><td>SG, HK, MY, MV</td><td>> 28 days</td><td><span class="badge badge-green">Accepted (exempt)</span></td></tr>
+    <tr><td>TC05–TC08</td><td>TUR</td><td>SG, HK, MY, MV</td><td>> 28 days</td><td><span class="badge badge-red">Rejected (fault 1115)</span></td></tr>
+    <tr><td>TC-F01–TC-F04</td><td>TUR</td><td>SG, HK, MY, MV</td><td>+35 days</td><td><span class="badge badge-red">Fault 1115 asserted</span></td></tr>
+  </table>
+</div>
+
+<!-- ─── 11. TEST CASE INVENTORY ────────────────────────────────────────── -->
+
+<h2 id="test-cases">11. Test Case Inventory</h2>
+<div class="section">
+  <table>
+    <tr><th>File</th><th>Test</th><th>Type</th><th>What It Tests</th></tr>
+    <tr><td rowspan="7">debug-payload.spec.ts</td><td>inspect full ORDER payload</td><td><span class="badge badge-cyan">API</span></td><td>Horticulture ORDER construction + send</td></tr>
+    <tr><td>inspect Horticulture LODGE payload</td><td><span class="badge badge-cyan">API</span></td><td>Horticulture LODGE construction + send</td></tr>
+    <tr><td>inspect Grain ORDER / LODGE</td><td><span class="badge badge-cyan">API</span></td><td>Grain payload construction</td></tr>
+    <tr><td>inspect Meat ORDER / LODGE</td><td><span class="badge badge-cyan">API</span></td><td>Meat payload construction</td></tr>
+    <tr><td>inspect full AMEND payload</td><td><span class="badge badge-cyan">API</span></td><td>LODGE → AMEND flow</td></tr>
+    <tr><td>LODGE then READ REX</td><td><span class="badge badge-cyan">API</span></td><td>LODGE → READ REX flow</td></tr>
+    <tr><td>TC-F01 to TC-F04</td><td><span class="badge badge-red">Fault</span></td><td>BR-002 fault 1115 assertions</td></tr>
+    <tr><td rowspan="2">br-002-departure-date.spec.ts</td><td>TC01–TC04 (Mango exempt)</td><td><span class="badge badge-green">Pass</span></td><td>Mango → SG/HK/MY/MV accepted</td></tr>
+    <tr><td>TC05–TC08 (TUR rejected)</td><td><span class="badge badge-red">Fault</span></td><td>TUR → SG/HK/MY/MV rejected</td></tr>
+    <tr><td rowspan="4">replace-flow.spec.ts</td><td>TC-R01 full REPLACE flow</td><td><span class="badge badge-orange">Hybrid</span></td><td>LODGE → portal authorise → REPLACE</td></tr>
+    <tr><td>TC-R02 CertificateReady status</td><td><span class="badge badge-orange">Hybrid</span></td><td>Status after authorisation</td></tr>
+    <tr><td>TC-R03 REPLACE response</td><td><span class="badge badge-orange">Hybrid</span></td><td>serviceRequestId + notices</td></tr>
+    <tr><td>TC-R04 REPLACE blocked</td><td><span class="badge badge-orange">Hybrid</span></td><td>REPLACE fails without authorisation</td></tr>
+  </table>
+</div>
+
+<!-- ─── 12. PHASES ─────────────────────────────────────────────────────── -->
+
+<h2 id="phases">12. Implementation Phases</h2>
+<div class="section">
+  <table>
+    <tr><th>Phase</th><th>Description</th><th>Status</th></tr>
+    <tr><td>1</td><td>Project Structure & Config</td><td><span class="badge badge-green">Complete</span></td></tr>
+    <tr><td>2</td><td>TypeScript Interfaces</td><td><span class="badge badge-green">Complete</span></td></tr>
+    <tr><td>3</td><td>Payload Builder</td><td><span class="badge badge-green">Complete</span></td></tr>
+    <tr><td>4</td><td>SOAP Client</td><td><span class="badge badge-green">Complete</span></td></tr>
+    <tr><td>5</td><td>Base Test Fixtures</td><td><span class="badge badge-green">Complete</span></td></tr>
+    <tr><td>6</td><td>First Test Cases (TC01–TC08) — BR-002</td><td><span class="badge badge-green">Complete</span></td></tr>
+    <tr><td>7</td><td>Staff Portal Page Objects</td><td><span class="badge badge-green">Complete</span></td></tr>
+    <tr><td>8</td><td>Hybrid Test Cases (REPLACE flow)</td><td><span class="badge badge-green">Complete</span></td></tr>
+    <tr><td>9</td><td>Reporting & CI Config</td><td><span class="badge badge-orange">Not Started</span></td></tr>
+  </table>
+</div>
+
+<!-- ─── 13. HOW TO RUN ─────────────────────────────────────────────────── -->
+
+<h2 id="run">13. How to Run Tests</h2>
+<div class="section">
+  <table>
+    <tr><th>Command</th><th>What It Does</th></tr>
+    <tr><td><code>$env:ENV="sit"; npx playwright test</code></td><td>Run all tests against SIT</td></tr>
+    <tr><td><code>$env:ENV="sit2"; npx playwright test</code></td><td>Run all tests against SIT2</td></tr>
+    <tr><td><code>$env:ENV="sit"; npx playwright test tests/debug/</code></td><td>Run only debug tests</td></tr>
+    <tr><td><code>$env:ENV="sit"; npx playwright test --grep "Grain LODGE"</code></td><td>Run a specific test by name</td></tr>
+    <tr><td><code>$env:ENV="sit"; npx playwright test tests/br-002/</code></td><td>Run BR-002 business rule tests</td></tr>
+    <tr><td><code>$env:ENV="sit"; npx playwright test tests/replace/</code></td><td>Run hybrid REPLACE tests</td></tr>
+    <tr><td><code>npx playwright show-report</code></td><td>Open the HTML test report</td></tr>
+  </table>
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      primaryColor:       '#7aa2f7',
+      primaryTextColor:   '#1a1b26',
+      primaryBorderColor: '#414868',
+      lineColor:          '#565f89',
+      secondaryColor:     '#bb9af7',
+      tertiaryColor:      '#24283b',
+      noteTextColor:      '#c0caf5',
+      noteBkgColor:       '#24283b',
+      noteBorderColor:    '#414868',
+    },
+    sequence: { mirrorActors: false },
+    flowchart: { curve: 'basis' },
+  });
+</script>
+
+</body>
+</html>

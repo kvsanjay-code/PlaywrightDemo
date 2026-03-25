@@ -102,6 +102,11 @@ export class RexDetailPage {
     await this.page.waitForLoadState('networkidle');
   }
 
+  async inspectAndAuthorise(details: InspectionDetails, comments: string): Promise<void> {
+    await this.addInspectionDetails(details);
+    await this.authorise(comments);
+  }
+
   async getREXStatus(): Promise<REXStatus> {
     const statusText = await this.statusLabel().innerText();
     return statusText.trim() as REXStatus;
