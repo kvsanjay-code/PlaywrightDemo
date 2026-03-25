@@ -7,6 +7,7 @@
  *   loginPage      — LoginPage (handles SIT/SIT2 login variants).
  *   rexSearchPage  — RexSearchPage (search by REX number).
  *   rexDetailPage  — RexDetailPage (inspect, authorise, status).
+ *   authoriseRex   — one-call helper: login → search → inspect → authorise.
  *
  * All tests should import { test, expect } from '../fixtures' rather than
  * from '@playwright/test' directly so they automatically get these fixtures.
@@ -16,6 +17,7 @@ import { test as base } from '@playwright/test';
 import { SoapClient } from '../soap';
 import { LoginPage, RexSearchPage, RexDetailPage } from '../pages';
 import { config } from '../config/environment';
+import { createAuthoriseRex, AuthoriseRexFn } from '../helpers/portal-workflow';
 
 // ─── Fixture type declarations ────────────────────────────────────────────────
 
@@ -28,6 +30,8 @@ type RexFixtures = {
   rexSearchPage: RexSearchPage;
   /** REX detail page object — inspection, authorisation, status. */
   rexDetailPage: RexDetailPage;
+  /** One-call portal workflow: login → search → inspect → authorise. */
+  authoriseRex: AuthoriseRexFn;
 };
 
 // ─── Extended test object ─────────────────────────────────────────────────────
@@ -47,6 +51,10 @@ export const test = base.extend<RexFixtures>({
 
   rexDetailPage: async ({ page }, use) => {
     await use(new RexDetailPage(page));
+  },
+
+  authoriseRex: async ({ loginPage, rexSearchPage, rexDetailPage }, use) => {
+    await use(createAuthoriseRex(loginPage, rexSearchPage, rexDetailPage));
   },
 });
 

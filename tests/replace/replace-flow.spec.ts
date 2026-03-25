@@ -8,7 +8,7 @@
  */
 
 import { test, expect } from 'src/fixtures';
-import { lodgeStep, readRexStep, replaceStep, portalAuthoriseFlow } from 'src/helpers';
+import { lodgeStep, readRexStep, replaceStep } from 'src/helpers';
 import {
   buildDefaultLodgePayload,
   buildDefaultReplacePayload,
@@ -16,13 +16,13 @@ import {
 
 // ─── TC-R01: Full REPLACE flow — happy path ────────────────────────────────────
 
-test('TC-R01 — full REPLACE flow: LODGE -> authorise -> REPLACE', async ({ soapClient, loginPage, rexSearchPage, rexDetailPage }) => {
+test('TC-R01 — full REPLACE flow: LODGE -> authorise -> REPLACE', async ({ soapClient, authoriseRex, rexDetailPage }) => {
   // Step 1 — LODGE
   const lodgeState = await lodgeStep(soapClient, buildDefaultLodgePayload());
   console.log('LODGE complete:', lodgeState);
 
   // Step 2 — Portal: login → search → inspect → authorise
-  await portalAuthoriseFlow(loginPage, rexSearchPage, rexDetailPage, lodgeState.rexNumber, {
+  await authoriseRex(lodgeState.rexNumber, {
     authoriseComments: 'Authorised for REPLACE test — TC-R01',
   });
 
@@ -47,10 +47,10 @@ test('TC-R01 — full REPLACE flow: LODGE -> authorise -> REPLACE', async ({ soa
 
 // ─── TC-R02: Assert CertificateReady status before REPLACE ─────────────────────
 
-test('TC-R02 — verify REX status transitions to CertificateReady after authorisation', async ({ soapClient, loginPage, rexSearchPage, rexDetailPage }) => {
+test('TC-R02 — verify REX status transitions to CertificateReady after authorisation', async ({ soapClient, authoriseRex, rexDetailPage }) => {
   const lodgeState = await lodgeStep(soapClient, buildDefaultLodgePayload());
 
-  await portalAuthoriseFlow(loginPage, rexSearchPage, rexDetailPage, lodgeState.rexNumber, {
+  await authoriseRex(lodgeState.rexNumber, {
     authoriseComments: 'Authorised — TC-R02',
   });
 
@@ -60,10 +60,10 @@ test('TC-R02 — verify REX status transitions to CertificateReady after authori
 
 // ─── TC-R03: REPLACE response assertions ────────────────────────────────────────
 
-test('TC-R03 — REPLACE response contains serviceRequestId and notices', async ({ soapClient, loginPage, rexSearchPage, rexDetailPage }) => {
+test('TC-R03 — REPLACE response contains serviceRequestId and notices', async ({ soapClient, authoriseRex }) => {
   const lodgeState = await lodgeStep(soapClient, buildDefaultLodgePayload());
 
-  await portalAuthoriseFlow(loginPage, rexSearchPage, rexDetailPage, lodgeState.rexNumber, {
+  await authoriseRex(lodgeState.rexNumber, {
     authoriseComments: 'Authorised — TC-R03',
   });
 
