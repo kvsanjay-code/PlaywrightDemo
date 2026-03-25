@@ -138,7 +138,7 @@
 │   ├── <span class="folder">config/</span> <span class="desc">.................. Environment configuration</span><br>
 │   │   └── <span class="file">environment.ts</span> <span class="desc">....... Loads .env.sit / .env.sit2 / .env.vnd</span><br>
 │   ├── <span class="folder">fixtures/</span> <span class="desc">................ Playwright test fixtures</span><br>
-│   │   ├── <span class="file">base-fixtures.ts</span> <span class="desc">..... soapClient, loginPage, rexSearchPage, rexDetailPage</span><br>
+│   │   ├── <span class="file">base-fixtures.ts</span> <span class="desc">..... soapClient, loginPage, rexSearchPage, rexDetailPage, authoriseRex</span><br>
 │   │   └── <span class="file">index.ts</span> <span class="desc">............. Barrel export</span><br>
 │   ├── <span class="folder">helpers/</span> <span class="desc">................. Utility functions</span><br>
 │   │   ├── <span class="file">rex-workflow.ts</span> <span class="desc">...... Step helpers (orderStep, lodgeStep, readRexStep...)</span><br>
@@ -196,7 +196,7 @@ graph TB
   end
 
   subgraph "Fixture Layer"
-    F["base-fixtures.ts<br/>soapClient | loginPage | rexSearchPage | rexDetailPage"]
+    F["base-fixtures.ts<br/>soapClient | loginPage | rexSearchPage | rexDetailPage | authoriseRex"]
   end
 
   subgraph "Test Data Layer"
@@ -327,8 +327,8 @@ sequenceDiagram
   API-->>SC: rexNumber + timestamp
   SC-->>Test: lodgeState
 
-  Note over Test: Step 2 — Staff Portal (one helper call)
-  Test->>Test: portalAuthoriseFlow(loginPage, rexSearchPage, rexDetailPage, rexNumber)
+  Note over Test: Step 2 — Staff Portal (one fixture call)
+  Test->>Test: authoriseRex(rexNumber)
   Test->>LP: login(username, password)
   LP->>Portal: Fill credentials + click Login
   Test->>SP: searchByRexNumber(rexNumber)
@@ -534,31 +534,34 @@ graph LR
     <span style="color: var(--cyan);">await</span> <span style="color: var(--green);">rexDetailPage</span>.assertREXStatus(<span style="color: var(--orange);">'CertificateReady'</span>);<br>
   </div>
 
-  <h3>Reusable Workflow Helper</h3>
-  <p>Since login → search → inspect → authorise is repeated across many tests, a single helper wraps all four steps:</p>
+  <h3>Reusable Workflow Fixture — <code>authoriseRex</code></h3>
+  <p>Since login → search → inspect → authorise is repeated across many tests, a <strong>fixture</strong> wraps all four steps. Tests just pass the REX number — no page objects needed:</p>
   <div class="diagram-box" style="background: var(--bg); font-family: 'Cascadia Code', monospace; font-size: 0.85rem; line-height: 1.8; padding: 1rem 1.5rem;">
-    <span style="color: var(--border);">// One line replaces four repeated steps:</span><br>
-    <span style="color: var(--cyan);">await</span> <span style="color: var(--green);">portalAuthoriseFlow</span>(loginPage, rexSearchPage, rexDetailPage, rexNumber, {<br>
-    &nbsp;&nbsp;authoriseComments: <span style="color: var(--orange);">'Authorised — TC-R01'</span>,<br>
-    });<br>
+    <span style="color: var(--border);">// Destructure from test fixtures — just like soapClient:</span><br>
+    test(<span style="color: var(--orange);">'my test'</span>, async ({ soapClient, <span style="color: var(--green);">authoriseRex</span> }) => {<br>
     <br>
-    <span style="color: var(--border);">// Or with custom inspection details:</span><br>
-    <span style="color: var(--cyan);">await</span> <span style="color: var(--green);">portalAuthoriseFlow</span>(loginPage, rexSearchPage, rexDetailPage, rexNumber, {<br>
-    &nbsp;&nbsp;inspection: { inspectorName: <span style="color: var(--orange);">'Inspector Smith'</span>, comments: <span style="color: var(--orange);">'All clear'</span> },<br>
-    &nbsp;&nbsp;authoriseComments: <span style="color: var(--orange);">'Approved'</span>,<br>
-    });<br>
+    &nbsp;&nbsp;<span style="color: var(--border);">// One line replaces four repeated steps:</span><br>
+    &nbsp;&nbsp;<span style="color: var(--cyan);">await</span> <span style="color: var(--green);">authoriseRex</span>(rexNumber);<br>
+    <br>
+    &nbsp;&nbsp;<span style="color: var(--border);">// Or with custom options:</span><br>
+    &nbsp;&nbsp;<span style="color: var(--cyan);">await</span> <span style="color: var(--green);">authoriseRex</span>(rexNumber, {<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;inspection: { inspectorName: <span style="color: var(--orange);">'Inspector Smith'</span> },<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;authoriseComments: <span style="color: var(--orange);">'Approved'</span>,<br>
+    &nbsp;&nbsp;});<br>
   </div>
 
   <div class="diagram-box">
     <div class="mermaid">
 graph LR
-  PF["portalAuthoriseFlow()"] --> L["loginPage.login()"]
+  FIX["authoriseRex fixture<br/>(bound to page objects)"] --> AR["authoriseRex(rexNumber)"]
+  AR --> L["loginPage.login()"]
   L --> S["rexSearchPage.searchByRexNumber()"]
   S --> IA["rexDetailPage.inspectAndAuthorise()"]
   IA --> I["addInspectionDetails()"]
   IA --> A["authorise()"]
 
-  style PF fill:#bb9af7,color:#1a1b26
+  style FIX fill:#ff9e64,color:#1a1b26
+  style AR fill:#bb9af7,color:#1a1b26
   style L fill:#9ece6a,color:#1a1b26
   style S fill:#9ece6a,color:#1a1b26
   style IA fill:#7aa2f7,color:#1a1b26
