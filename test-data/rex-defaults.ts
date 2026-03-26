@@ -90,7 +90,7 @@ export const BASE_DEFAULTS: Omit<CommodityDefaults, 'commodityType' | 'defaultPr
 
 // ─── Generic section builders ─────────────────────────────────────────────────
 
-export function buildDefaultExportDetails(d: CommodityDefaults, overrides: PayloadOverrides): ExportDetails {
+function buildDefaultExportDetails(d: CommodityDefaults, overrides: PayloadOverrides): ExportDetails {
   const destinationCountry = o(d.destinationCountry, overrides.destinationCountry)!;
 
   return {
@@ -201,7 +201,7 @@ export function createCommodityBuilders(d: CommodityDefaults) {
   };
 }
 
-export function buildDefaultProductLines(d: CommodityDefaults, overrides: PayloadOverrides, transportMode: string): ProductLines {
+function buildDefaultProductLines(d: CommodityDefaults, overrides: PayloadOverrides, transportMode: string): ProductLines {
   const productType = o(d.defaultProductType, overrides.productType)!;
   const packType    = o(d.packType,           overrides.packType)!;
 
