@@ -9,7 +9,7 @@
  *   - Pass null    → explicitly omit the field from the payload (e.g. no departureDate)
  */
 
-import { PrintIndicator } from 'src/interfaces';
+import { PrintIndicator, ProductLine } from 'src/interfaces';
 
 /**
  * Wraps a type to also allow null, which signals "omit this field from the payload".
@@ -45,6 +45,8 @@ export interface PayloadOverrides {
   containerNumber?:    Nullable<string>;
   // Certificate
   printIndicator?:     Nullable<PrintIndicator>;
+  // Additional product lines (appended after the default line 1)
+  additionalProductLines?: ProductLine[];
 }
 
 /**

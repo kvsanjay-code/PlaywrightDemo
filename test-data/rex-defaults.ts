@@ -215,26 +215,26 @@ function buildDefaultProductLines(d: CommodityDefaults, overrides: PayloadOverri
     ? { treatmentType: [{ treatmentCode: d.treatmentCode, treatmentStartDate: futureDateISO(1), treatmentInformation: d.treatmentInfo ?? '' }] }
     : undefined;
 
-  return {
-    productLine: [
-      {
-        lineNumber: '1',
-        productDetails: {
-          productType,
-          packType,
-          preservationType: o(d.preservationType,  overrides.preservationType)!,
-          netMetricWeight:  { value: o(d.netWeightKg, overrides.netWeightKg)!, unit: 'KG' },
-          outerProductPackaging: {
-            quantity: { value: o(d.outerPackQty, overrides.outerPackQty)!, packageType: packType },
-          },
-          farmCode: d.farmCode,   // plant-specific — undefined for Grain, Meat
-        },
-        containers,
-        treatments,              // plant-specific — undefined for Grain, Meat
-        batchCode:           o(d.batchCode, overrides.batchCode),
-        durabilityStartDate: o(futureDateISO(d.durabilityDaysStart), overrides.durabilityStartDate),
-        durabilityEndDate:   o(futureDateISO(d.durabilityDaysEnd),   overrides.durabilityEndDate),
+  const defaultLine = {
+    lineNumber: '1',
+    productDetails: {
+      productType,
+      packType,
+      preservationType: o(d.preservationType,  overrides.preservationType)!,
+      netMetricWeight:  { value: o(d.netWeightKg, overrides.netWeightKg)!, unit: 'KG' },
+      outerProductPackaging: {
+        quantity: { value: o(d.outerPackQty, overrides.outerPackQty)!, packageType: packType },
       },
-    ],
+      farmCode: d.farmCode,   // plant-specific — undefined for Grain, Meat
+    },
+    containers,
+    treatments,              // plant-specific — undefined for Grain, Meat
+    batchCode:           o(d.batchCode, overrides.batchCode),
+    durabilityStartDate: o(futureDateISO(d.durabilityDaysStart), overrides.durabilityStartDate),
+    durabilityEndDate:   o(futureDateISO(d.durabilityDaysEnd),   overrides.durabilityEndDate),
+  };
+
+  return {
+    productLine: [defaultLine, ...(overrides.additionalProductLines ?? [])],
   };
 }
