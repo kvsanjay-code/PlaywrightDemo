@@ -6,7 +6,7 @@
  */
 
 import { Page, Locator } from '@playwright/test';
-import { Environment } from '../config/environment';
+import { Environment } from '../../config/environment';
 
 export class LoginPage {
   constructor(
