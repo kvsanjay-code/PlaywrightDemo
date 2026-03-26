@@ -4,7 +4,7 @@
  */
 
 import { test, expect } from 'src/fixtures';
-import { buildDefaultOrderPayload, buildDefaultAmendPayload, buildDefaultLodgePayload as buildHorticultureLodgePayload, buildLodgePayload, PRODUCT_TYPE } from 'test-data/commodities/horticulture';
+import { buildDefaultOrderPayload, buildDefaultAmendPayload, buildDefaultLodgePayload as buildHorticultureLodgePayload, PRODUCT_TYPE } from 'test-data/commodities/horticulture';
 import { buildDefaultLodgePayload as buildGrainLodgePayload, buildDefaultOrderPayload as buildGrainOrderPayload } from 'test-data/commodities/grain';
 import { buildDefaultLodgePayload as buildMeatLodgePayload,  buildDefaultOrderPayload as buildMeatOrderPayload }  from 'test-data/commodities/meat';
 import { lodgeStep, readRexStep, futureDateISO } from 'src/helpers';
@@ -142,7 +142,7 @@ test.describe('BR-002-01 — fault 1115 when departure exceeds 28 days', () => {
   for (const { tc, country } of faultCases) {
     test(`${tc} — TUR → ${country}, departure +35 days → fault 1115`, async ({ soapClient }) => {
       const result = await soapClient.lodgeRex(
-        buildLodgePayload(country, PRODUCT_TYPE.TUR, DEPARTURE_BEYOND_28_DAYS),
+        buildHorticultureLodgePayload({ destinationCountry: country, productType: PRODUCT_TYPE.TUR, departureDate: DEPARTURE_BEYOND_28_DAYS }),
       );
 
       console.log(`${tc} result:\n`, JSON.stringify(result, null, 2));

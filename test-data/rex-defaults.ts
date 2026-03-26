@@ -125,25 +125,6 @@ type ReplaceOverrides = PayloadOverrides & { reason?: string | null };
 
 export function createCommodityBuilders(d: CommodityDefaults) {
   return {
-    buildOrderPayload(destinationCountry: string, productType: string, departureDate: string): OrderRexPayload {
-      return {
-        exportDetails: { commodityType: d.commodityType, destinationCountry, departureDate },
-        productLines: {
-          productLine: [{ lineNumber: '1', productDetails: { productType, packType: d.packType, preservationType: d.preservationType } }],
-        },
-      };
-    },
-
-    buildLodgePayload(destinationCountry: string, productType: string, departureDate: string): LodgeRexPayload {
-      return {
-        payloadType: 'LODGE',
-        exportDetails: { commodityType: d.commodityType, destinationCountry, departureDate },
-        productLines: {
-          productLine: [{ lineNumber: '1', productDetails: { productType, packType: d.packType, preservationType: d.preservationType } }],
-        },
-      };
-    },
-
     buildDefaultOrderPayload(overrides: PayloadOverrides = {}): OrderRexPayload {
       const transportMode = o(d.transportMode, overrides.transportMode)!;
       return {

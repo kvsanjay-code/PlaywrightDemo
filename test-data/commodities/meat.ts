@@ -33,8 +33,6 @@ export const DEFAULTS: CommodityDefaults = {
 // ─── Builders ─────────────────────────────────────────────────────────────────
 
 export const {
-  buildOrderPayload,
-  buildLodgePayload,
   buildDefaultOrderPayload,
   buildDefaultLodgePayload,
   buildDefaultAmendPayload,
