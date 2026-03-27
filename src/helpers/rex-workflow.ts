@@ -64,6 +64,17 @@ function toState(operation: string, result: SoapSuccessResult): RexState {
 // ─── Exported utilities ───────────────────────────────────────────────────────
 
 /**
+ * Extracts rexNumber + lastAmendmentTimestamp from a SoapSuccessResult into a RexState.
+ * Use this when you need to do assertions on the raw result before passing state to the next step.
+ */
+export function toRexState(result: SoapSuccessResult): RexState {
+  return {
+    rexNumber:              requireField('toRexState', 'rexNumber',              result.rexNumber),
+    lastAmendmentTimestamp: requireField('toRexState', 'lastAmendmentTimestamp', result.lastAmendmentTimestamp),
+  };
+}
+
+/**
  * Converts a RexState into the Identification object required by AMEND and REPLACE.
  * Maps lastAmendmentTimestamp → lastAmendDateTime (the field name used in payloads).
  */
