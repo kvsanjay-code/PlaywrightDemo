@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Code Walkthrough — What Happens When You Call lodgeRex()</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg:       #1a1b26;
+      --surface:  #24283b;
+      --border:   #414868;
+      --text:     #c0caf5;
+      --heading:  #7aa2f7;
+      --accent:   #bb9af7;
+      --green:    #9ece6a;
+      --orange:   #ff9e64;
+      --red:      #f7768e;
+      --cyan:     #7dcfff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.8;
+      padding: 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    h1 { color: var(--heading); font-size: 2rem; margin-bottom: 0.5rem; border-bottom: 3px solid var(--accent); padding-bottom: 0.5rem; }
+    h2 { color: var(--accent); font-size: 1.5rem; margin: 2.5rem 0 1rem; border-left: 4px solid var(--accent); padding-left: 0.8rem; }
+    h3 { color: var(--cyan); font-size: 1.15rem; margin: 1.5rem 0 0.5rem; }
+    p { margin-bottom: 0.8rem; }
+    .subtitle { color: var(--border); font-size: 1rem; margin-bottom: 2rem; }
+
+    .section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem 2rem; margin-bottom: 2rem; }
+
+    .diagram-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; overflow-x: auto; }
+    .diagram-box .mermaid { display: flex; justify-content: center; }
+
+    .code-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.5rem; margin: 1rem 0; font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.85rem; line-height: 1.8; overflow-x: auto; }
+    .cm { color: var(--border); }
+    .kw { color: var(--cyan); }
+    .fn { color: var(--green); }
+    .st { color: var(--orange); }
+    .vr { color: var(--text); }
+    .tp { color: var(--accent); }
+    .hl { background: rgba(187,154,247,0.15); display: inline; padding: 0.1rem 0.3rem; border-radius: 3px; }
+
+    .step-num { display: inline-block; background: var(--accent); color: var(--bg); width: 32px; height: 32px; border-radius: 50%; text-align: center; line-height: 32px; font-weight: 700; font-size: 0.9rem; margin-right: 0.5rem; }
+
+    .analogy { background: rgba(158,206,106,0.1); border-left: 4px solid var(--green); padding: 1rem 1.5rem; border-radius: 0 8px 8px 0; margin: 1rem 0; }
+    .analogy strong { color: var(--green); }
+
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    th { background: var(--border); color: var(--heading); text-align: left; padding: 0.5rem 1rem; font-size: 0.85rem; }
+    td { border-bottom: 1px solid var(--border); padding: 0.5rem 1rem; font-size: 0.85rem; }
+
+    .arrow-flow { text-align: center; font-size: 1.5rem; color: var(--accent); margin: 0.5rem 0; }
+  </style>
+</head>
+<body>
+
+<h1>Code Walkthrough</h1>
+<p class="subtitle">What happens when you write one line of test code — explained step by step</p>
+
+<!-- ─── THE ONE LINE ───────────────────────────────────────────────────── -->
+
+<h2>The Line of Code</h2>
+<div class="section">
+  <div class="code-box">
+    <span class="kw">const</span> <span class="vr">result</span> = <span class="kw">await</span> <span class="fn">soapClient.lodgeRex</span>(<br>
+    &nbsp;&nbsp;<span class="fn">buildHorticultureLodgePayload</span>({ <span class="st">destinationCountry</span>: <span class="st">'MY'</span> })<br>
+    );
+  </div>
+  <p>This single line triggers <strong>6 steps</strong> behind the scenes. Let's walk through each one.</p>
+
+  <div class="diagram-box">
+    <div class="mermaid">
+graph LR
+  A["1. Your Test"] --> B["2. Load Defaults"]
+  B --> C["3. Apply Override"]
+  C --> D["4. Build Payload Object"]
+  D --> E["5. Convert to SOAP XML"]
+  E --> F["6. Send HTTP Request"]
+  F --> G["7. Parse Response"]
+  G --> A
+
+  style A fill:#7aa2f7,color:#1a1b26
+  style B fill:#9ece6a,color:#1a1b26
+  style C fill:#ff9e64,color:#1a1b26
+  style D fill:#bb9af7,color:#1a1b26
+  style E fill:#7dcfff,color:#1a1b26
+  style F fill:#f7768e,color:#1a1b26
+  style G fill:#9ece6a,color:#1a1b26
+    </div>
+  </div>
+</div>
+
+<!-- ─── STEP 1 ─────────────────────────────────────────────────────────── -->
+
+<h2><span class="step-num">1</span> Your Test Calls the Builder</h2>
+<div class="section">
+  <div class="code-box">
+    <span class="fn">buildHorticultureLodgePayload</span>({ <span class="st">destinationCountry</span>: <span class="st">'MY'</span> })
+  </div>
+
+  <p>This function comes from <code>test-data/commodities/horticulture.ts</code>.</p>
+  <p>But it's not written there — it was <strong>created by a factory</strong>:</p>
+
+  <div class="code-box">
+    <span class="cm">// horticulture.ts</span><br>
+    <span class="kw">export const</span> { <span class="fn">buildDefaultLodgePayload</span>, ... } = <span class="fn">createCommodityBuilders</span>(<span class="vr">DEFAULTS</span>);
+  </div>
+
+  <div class="analogy">
+    <strong>Analogy:</strong> Think of <code>createCommodityBuilders</code> as a <strong>cookie cutter factory</strong>. You give it a shape (horticulture defaults), and it gives you back tools (builders) that can stamp out cookies (payloads) in that shape.
+  </div>
+</div>
+
+<!-- ─── STEP 2 ─────────────────────────────────────────────────────────── -->
+
+<h2><span class="step-num">2</span> Defaults Are Loaded</h2>
+<div class="section">
+  <p>The builder starts with the horticulture <code>DEFAULTS</code> object — all the "normal" values for a horticulture LODGE:</p>
+
+  <div class="diagram-box">
+    <div class="mermaid">
+graph TB
+  subgraph "BASE_DEFAULTS (shared by all commodities)"
+    BD["destinationCountry: 'SG'<br/>consigneeName: 'ABC Importer Pte Ltd'<br/>transportMode: 'SEA'<br/>voyageNumber: 'V001'<br/>vesselName: 'MV Example'<br/>loadingPort: 'AUMEL'<br/>netWeightKg: '500'<br/>printIndicator: 'A' (Auto)<br/>containerNumber: 'CONT-001'<br/>..."]
+  end
+
+  subgraph "Horticulture DEFAULTS (extends base)"
+    HD["commodityType: 'H'<br/>defaultProductType: 'MAN' (Mango)<br/>packType: 'CTN' (Carton)<br/>preservationType: 'FRE' (Fresh)<br/>treatmentCode: 'HT' (Heat Treatment)<br/>farmCode: 'FARM-001'"]
+  end
+
+  BD --> HD
+
+  style BD fill:#9ece6a,color:#1a1b26
+  style HD fill:#7aa2f7,color:#1a1b26
+    </div>
+  </div>
+
+  <div class="analogy">
+    <strong>Analogy:</strong> Think of <code>BASE_DEFAULTS</code> as a <strong>standard order form</strong> — same consignee, same shipping details for everyone. Each commodity (horticulture, grain, meat) then <strong>fills in its own product details</strong> on top.
+  </div>
+
+  <p>The <code>DEFAULTS</code> object also pulls two values from your <code>.env.sit</code> file:</p>
+  <div class="code-box">
+    <span class="vr">ownerExporterId</span>: config.<span class="fn">ownerExporterId</span>,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">// from .env.sit → OWNER_EXPORTER_ID</span><br>
+    <span class="vr">certificateRequiredClientGroup</span>: config.<span class="fn">certificateRequiredClientGroup</span>, <span class="cm">// from .env.sit → CERTIFICATE_REQUIRED_CLIENT_GROUP</span>
+  </div>
+</div>
+
+<!-- ─── STEP 3 ─────────────────────────────────────────────────────────── -->
+
+<h2><span class="step-num">3</span> Your Override Is Applied</h2>
+<div class="section">
+  <p>You passed <code>{ destinationCountry: 'MY' }</code>. The builder uses the <code>o()</code> function to merge:</p>
+
+  <div class="code-box">
+    <span class="cm">// o() = "use override if provided, otherwise use default"</span><br><br>
+    <span class="fn">o</span>(<span class="st">'SG'</span>, <span class="st">'MY'</span>)&nbsp;&nbsp; <span class="cm">// → 'MY' ✅ your override wins</span><br>
+    <span class="fn">o</span>(<span class="st">'V001'</span>, <span class="tp">undefined</span>) <span class="cm">// → 'V001' ← default kept (you didn't override it)</span><br>
+    <span class="fn">o</span>(<span class="st">'SEA'</span>, <span class="tp">null</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">// → undefined ← field removed from payload (if you passed null)</span>
+  </div>
+
+  <table>
+    <tr><th>Override Value</th><th>Result</th><th>Meaning</th></tr>
+    <tr><td><code>'MY'</code></td><td>Use <code>'MY'</code></td><td>Your value replaces the default</td></tr>
+    <tr><td><code>undefined</code> (not passed)</td><td>Use default (<code>'SG'</code>)</td><td>Keep the default</td></tr>
+    <tr><td><code>null</code></td><td><code>undefined</code></td><td>Deliberately omit the field</td></tr>
+  </table>
+
+  <div class="analogy">
+    <strong>Analogy:</strong> It's like filling out a form with <strong>pencil defaults</strong>. You can <strong>write over</strong> any field (override), <strong>leave it</strong> (use default), or <strong>erase it</strong> (null = remove).
+  </div>
+</div>
+
+<!-- ─── STEP 4 ─────────────────────────────────────────────────────────── -->
+
+<h2><span class="step-num">4</span> TypeScript Payload Object Is Built</h2>
+<div class="section">
+  <p>The builder assembles a <code>LodgeRexPayload</code> object with all sections:</p>
+
+  <div class="diagram-box">
+    <div class="mermaid">
+graph TB
+  LP["LodgeRexPayload"]
+
+  LP --> ED["exportDetails<br/>commodityType: 'H'<br/>destinationCountry: 'MY' ← your override<br/>departureDate: '2026-04-01'<br/>consigneeDetails: {...}<br/>transportDetails: {...}<br/>loadingPorts, dischargePorts"]
+
+  LP --> CD["certificateDetails<br/>printIndicator: 'A' (Auto)"]
+
+  LP --> PL["productLines<br/>line 1:"]
+  PL --> PD["productDetails<br/>productType: 'MAN'<br/>packType: 'CTN'<br/>preservationType: 'FRE'<br/>netMetricWeight: 500 KG<br/>farmCode: 'FARM-001'"]
+  PL --> CT["containers<br/>containerNumber: 'CONT-001'<br/>(only because transport = SEA)"]
+  PL --> TR["treatments<br/>treatmentCode: 'HT'<br/>(only because horticulture)"]
+
+  style LP fill:#bb9af7,color:#1a1b26
+  style ED fill:#7aa2f7,color:#1a1b26
+  style CD fill:#7dcfff,color:#1a1b26
+  style PL fill:#9ece6a,color:#1a1b26
+  style PD fill:#9ece6a,color:#1a1b26
+  style CT fill:#ff9e64,color:#1a1b26
+  style TR fill:#ff9e64,color:#1a1b26
+    </div>
+  </div>
+
+  <p><strong>Conditional logic in this step:</strong></p>
+  <table>
+    <tr><th>Condition</th><th>Result</th></tr>
+    <tr><td>transportMode = SEA</td><td>Containers section <strong>included</strong></td></tr>
+    <tr><td>transportMode = AIR</td><td>Containers section <strong>omitted</strong></td></tr>
+    <tr><td>treatmentCode is set (horticulture)</td><td>Treatments section <strong>included</strong></td></tr>
+    <tr><td>treatmentCode not set (grain, meat)</td><td>Treatments section <strong>omitted</strong></td></tr>
+    <tr><td>farmCode is set (horticulture)</td><td>farmCode <strong>included</strong> in productDetails</td></tr>
+    <tr><td>farmCode not set (grain, meat)</td><td>farmCode = <strong>undefined</strong> (omitted from XML)</td></tr>
+  </table>
+
+  <div class="analogy">
+    <strong>Analogy:</strong> This is the <strong>completed form</strong> — all sections filled in, ready to be put in an envelope and mailed.
+  </div>
+</div>
+
+<!-- ─── STEP 5 ─────────────────────────────────────────────────────────── -->
+
+<h2><span class="step-num">5</span> Payload Object → SOAP XML</h2>
+<div class="section">
+  <p>Now <code>soapClient.lodgeRex(payload)</code> is called. The client passes the payload to the <strong>XML builder</strong>:</p>
+
+  <div class="diagram-box">
+    <div class="mermaid">
+graph LR
+  PO["TypeScript Object<br/>(LodgeRexPayload)"] --> B["lodge-rex.builder.ts"]
+  B --> S["Section Builders<br/>export-details.builder.ts<br/>product-lines.builder.ts<br/>certificate-details.builder.ts"]
+  S --> H["soap-header.builder.ts<br/>Adds credentials"]
+  H --> XML["SOAP XML Envelope"]
+
+  style PO fill:#bb9af7,color:#1a1b26
+  style B fill:#7aa2f7,color:#1a1b26
+  style S fill:#9ece6a,color:#1a1b26
+  style H fill:#ff9e64,color:#1a1b26
+  style XML fill:#7dcfff,color:#1a1b26
+    </div>
+  </div>
+
+  <p>The builder converts each TypeScript field into XML tags:</p>
+
+  <div class="code-box">
+    <span class="cm">&lt;soapenv:Envelope&gt;</span><br>
+    &nbsp;&nbsp;<span class="cm">&lt;soapenv:Header&gt;</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="st">&lt;vendorToken&gt;</span>...from .env.sit...<span class="st">&lt;/vendorToken&gt;</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="st">&lt;clientGroupToken&gt;</span>...<span class="st">&lt;/clientGroupToken&gt;</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="st">&lt;username&gt;</span>...<span class="st">&lt;/username&gt;</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="st">&lt;password&gt;</span>...<span class="st">&lt;/password&gt;</span><br>
+    &nbsp;&nbsp;<span class="cm">&lt;/soapenv:Header&gt;</span><br>
+    &nbsp;&nbsp;<span class="cm">&lt;soapenv:Body&gt;</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">&lt;LodgeRex&gt;</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;exportDetails&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;commodityType&gt;<span class="hl">H</span>&lt;/commodityType&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;destinationCountry&gt;<span class="hl">MY</span>&lt;/destinationCountry&gt;&nbsp;&nbsp;<span class="cm">&lt;!-- your override --&gt;</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;departureDate&gt;2026-04-01&lt;/departureDate&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...consignee, transport, ports...<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/exportDetails&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;productLines&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;productLine&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;productType&gt;<span class="hl">MAN</span>&lt;/productType&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...weights, containers, treatments...<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/productLine&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/productLines&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">&lt;/LodgeRex&gt;</span><br>
+    &nbsp;&nbsp;<span class="cm">&lt;/soapenv:Body&gt;</span><br>
+    <span class="cm">&lt;/soapenv:Envelope&gt;</span>
+  </div>
+
+  <div class="analogy">
+    <strong>Analogy:</strong> The builder is a <strong>translator</strong>. It takes your filled form (TypeScript object) and translates it into the government's official language (SOAP XML) — with all the proper headers, namespaces, and formatting they require.
+  </div>
+</div>
+
+<!-- ─── STEP 6 ─────────────────────────────────────────────────────────── -->
+
+<h2><span class="step-num">6</span> HTTP Request Sent</h2>
+<div class="section">
+  <p>The SoapClient sends the XML to the REX service via HTTP POST:</p>
+
+  <div class="diagram-box">
+    <div class="mermaid">
+sequenceDiagram
+  participant SC as SoapClient
+  participant REX as REX Service<br/>(government server)
+
+  SC->>REX: POST https://online-sit.agriculture.gov.au/.../RexSubmissionService
+  Note over SC: Headers:<br/>Content-Type: text/xml<br/>SOAPAction: ".../LodgeRex"
+  Note over SC: Body: SOAP XML envelope
+  REX-->>SC: HTTP 200 + SOAP XML response
+  Note over REX: (or HTTP 500 if fault)
+    </div>
+  </div>
+
+  <p>The URL comes from your <code>.env.sit</code> file:</p>
+  <div class="code-box">
+    <span class="vr">REX_SUBMISSION_SERVICE_URL</span>=https://online-sit.agriculture.gov.au/nexdoc-ws-ext-proxy/RexSubmissionService
+  </div>
+
+  <div class="analogy">
+    <strong>Analogy:</strong> You put your form in an envelope, address it to the government office (URL), write "LODGE REQUEST" on the outside (SOAPAction header), and post it. They process it and mail back a response.
+  </div>
+</div>
+
+<!-- ─── STEP 7 ─────────────────────────────────────────────────────────── -->
+
+<h2><span class="step-num">7</span> Response Is Parsed</h2>
+<div class="section">
+  <p>The government sends back SOAP XML. The <strong>response parser</strong> converts it into a typed TypeScript object:</p>
+
+  <div class="diagram-box">
+    <div class="mermaid">
+graph LR
+  XML["Raw SOAP XML<br/>from REX Service"] --> CHECK{"Contains<br/>&lt;Fault&gt; ?"}
+
+  CHECK -->|"Yes — something went wrong"| FAULT["SoapFaultResult<br/>success: false<br/>faultCode: 'soap-env:Server'<br/>faultString: 'Nexdoc System Fault'<br/>faultItems: [<br/>&nbsp;&nbsp;{code:'170', message:'...'},<br/>&nbsp;&nbsp;{code:'426', message:'...'}<br/>]"]
+
+  CHECK -->|"No — it worked!"| SUCCESS["SoapSuccessResult<br/>success: true<br/>rexNumber: 'REX0003487048'<br/>lastAmendmentTimestamp: '2026-03-27T...'<br/>complianceStatus: 'INIT'<br/>notices: [{id:'426', message:'...'}]<br/>rexLines: [{lineNumber:'1', template:'H16'}]"]
+
+  style XML fill:#7aa2f7,color:#1a1b26
+  style FAULT fill:#f7768e,color:#1a1b26
+  style SUCCESS fill:#9ece6a,color:#1a1b26
+    </div>
+  </div>
+
+  <h3>Success Response — What You Get Back</h3>
+  <table>
+    <tr><th>Field</th><th>Example</th><th>What It Means</th></tr>
+    <tr><td><code>success</code></td><td><code>true</code></td><td>The LODGE worked</td></tr>
+    <tr><td><code>rexNumber</code></td><td><code>'REX0003487048'</code></td><td>The permit number assigned by the system</td></tr>
+    <tr><td><code>lastAmendmentTimestamp</code></td><td><code>'2026-03-27T14:04:43...'</code></td><td>Version stamp — needed for AMEND/REPLACE</td></tr>
+    <tr><td><code>complianceStatus</code></td><td><code>'INIT'</code></td><td>Initial status after LODGE</td></tr>
+    <tr><td><code>notices[]</code></td><td><code>[{noticeId:'426', ...}]</code></td><td>Informational warnings (not errors)</td></tr>
+    <tr><td><code>rexLines[]</code></td><td><code>[{lineNumber:'1', template:'H16'}]</code></td><td>Certificate template assigned per product line</td></tr>
+  </table>
+
+  <h3>Fault Response — When It Fails</h3>
+  <table>
+    <tr><th>Field</th><th>Example</th><th>What It Means</th></tr>
+    <tr><td><code>success</code></td><td><code>false</code></td><td>The LODGE was rejected</td></tr>
+    <tr><td><code>faultCode</code></td><td><code>'soap-env:Server'</code></td><td>General SOAP fault category</td></tr>
+    <tr><td><code>faultString</code></td><td><code>'Nexdoc System Fault'</code></td><td>General error description</td></tr>
+    <tr><td><code>faultItems[]</code></td><td><code>[{faultCode:'1115', faultMessage:'departure date...'}]</code></td><td>Specific business rule violations</td></tr>
+  </table>
+
+  <div class="analogy">
+    <strong>Analogy:</strong> The government mails back either an <strong>approval letter</strong> (success — here's your permit number) or a <strong>rejection letter</strong> (fault — here's what you did wrong, with specific error codes).
+  </div>
+</div>
+
+<!-- ─── FULL PICTURE ───────────────────────────────────────────────────── -->
+
+<h2>The Complete Picture</h2>
+<div class="section">
+  <div class="diagram-box">
+    <div class="mermaid">
+sequenceDiagram
+  participant Test as Your Test
+  participant Hort as horticulture.ts
+  participant Factory as createCommodityBuilders
+  participant Defaults as BASE_DEFAULTS + Hort DEFAULTS
+  participant Override as o() resolver
+  participant Builder as XML Builder
+  participant Client as SoapClient
+  participant REX as REX Service
+  participant Parser as Response Parser
+
+  Note over Test: const result = await soapClient.lodgeRex(<br/>buildHorticultureLodgePayload({destinationCountry:'MY'}))
+
+  Test->>Hort: buildDefaultLodgePayload({destinationCountry:'MY'})
+  Hort->>Factory: (was created at import time)
+  Factory->>Defaults: Load BASE_DEFAULTS + Horticulture DEFAULTS
+  Defaults-->>Factory: commodityType:'H', productType:'MAN', destination:'SG', ...
+  Factory->>Override: o('SG', 'MY') → 'MY'
+  Factory->>Override: o('V001', undefined) → 'V001'
+  Override-->>Factory: Merged values
+  Factory-->>Test: LodgeRexPayload (TypeScript object)
+
+  Test->>Client: lodgeRex(payload)
+  Client->>Builder: buildLodgeRexPayload(payload, header)
+  Builder-->>Client: SOAP XML string
+  Client->>REX: HTTP POST (XML)
+  REX-->>Client: SOAP XML response
+  Client->>Parser: parseSoapResponse(xml)
+  Parser-->>Client: SoapResult
+  Client-->>Test: result (success/fault)
+
+  Note over Test: result.success === true<br/>result.rexNumber === 'REX0003487048'
+    </div>
+  </div>
+</div>
+
+<!-- ─── WHAT HAPPENS NEXT ──────────────────────────────────────────────── -->
+
+<h2>What You Can Do With the Result</h2>
+<div class="section">
+  <div class="code-box">
+    <span class="cm">// 1. Assert on the raw result</span><br>
+    <span class="fn">expect</span>(result.success).toBe(<span class="st">true</span>);<br>
+    <span class="kw">if</span> (result.success) {<br>
+    &nbsp;&nbsp;<span class="fn">expect</span>(result.<span class="vr">complianceStatus</span>).toBe(<span class="st">'INIT'</span>);<br>
+    &nbsp;&nbsp;<span class="fn">expect</span>(result.<span class="vr">rexNumber</span>).toBeTruthy();<br>
+    }<br><br>
+    <span class="cm">// 2. Convert to RexState for next step</span><br>
+    <span class="kw">const</span> <span class="vr">rexState</span> = <span class="fn">toRexState</span>(result <span class="kw">as</span> <span class="tp">SoapSuccessResult</span>);<br>
+    <span class="cm">// rexState = { rexNumber: 'REX0003487048', lastAmendmentTimestamp: '2026-03-27T...' }</span><br><br>
+    <span class="cm">// 3. Use rexState to build AMEND payload</span><br>
+    <span class="kw">const</span> <span class="vr">amendPayload</span> = <span class="fn">buildDefaultAmendPayload</span>(<span class="vr">rexState</span>, { <span class="st">productType</span>: <span class="st">'TUR'</span> });<br>
+    <span class="kw">const</span> <span class="vr">amendResult</span> = <span class="kw">await</span> soapClient.<span class="fn">amendRex</span>(<span class="vr">amendPayload</span>);
+  </div>
+
+  <div class="diagram-box">
+    <div class="mermaid">
+graph LR
+  R["SoapResult<br/>(raw response)"] -->|"assertions"| A["expect(result.success)<br/>expect(result.rexNumber)<br/>expect(result.notices)"]
+  R -->|"toRexState()"| S["RexState<br/>{rexNumber, timestamp}"]
+  S -->|"pass to next builder"| AM["buildDefaultAmendPayload(rexState, {...})"]
+  S -->|"or"| RP["buildDefaultReplacePayload(rexState, {...})"]
+  S -->|"or"| RD["readRexStep(soapClient, rexState.rexNumber)"]
+
+  style R fill:#7aa2f7,color:#1a1b26
+  style A fill:#ff9e64,color:#1a1b26
+  style S fill:#bb9af7,color:#1a1b26
+  style AM fill:#9ece6a,color:#1a1b26
+  style RP fill:#9ece6a,color:#1a1b26
+  style RD fill:#9ece6a,color:#1a1b26
+    </div>
+  </div>
+</div>
+
+<!-- ─── FILES INVOLVED ─────────────────────────────────────────────────── -->
+
+<h2>Files Involved (in order)</h2>
+<div class="section">
+  <table>
+    <tr><th>#</th><th>File</th><th>Role</th></tr>
+    <tr><td>1</td><td><code>test-data/commodities/horticulture.ts</code></td><td>Defines DEFAULTS, exports builders from factory</td></tr>
+    <tr><td>2</td><td><code>test-data/rex-defaults.ts</code></td><td>Factory + BASE_DEFAULTS + section builders</td></tr>
+    <tr><td>3</td><td><code>test-data/payload-overrides.ts</code></td><td>Override types + <code>o()</code> resolver</td></tr>
+    <tr><td>4</td><td><code>src/config/environment.ts</code></td><td>Loads .env.sit credentials</td></tr>
+    <tr><td>5</td><td><code>src/soap/soap-client.ts</code></td><td>Calls XML builder, sends HTTP, calls parser</td></tr>
+    <tr><td>6</td><td><code>src/soap/builders/lodge-rex.builder.ts</code></td><td>Converts payload → SOAP XML</td></tr>
+    <tr><td>7</td><td><code>src/soap/builders/soap-header.builder.ts</code></td><td>Adds credential header to XML</td></tr>
+    <tr><td>8</td><td><code>src/soap/response-parser.ts</code></td><td>Parses XML response → typed result</td></tr>
+  </table>
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      primaryColor:       '#7aa2f7',
+      primaryTextColor:   '#1a1b26',
+      primaryBorderColor: '#414868',
+      lineColor:          '#565f89',
+      secondaryColor:     '#bb9af7',
+      tertiaryColor:      '#24283b',
+      noteTextColor:      '#c0caf5',
+      noteBkgColor:       '#24283b',
+      noteBorderColor:    '#414868',
+    },
+    sequence: { mirrorActors: false },
+    flowchart: { curve: 'basis' },
+  });
+</script>
+
+</body>
+</html>
