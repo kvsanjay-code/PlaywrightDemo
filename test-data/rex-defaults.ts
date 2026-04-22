@@ -6,10 +6,11 @@
  * that accept a CommodityDefaults so each commodity can supply its own values.
  */
 
-import { ExportDetails, ProductLines, PrintIndicator, LodgeRexPayload, OrderRexPayload, AmendRexPayload, ReplaceCertificatePayload } from 'src/interfaces';
+import { ExportDetails, ProductLines, PrintIndicator, LodgeRexPayload, OrderRexPayload, AmendRexPayload, ReplaceCertificatePayload, EuTransit, EuPlaceOfDestinationDetail } from 'src/interfaces';
 import { randomExporterReference, futureDateISO, RexState, toIdentification } from 'src/helpers';
 import { config } from 'src/config/environment';
 import { PayloadOverrides, o } from './payload-overrides';
+import { EuTransitOverrides, EuPlaceOfDestinationDetailOverrides } from './eu-transit-overrides';
 
 // ─── Transport modes ──────────────────────────────────────────────────────────
 
@@ -106,10 +107,11 @@ function buildDefaultExportDetails(d: CommodityDefaults, overrides: PayloadOverr
     },
 
     transportDetails: {
-      transportMode:        o(d.transportMode,   overrides.transportMode),
-      voyageOrFlightNumber: o(d.voyageNumber,    overrides.voyageNumber),
-      vesselName:           o(d.vesselName,      overrides.vesselName),
-      shippingCompany:      o(d.shippingCompany, overrides.shippingCompany),
+      transportMode:              o(d.transportMode,   overrides.transportMode),
+      voyageOrFlightNumber:       o(d.voyageNumber,    overrides.voyageNumber),
+      vesselName:                 o(d.vesselName,      overrides.vesselName),
+      shippingCompany:            o(d.shippingCompany, overrides.shippingCompany),
+      euPlaceOfDestinationDetail: overrides.euPlaceOfDestinationDetail,
     },
 
     loadingPorts:   { loadingPort:   [o(d.loadingPort,   overrides.loadingPort)!] },
@@ -217,5 +219,52 @@ function buildDefaultProductLines(d: CommodityDefaults, overrides: PayloadOverri
 
   return {
     productLine: [defaultLine, ...(overrides.additionalProductLines ?? [])],
+  };
+}
+
+// ─── EU Transit builder ───────────────────────────────────────────────────────
+
+export function buildDefaultEuTransit(overrides: EuTransitOverrides = {}): EuTransit {
+  return {
+    personResponsible: {
+      address: overrides.personAddress ?? {
+        streetLine: '10 Transit Way',
+        city:       'Rotterdam',
+        country:    'NL',
+        postalCode: '3011',
+      },
+      firstName:   overrides.personFirstName ?? 'Jan',
+      lastName:    overrides.personLastName  ?? 'de Vries',
+      phoneNumber: overrides.personPhone     ?? '+31101234567',
+    },
+    placeOfDestinationDetails: {
+      name: overrides.placeName ?? 'EU Distribution Hub',
+      address: overrides.placeAddress ?? {
+        streetLine: '25 Destination Blvd',
+        city:       'Hamburg',
+        country:    'DE',
+        postalCode: '20095',
+      },
+      phoneNumber:         overrides.placePhone          ?? '+494012345678',
+      approvalNumber:      overrides.approvalNumber      ?? 'DE-APR-001',
+      transitLocationType: overrides.transitLocationType ?? 'WAREHOUSE',
+    },
+  };
+}
+
+// ─── EU Place of Destination Detail builder ───────────────────────────────────
+
+export function buildDefaultEuPlaceOfDestinationDetail(
+  overrides: EuPlaceOfDestinationDetailOverrides = {},
+): EuPlaceOfDestinationDetail {
+  return {
+    name: overrides.name ?? 'EU Distribution Hub',
+    address: overrides.address ?? {
+      streetLine: '25 Destination Blvd',
+      city:       'Hamburg',
+      country:    'DE',
+      postalCode: '20095',
+    },
+    approvalNumber: overrides.approvalNumber ?? 'DE-APR-001',
   };
 }

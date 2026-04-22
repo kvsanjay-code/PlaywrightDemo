@@ -9,7 +9,7 @@
  *   - Pass null    → explicitly omit the field from the payload (e.g. no departureDate)
  */
 
-import { PrintIndicator, ProductLine } from 'src/interfaces';
+import { PrintIndicator, ProductLine, EuPlaceOfDestinationDetail } from 'src/interfaces';
 
 /**
  * Wraps a type to also allow null, which signals "omit this field from the payload".
@@ -33,6 +33,7 @@ export interface PayloadOverrides {
   shippingCompany?:    Nullable<string>;
   loadingPort?:        Nullable<string>;
   dischargePort?:      Nullable<string>;
+  euPlaceOfDestinationDetail?: EuPlaceOfDestinationDetail;
   // Product line
   productType?:        Nullable<string>;
   packType?:           Nullable<string>;

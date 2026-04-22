@@ -7,6 +7,7 @@ import { test, expect } from 'src/fixtures';
 import { buildDefaultOrderPayload, buildDefaultAmendPayload, buildDefaultLodgePayload as buildHorticultureLodgePayload, PRODUCT_TYPE } from 'test-data/commodities/horticulture';
 import { buildDefaultLodgePayload as buildGrainLodgePayload, buildDefaultOrderPayload as buildGrainOrderPayload } from 'test-data/commodities/grain';
 import { buildDefaultLodgePayload as buildMeatLodgePayload,  buildDefaultOrderPayload as buildMeatOrderPayload }  from 'test-data/commodities/meat';
+import { buildDefaultEuTransit, buildDefaultEuPlaceOfDestinationDetail } from 'test-data/rex-defaults';
 import { lodgeStep, readRexStep, futureDateISO } from 'src/helpers';
 import { PrintIndicator } from 'src/interfaces';
 
@@ -111,6 +112,34 @@ test('debug — inspect full AMEND payload', async ({ soapClient }) => {
 
   const result = await soapClient.amendRex(payload);
 
+  console.log('Result:\n', JSON.stringify(result, null, 2));
+});
+
+test('debug — LODGE with EU transit section (Horticulture → DE)', async ({ soapClient }) => {
+  const payload = buildHorticultureLodgePayload({ destinationCountry: 'DE' });
+  payload.euTransit = buildDefaultEuTransit({ placeName: 'Hamburg Distribution Hub' });
+
+  console.log('Payload object:\n', JSON.stringify(payload, null, 2));
+
+  const xml = soapClient.serializeLodgeRex(payload);
+  console.log('Serialized XML:\n', xml);
+
+  const result = await soapClient.lodgeRex(payload);
+  console.log('Result:\n', JSON.stringify(result, null, 2));
+});
+
+test('debug — LODGE with EU place of destination detail (Horticulture → DE)', async ({ soapClient }) => {
+  const payload = buildHorticultureLodgePayload({
+    destinationCountry:         'DE',
+    euPlaceOfDestinationDetail: buildDefaultEuPlaceOfDestinationDetail({ name: 'Berlin Cold Store' }),
+  });
+
+  console.log('Payload object:\n', JSON.stringify(payload, null, 2));
+
+  const xml = soapClient.serializeLodgeRex(payload);
+  console.log('Serialized XML:\n', xml);
+
+  const result = await soapClient.lodgeRex(payload);
   console.log('Result:\n', JSON.stringify(result, null, 2));
 });
 
