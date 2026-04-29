@@ -128,7 +128,7 @@ function parseSuccess(xml: string): SoapSuccessResult {
     extractTag(xml, 'complianceStatus') ??
     extractTag(xml, 'complianceStaus');
 
-  const exporterReferences = extractTag(xml, 'exporterReferences');
+  const exporterReferences = extractTag(xml, 'exporterReferences') ?? extractTag(xml, 'exporterReference');
   const permitNumber       = extractTag(xml, 'permitNumber');
   const serviceRequestId   = extractTag(xml, 'ServiceRequestId');
 

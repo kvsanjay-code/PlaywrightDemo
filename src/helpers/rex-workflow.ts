@@ -17,6 +17,7 @@ import {
   LodgeRexPayload,
   AmendRexPayload,
   ReplaceCertificatePayload,
+  ReleaseRexToPrintPayload,
   Identification,
 } from '../interfaces';
 
@@ -32,6 +33,15 @@ export interface RexState {
 export interface ReplaceResult {
   serviceRequestId?: string;
   notices: { noticeId: string; noticeType: string; noticeMessage: string }[];
+}
+
+/** Result returned by releaseRexToPrintStep. */
+export interface ReleaseRexToPrintResult {
+  rexNumber?:        string;
+  complianceStatus?: string;
+  permitNumber?:     string;
+  exporterReference?: string;
+  notices:           { noticeId: string; noticeType: string; noticeMessage: string }[];
 }
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
@@ -130,6 +140,27 @@ export async function amendStep(client: SoapClient, payload: AmendRexPayload): P
   const result = await client.amendRex(payload);
   assertSuccess('AMEND', result);
   return toState('AMEND', result);
+}
+
+/**
+ * Sends a ReleaseRexToPrinter request.
+ * payload is built directly from a RexState via toIdentification(state).
+ * Returns compliance status, notices, and the updated REX details.
+ */
+export async function releaseRexToPrintStep(client: SoapClient, state: RexState): Promise<ReleaseRexToPrintResult> {
+  const payload: ReleaseRexToPrintPayload = {
+    rexNumber:         state.rexNumber,
+    lastAmendDateTime: state.lastAmendmentTimestamp,
+  };
+  const result = await client.releaseRexToPrint(payload);
+  assertSuccess('RELEASE_REX_TO_PRINT', result);
+  return {
+    rexNumber:        result.rexNumber,
+    complianceStatus: result.complianceStatus,
+    permitNumber:     result.permitNumber,
+    exporterReference: result.exporterReferences,
+    notices:          result.notices,
+  };
 }
 
 /**

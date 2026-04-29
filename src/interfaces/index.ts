@@ -7,3 +7,4 @@ export * from './lodge-rex.types';
 export * from './amend-rex.types';
 export * from './replace-certificate.types';
 export * from './read-rex.types';
+export * from './release-rex-to-print.types';

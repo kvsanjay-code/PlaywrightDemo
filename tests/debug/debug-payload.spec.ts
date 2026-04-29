@@ -8,7 +8,7 @@ import { buildDefaultOrderPayload, buildDefaultAmendPayload, buildDefaultLodgePa
 import { buildDefaultLodgePayload as buildGrainLodgePayload, buildDefaultOrderPayload as buildGrainOrderPayload } from 'test-data/commodities/grain';
 import { buildDefaultLodgePayload as buildMeatLodgePayload,  buildDefaultOrderPayload as buildMeatOrderPayload }  from 'test-data/commodities/meat';
 import { buildDefaultEuTransit, buildDefaultEuPlaceOfDestinationDetail } from 'test-data/rex-defaults';
-import { lodgeStep, readRexStep, futureDateISO } from 'src/helpers';
+import { lodgeStep, readRexStep, releaseRexToPrintStep, futureDateISO } from 'src/helpers';
 import { PrintIndicator } from 'src/interfaces';
 
 test('debug — inspect full ORDER payload', async ({ soapClient }) => {
@@ -154,6 +154,18 @@ test('debug — LODGE then READ REX', async ({ soapClient }) => {
   const readState = await readRexStep(soapClient, lodgeState.rexNumber);
 
   console.log('READ REX state:\n', JSON.stringify(readState, null, 2));
+});
+
+// ── ReleaseRexToPrinter ───────────────────────────────────────────────────────
+
+test('debug — LODGE then RELEASE REX TO PRINT', async ({ soapClient }) => {
+  // Step 1 — LODGE
+  const lodgeState = await lodgeStep(soapClient, buildHorticultureLodgePayload({ destinationCountry: 'GB' }));
+  console.log('LODGE state:\n', JSON.stringify(lodgeState, null, 2));
+
+  // Step 2 — RELEASE REX TO PRINT
+  const result = await releaseRexToPrintStep(soapClient, lodgeState);
+  console.log('RELEASE REX TO PRINT result:\n', JSON.stringify(result, null, 2));
 });
 
 // ── BR-002 fault assertions ───────────────────────────────────────────────────
