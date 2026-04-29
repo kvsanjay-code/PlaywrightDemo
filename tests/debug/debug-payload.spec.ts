@@ -158,13 +158,20 @@ test('debug — LODGE then READ REX', async ({ soapClient }) => {
 
 // ── ReleaseRexToPrinter ───────────────────────────────────────────────────────
 
-test('debug — LODGE then RELEASE REX TO PRINT', async ({ soapClient }) => {
+test('debug — LODGE → authorise → READ REX → RELEASE REX TO PRINT', async ({ soapClient, authoriseRex }) => {
   // Step 1 — LODGE
   const lodgeState = await lodgeStep(soapClient, buildHorticultureLodgePayload({ destinationCountry: 'GB' }));
   console.log('LODGE state:\n', JSON.stringify(lodgeState, null, 2));
 
-  // Step 2 — RELEASE REX TO PRINT
-  const result = await releaseRexToPrintStep(soapClient, lodgeState);
+  // Step 2 — Portal: authorise
+  await authoriseRex(lodgeState.rexNumber, { authoriseComments: 'Authorised for release to print — debug test' });
+
+  // Step 3 — READ REX (fresh timestamp after portal action)
+  const freshState = await readRexStep(soapClient, lodgeState.rexNumber);
+  console.log('READ REX state:\n', JSON.stringify(freshState, null, 2));
+
+  // Step 4 — RELEASE REX TO PRINT
+  const result = await releaseRexToPrintStep(soapClient, freshState);
   console.log('RELEASE REX TO PRINT result:\n', JSON.stringify(result, null, 2));
 });
 

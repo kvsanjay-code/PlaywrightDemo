@@ -144,7 +144,7 @@ export async function amendStep(client: SoapClient, payload: AmendRexPayload): P
 
 /**
  * Sends a ReleaseRexToPrinter request.
- * payload is built directly from a RexState via toIdentification(state).
+ * Expects a fresh RexState — call readRexStep after any portal action before invoking this.
  * Returns compliance status, notices, and the updated REX details.
  */
 export async function releaseRexToPrintStep(client: SoapClient, state: RexState): Promise<ReleaseRexToPrintResult> {
@@ -155,11 +155,11 @@ export async function releaseRexToPrintStep(client: SoapClient, state: RexState)
   const result = await client.releaseRexToPrint(payload);
   assertSuccess('RELEASE_REX_TO_PRINT', result);
   return {
-    rexNumber:        result.rexNumber,
-    complianceStatus: result.complianceStatus,
-    permitNumber:     result.permitNumber,
+    rexNumber:         result.rexNumber,
+    complianceStatus:  result.complianceStatus,
+    permitNumber:      result.permitNumber,
     exporterReference: result.exporterReferences,
-    notices:          result.notices,
+    notices:           result.notices,
   };
 }
 
