@@ -35,11 +35,18 @@ export interface SoapSuccessResult {
   rawXml: string;
 }
 
+export interface OsbFaultDetail {
+  errorCode: string;
+  reason:    string;
+  messages:  string[];   // one entry per ValidationFailureDetail
+}
+
 export interface SoapFaultResult {
   success: false;
   faultCode: string;
   faultString: string;
   faultItems: ParsedFaultItem[];
+  osbFault?: OsbFaultDetail;   // present for OSB validation errors (e.g. OSB-382505)
   rawXml: string;
 }
 
@@ -82,6 +89,18 @@ function isFault(xml: string): boolean {
 
 // ─── Parsers ─────────────────────────────────────────────────────────────────
 
+function parseOsbFault(xml: string): OsbFaultDetail | undefined {
+  const errorCode = extractTag(xml, 'errorCode');
+  if (!errorCode) return undefined;
+
+  const reason   = extractTag(xml, 'reason') ?? '';
+  const messages = extractAll(xml, 'ValidationFailureDetail')
+    .map(d => extractTag(d, 'message') ?? '')
+    .filter(m => m !== '');
+
+  return { errorCode, reason, messages };
+}
+
 function parseFault(xml: string): SoapFaultResult {
   const faultCode   = extractTag(xml, 'faultcode')   ?? extractTag(xml, 'Code')   ?? 'UNKNOWN';
   const faultString = extractTag(xml, 'faultstring') ?? extractTag(xml, 'faultString') ?? extractTag(xml, 'Reason') ?? 'Unknown fault';
@@ -92,7 +111,9 @@ function parseFault(xml: string): SoapFaultResult {
     faultMessage: extractTag(itemXml, 'FaultMessage') ?? '',
   }));
 
-  return { success: false, faultCode, faultString, faultItems, rawXml: xml };
+  const osbFault = parseOsbFault(xml);
+
+  return { success: false, faultCode, faultString, faultItems, osbFault, rawXml: xml };
 }
 
 function parseNotices(xml: string): ParsedNotice[] {
