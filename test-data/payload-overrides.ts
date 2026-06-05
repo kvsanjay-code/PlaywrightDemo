@@ -26,6 +26,7 @@ export interface PayloadOverrides {
   departureDate?:      Nullable<string>;
   exporterReference?:  Nullable<string>;
   consigneeName?:      Nullable<string>;
+  consigneeAddress?:   Nullable<{ streetLine: string; city: string; country: string; postalCode: string }>;
   consigneePhone?:     Nullable<string>;
   transportMode?:      Nullable<'S'|'A'>;
   voyageNumber?:       Nullable<string>;

@@ -102,7 +102,7 @@ function buildDefaultExportDetails(d: CommodityDefaults, overrides: PayloadOverr
 
     consigneeDetails: {
       consigneeName:        o(d.consigneeName,  overrides.consigneeName),
-      consigneeAddress:     d.consigneeAddress,
+      consigneeAddress:     o(d.consigneeAddress, overrides.consigneeAddress),
       consigneePhoneNumber: o(d.consigneePhone, overrides.consigneePhone),
     },
 
