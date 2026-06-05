@@ -20,6 +20,11 @@ export interface CertificatePrintControls {
   separateBy?: string;
 }
 
+export interface PlantAdditionalDeclaration {
+  lineNumber:      string;
+  declarationText: string[];   // 0 to 5 repetitions
+}
+
 export interface CertificateEntry {
   removeEntry?: string;
   lineNumbers?: { lineNumber: string[] };
@@ -27,6 +32,7 @@ export interface CertificateEntry {
     certificateTemplate: string;
     certificateEndorsement?: string;
   };
+  plantAdditionalDeclarations?: { plantAdditionalDeclaration: PlantAdditionalDeclaration[] };
   certificatePrintDetails?: CertificatePrintDetails;
 }
 

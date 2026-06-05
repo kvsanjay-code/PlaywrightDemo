@@ -1,4 +1,4 @@
-import { CertificateDetails, CertificateEntry } from 'src/interfaces';
+import { CertificateDetails, CertificateEntry, PlantAdditionalDeclaration } from 'src/interfaces';
 import { optElem, elem } from '../xml-utils';
 
 export function buildCertificateDetails(details: CertificateDetails | undefined): string {
@@ -30,9 +30,21 @@ function buildCertificates(details: CertificateDetails): string {
   return elem('com1:certificates', certEntries + primaryEntries + extraEntries);
 }
 
+function buildPlantAdditionalDeclarations(declarations: PlantAdditionalDeclaration[]): string {
+  const items = declarations.map(d =>
+    elem('plan:plantAdditionalDeclaration',
+      `<plan:lineNumber>${d.lineNumber}</plan:lineNumber>` +
+      d.declarationText.map(t => `<plan:declarationText>${t}</plan:declarationText>`).join(''))
+  ).join('');
+  return elem('com1:plantAdditionalDeclarations', items);
+}
+
 function buildCertEntry(c: CertificateEntry): string {
   if (c.removeEntry) return optElem('com1:removeEntry', c.removeEntry);
   const lineNumbers = c.lineNumbers?.lineNumber.map(n => optElem('com1:lineNumber', n)).join('') ?? '';
+  const plantDeclarations = c.plantAdditionalDeclarations
+    ? buildPlantAdditionalDeclarations(c.plantAdditionalDeclarations.plantAdditionalDeclaration)
+    : '';
   const printDetails = c.certificatePrintDetails
     ? elem('com1:certificatePrintDetails',
         c.certificatePrintDetails.certificatePrintRegion
@@ -43,5 +55,6 @@ function buildCertEntry(c: CertificateEntry): string {
     elem('com1:certificateDetails',
       `<com1:certificateTemplate>${c.certificateDetails.certificateTemplate}</com1:certificateTemplate>` +
       optElem('com1:certificateEndorsement', c.certificateDetails.certificateEndorsement)) +
+    plantDeclarations +
     printDetails;
 }
