@@ -28,6 +28,10 @@ export const DEFAULTS: CommodityDefaults = {
   preservationType:   'CHI',   // Chilled — TODO: confirm
   exporterPrefix:     'MEAT',
   destinationCountry: 'JP',    // Common meat export destination
+  meatProductLineDetails: {
+    halalIndicator: 'N',
+    ungraded:       'N',
+  },
 };
 
 // ─── Builders ─────────────────────────────────────────────────────────────────

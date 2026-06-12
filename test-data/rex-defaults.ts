@@ -6,7 +6,7 @@
  * that accept a CommodityDefaults so each commodity can supply its own values.
  */
 
-import { ExportDetails, ProductLines, PrintIndicator, LodgeRexPayload, OrderRexPayload, AmendRexPayload, ReplaceCertificatePayload, EuTransit, EuPlaceOfDestinationDetail } from 'src/interfaces';
+import { ExportDetails, ProductLines, PrintIndicator, LodgeRexPayload, OrderRexPayload, AmendRexPayload, ReplaceCertificatePayload, EuTransit, EuPlaceOfDestinationDetail, MeatProductLineDetails } from 'src/interfaces';
 import { randomExporterReference, futureDateISO, RexState, toIdentification } from 'src/helpers';
 import { config } from 'src/config/environment';
 import { PayloadOverrides, o } from './payload-overrides';
@@ -57,6 +57,9 @@ export interface CommodityDefaults {
   treatmentCode?: string;   // e.g. 'HT' = Heat Treatment, 'MB' = Methyl Bromide
   treatmentInfo?: string;   // human-readable treatment description
   farmCode?:      string;   // farm registration code on the product line
+
+  // ── Meat-specific (optional — omit for other commodities) ──
+  meatProductLineDetails?: MeatProductLineDetails;
 }
 
 // ─── Shared base defaults (overridden per commodity) ─────────────────────────
@@ -212,6 +215,7 @@ function buildDefaultProductLines(d: CommodityDefaults, overrides: PayloadOverri
     },
     containers,
     treatments,              // plant-specific — undefined for Grain, Meat
+    meatProductLineDetails: d.meatProductLineDetails,
     batchCode:           o(d.batchCode, overrides.batchCode),
     durabilityStartDate: o(futureDateISO(d.durabilityDaysStart), overrides.durabilityStartDate),
     durabilityEndDate:   o(futureDateISO(d.durabilityDaysEnd),   overrides.durabilityEndDate),

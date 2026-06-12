@@ -173,6 +173,20 @@ function buildCommoditySpecificProductLineDetails(line: ProductLine): string {
     return elem('com1:skinsAndHidesProductLineDetails',
       optElem('skin:saltingDate', line.skinsAndHidesProductLineDetails.saltingDate));
   }
+  if (line.meatProductLineDetails) {
+    const m = line.meatProductLineDetails;
+    const additionalProducts = m.additionalProducts
+      ? elem('meat:additionalProducts',
+          m.additionalProducts.additionalProduct.map(p => `<meat:additionalProduct>${p}</meat:additionalProduct>`).join(''))
+      : '';
+    return elem('com1:meatProductLineDetails',
+      optElem('meat:halalIndicator', m.halalIndicator) +
+      optElem('meat:lineItemDescription', m.lineItemDescription) +
+      optElem('meat:dominantProduct', m.dominantProduct) +
+      additionalProducts +
+      optElem('meat:ungraded', m.ungraded) +
+      optElem('meat:chemicalLeanPercentage', m.chemicalLeanPercentage));
+  }
   // Horticulture — no commodity-specific product line section
   return '';
 }

@@ -122,6 +122,15 @@ export interface SkinsAndHidesProductLineDetails {
   saltingDate?: string;
 }
 
+export interface MeatProductLineDetails {
+  halalIndicator?:         YesNoFlag;
+  lineItemDescription?:    string;
+  dominantProduct?:        string;
+  additionalProducts?:     { additionalProduct: string[] };
+  ungraded?:               YesNoFlag;
+  chemicalLeanPercentage?: string;
+}
+
 // --- Product Source Countries ---
 
 export interface ProductSourceCountries {
@@ -153,6 +162,7 @@ export interface ProductLine {
   // Commodity-specific — mutually exclusive, omit for Horticulture
   fishProductLineDetails?: FishProductLineDetails;
   skinsAndHidesProductLineDetails?: SkinsAndHidesProductLineDetails;
+  meatProductLineDetails?: MeatProductLineDetails;
 
   freeTextEstablishments?: FreeTextEstablishments;
   natureOfCommodity?: string;
