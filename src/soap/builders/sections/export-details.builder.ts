@@ -1,6 +1,6 @@
 import { ExportDetails } from 'src/interfaces';
 import { optElem, reqElem, elem } from '../xml-utils';
-import { buildAddress, buildAddressSection } from './address.builder';
+import { buildAddressSection } from './address.builder';
 
 export function buildExportDetails(details: ExportDetails | undefined): string {
   if (!details) return '';
@@ -206,6 +206,34 @@ function buildCommoditySpecificExportDetails(details: ExportDetails): string {
       i.transportStorageMinimumTemperature
         ? optElem('ined:transportStorageMinimumTemperature', i.transportStorageMinimumTemperature.value, { unit: i.transportStorageMinimumTemperature.unit })
         : '');
+  }
+  if (details.meatExportDetails) {
+    const m = details.meatExportDetails;
+    const person = m.consignmentResponsiblePerson
+      ? elem('meat:consignmentResponsiblePerson',
+          buildAddressSection(m.consignmentResponsiblePerson.address, 'com1:address') +
+          optElem('com1:firstName', m.consignmentResponsiblePerson.firstName) +
+          optElem('com1:lastName', m.consignmentResponsiblePerson.lastName) +
+          optElem('com1:phoneNumber', m.consignmentResponsiblePerson.phoneNumber))
+      : '';
+    const authCodes = m.authoriserDeclarationCodes?.length
+      ? elem('meat:authoriserDeclarationCodes',
+          m.authoriserDeclarationCodes.map(c => optElem('meat:authoriserDeclarationCode', c)).join(''))
+      : '';
+    const amend = m.amendAndReplaceDeclarations
+      ? elem('meat:amendAndReplaceDeclarations',
+          optElem('meat:goodsLeftAustralia', m.amendAndReplaceDeclarations.goodsLeftAustralia) +
+          optElem('meat:consignmentArrivedAtDestination', m.amendAndReplaceDeclarations.consignmentArrivedAtDestination) +
+          optElem('meat:goodsClearedAtDestination', m.amendAndReplaceDeclarations.goodsClearedAtDestination) +
+          optElem('meat:officialSealsIntact', m.amendAndReplaceDeclarations.officialSealsIntact) +
+          optElem('meat:amendAndReplaceDeclarationCode', m.amendAndReplaceDeclarations.amendAndReplaceDeclarationCode))
+      : '';
+    return elem('com1:meatExportDetails',
+      optElem('meat:averageAgeOfAnimals', m.averageAgeOfAnimals) +
+      person +
+      optElem('meat:approvedCertifier', m.approvedCertifier) +
+      authCodes +
+      amend);
   }
   // Horticulture — no commodity-specific section
   return '';

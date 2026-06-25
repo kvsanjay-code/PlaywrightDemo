@@ -143,6 +143,29 @@ export interface InedibleMeatExportDetails {
   transportStorageMinimumTemperature?: { value: string; unit: string };
 }
 
+export interface MeatConsignmentResponsiblePerson {
+  address?: Address;
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+}
+
+export interface MeatAmendAndReplaceDeclarations {
+  goodsLeftAustralia?: YesNoFlag;
+  consignmentArrivedAtDestination?: YesNoFlag;
+  goodsClearedAtDestination?: YesNoFlag;
+  officialSealsIntact?: YesNoFlag;
+  amendAndReplaceDeclarationCode?: string;
+}
+
+export interface MeatExportDetails {
+  averageAgeOfAnimals?: string;
+  consignmentResponsiblePerson?: MeatConsignmentResponsiblePerson;
+  approvedCertifier?: string;
+  authoriserDeclarationCodes?: string[];
+  amendAndReplaceDeclarations?: MeatAmendAndReplaceDeclarations;
+}
+
 // --- Root Export Details ---
 
 export interface ExportDetails {
@@ -186,4 +209,5 @@ export interface ExportDetails {
   woolExportDetails?: WoolExportDetails;
   skinsAndHidesExportDetails?: SkinsAndHidesExportDetails;
   inedibleMeatExportDetails?: InedibleMeatExportDetails;
+  meatExportDetails?: MeatExportDetails;
 }
