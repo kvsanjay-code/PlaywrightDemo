@@ -133,7 +133,25 @@
 
 ---
 
-## Phase 9 — Reporting & CI Config
+## Phase 9 — Extended Services & Payload Features
+**Goal:** Add ReleaseRexToPrinter service, extend payload coverage, and add new commodity types.
+
+**Tasks:**
+- [x] Add `ReleaseRexToPrinter` service — builder, SOAP client method, workflow step (`releaseRexToPrintStep`)
+- [x] Add OSB fault parsing — `OsbFaultDetail` type and `osbFault?` field on `SoapFaultResult`
+- [x] Add `euTransit` builder (`buildDefaultEuTransit`) and `EuTransitOverrides` interface
+- [x] Add `euPlaceOfDestinationDetail` builder (`buildDefaultEuPlaceOfDestinationDetail`) and override type
+- [x] Add `consigneeAddress` to `PayloadOverrides` — override per test
+- [x] Add `plantAdditionalDeclarations` to `CertificateEntry` type and `extraCertificate` builder
+- [x] Add `meatProductLineDetails` interface, XML builder, and meat commodity defaults
+- [x] Add Dairy commodity (`test-data/commodities/dairy.ts`) with `CASEIN` product type
+- [x] Install `xml-formatter` for readable XML output in debug tests
+
+**Status:** Complete
+
+---
+
+## Phase 10 — Reporting & CI Config
 **Goal:** Polish reporting and enable environment switching via CLI.
 
 **Tasks:**

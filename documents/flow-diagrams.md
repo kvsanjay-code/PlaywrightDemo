@@ -31,7 +31,24 @@ flowchart TD
 
 ---
 
-## 2. REPLACE Hybrid Flow (Phase 9)
+## 2. ReleaseRexToPrint Flow
+
+```mermaid
+flowchart TD
+    A([Test starts]) --> B[LODGE\nget rexNumber + timestamp]
+    B --> C[Staff Portal\nauthoriseRex]
+    C --> D[READ REX\nget fresh timestamp]
+    D --> E[releaseRexToPrintStep]
+    E --> F{SoapResult}
+    F -->|success=true| G[Assert complianceStatus\npermitNumber · notices]
+    F -->|success=false| H[soapClient.releaseRexToPrint directly\nAssert osbFault or faultItems]
+    G --> I([Test passes])
+    H --> I
+```
+
+---
+
+## 3. REPLACE Hybrid Flow
 
 ```mermaid
 flowchart TD
@@ -52,7 +69,7 @@ flowchart TD
 
 ---
 
-## 3. Project Architecture
+## 4. Project Architecture
 
 ```mermaid
 flowchart LR
