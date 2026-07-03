@@ -11,13 +11,14 @@
  *   const amend  = await amendStep(soapClient, { identification: toIdentification(state), ... });
  */
 
-import { SoapClient, SoapSuccessResult, SoapResult } from '../soap';
+import { SoapClient, SoapSuccessResult, SoapResult, ParsedCustomCertLine } from '../soap';
 import {
   OrderRexPayload,
   LodgeRexPayload,
   AmendRexPayload,
   ReplaceCertificatePayload,
   ReleaseRexToPrintPayload,
+  LodgeCustomCertificatePayload,
   Identification,
 } from '../interfaces';
 
@@ -32,6 +33,16 @@ export interface RexState {
 /** Result returned by replaceStep — REPLACE response has no rexNumber/timestamp. */
 export interface ReplaceResult {
   serviceRequestId?: string;
+  notices: { noticeId: string; noticeType: string; noticeMessage: string }[];
+}
+
+/** Result returned by lodgeCustomCertificateStep. */
+export interface LodgeCustomCertificateResult {
+  customCertificateRequestId?: string;
+  complianceStatus?: string;
+  lastAmendmentTimestamp?: string;
+  exporterReference?: string;
+  customCertificateLines: ParsedCustomCertLine[];
   notices: { noticeId: string; noticeType: string; noticeMessage: string }[];
 }
 
@@ -160,6 +171,27 @@ export async function releaseRexToPrintStep(client: SoapClient, state: RexState)
     permitNumber:      result.permitNumber,
     exporterReference: result.exporterReferences,
     notices:           result.notices,
+  };
+}
+
+/**
+ * Calls CustomCertificateService.LodgeCustomCertificateDetails.
+ * Flow: LODGE (printIndicator=C) → staff portal authorise → lodgeCustomCertificateStep.
+ * productLines must include the rexNumber from the LODGE response and netQuantity from the REX.
+ */
+export async function lodgeCustomCertificateStep(
+  client: SoapClient,
+  payload: LodgeCustomCertificatePayload,
+): Promise<LodgeCustomCertificateResult> {
+  const result = await client.lodgeCustomCertificate(payload);
+  assertSuccess('LODGE_CUSTOM_CERTIFICATE', result);
+  return {
+    customCertificateRequestId: result.customCertificateRequestId,
+    complianceStatus:           result.complianceStatus,
+    lastAmendmentTimestamp:     result.lastAmendmentTimestamp,
+    exporterReference:          result.exporterReferences,
+    customCertificateLines:     result.customCertificateLines,
+    notices:                    result.notices,
   };
 }
 

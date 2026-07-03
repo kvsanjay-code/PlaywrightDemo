@@ -22,16 +22,24 @@ export interface ParsedRexLine {
   endorsementNumber?: string;
 }
 
+export interface ParsedCustomCertLine {
+  certificateLineNumber: string;
+  healthCertificateDescription?: string;
+  templateCode?: string;
+}
+
 export interface SoapSuccessResult {
   success: true;
   rexNumber?: string;
   lastAmendmentTimestamp?: string;
   complianceStatus?: string;
   exporterReferences?: string;
-  permitNumber?: string;          // present when complianceStatus = 'COMP'
-  serviceRequestId?: string;      // present in REPLACE response
+  permitNumber?: string;               // present when complianceStatus = 'COMP'
+  serviceRequestId?: string;           // present in REPLACE response
+  customCertificateRequestId?: string; // present in LodgeCustomCertificateDetails response
   notices: ParsedNotice[];
   rexLines: ParsedRexLine[];
+  customCertificateLines: ParsedCustomCertLine[];
   rawXml: string;
 }
 
@@ -133,6 +141,14 @@ function parseRexLines(xml: string): ParsedRexLine[] {
   }));
 }
 
+function parseCustomCertLines(xml: string): ParsedCustomCertLine[] {
+  return extractAll(xml, 'customCertificateLine').map(lineXml => ({
+    certificateLineNumber:        extractTag(lineXml, 'certificateLineNumber') ?? '',
+    healthCertificateDescription: extractTag(lineXml, 'healthCertificateDescription'),
+    templateCode:                 extractTag(lineXml, 'templateCode'),
+  }));
+}
+
 function parseSuccess(xml: string): SoapSuccessResult {
   // rexNumber may appear as <rexNumber>, <requestNumber>, or <REXNumber>
   const rexNumber =
@@ -149,9 +165,10 @@ function parseSuccess(xml: string): SoapSuccessResult {
     extractTag(xml, 'complianceStatus') ??
     extractTag(xml, 'complianceStaus');
 
-  const exporterReferences = extractTag(xml, 'exporterReferences') ?? extractTag(xml, 'exporterReference');
-  const permitNumber       = extractTag(xml, 'permitNumber');
-  const serviceRequestId   = extractTag(xml, 'ServiceRequestId');
+  const exporterReferences         = extractTag(xml, 'exporterReferences') ?? extractTag(xml, 'exporterReference');
+  const permitNumber               = extractTag(xml, 'permitNumber');
+  const serviceRequestId           = extractTag(xml, 'ServiceRequestId');
+  const customCertificateRequestId = extractTag(xml, 'customCertificateRequestId');
 
   return {
     success: true,
@@ -161,8 +178,10 @@ function parseSuccess(xml: string): SoapSuccessResult {
     exporterReferences,
     permitNumber,
     serviceRequestId,
-    notices:  parseNotices(xml),
-    rexLines: parseRexLines(xml),
+    customCertificateRequestId,
+    notices:                parseNotices(xml),
+    rexLines:               parseRexLines(xml),
+    customCertificateLines: parseCustomCertLines(xml),
     rawXml: xml,
   };
 }

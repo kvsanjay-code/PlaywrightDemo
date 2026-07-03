@@ -17,6 +17,7 @@ export interface EnvironmentConfig {
   rexSubmissionServiceUrl: string;
   rexCertificateServiceUrl: string;
   readRexServiceUrl: string;
+  customCertificateServiceUrl: string;
 
   // Staff portal
   staffPortalUrl: string;
@@ -41,9 +42,10 @@ function loadConfig(): EnvironmentConfig {
     clientToken:              requireEnv('CLIENT_TOKEN'),
     soapUsername:             requireEnv('SOAP_USERNAME'),
     soapPassword:             requireEnv('SOAP_PASSWORD'),
-    rexSubmissionServiceUrl:  requireEnv('REX_SUBMISSION_SERVICE_URL'),
-    rexCertificateServiceUrl: requireEnv('REX_CERTIFICATE_SERVICE_URL'),
-    readRexServiceUrl:        requireEnv('READ_REX_SERVICE_URL'),
+    rexSubmissionServiceUrl:     requireEnv('REX_SUBMISSION_SERVICE_URL'),
+    rexCertificateServiceUrl:    requireEnv('REX_CERTIFICATE_SERVICE_URL'),
+    readRexServiceUrl:           requireEnv('READ_REX_SERVICE_URL'),
+    customCertificateServiceUrl: requireEnv('CUSTOM_CERTIFICATE_SERVICE_URL'),
     staffPortalUrl:                    requireEnv('STAFF_PORTAL_URL'),
     staffUsername:                     requireEnv('STAFF_USERNAME'),
     staffPassword:                     requireEnv('STAFF_PASSWORD'),

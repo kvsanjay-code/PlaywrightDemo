@@ -4,3 +4,4 @@ export { buildAmendRexPayload } from './amend-rex.builder';
 export { buildReplaceCertificatePayload } from './replace-certificate.builder';
 export { buildReadRexPayload } from './read-rex.builder';
 export { buildReleaseRexToPrintPayload } from './release-rex-to-print.builder';
+export { buildLodgeCustomCertificatePayload } from './lodge-custom-certificate.builder';
