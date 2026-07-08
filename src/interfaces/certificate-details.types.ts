@@ -4,6 +4,7 @@ export enum PrintIndicator {
   Auto   = 'A',
   Manual = 'M',
   None   = 'N',
+  Custom = 'C',   // CustomCertificateService flow
 }
 
 export type CertificatePrintIndicator = PrintIndicator;
