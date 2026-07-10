@@ -72,3 +72,8 @@ export interface LodgeCustomCertificatePayload {
   productLines: CustomCertificateProductLine[];
   exporterDeclarationCode: string;
 }
+
+export interface ReleaseCustomCertificateToPrintPayload {
+  customCertificateRequestId: string;
+  lastAmendDateTime: string;
+}

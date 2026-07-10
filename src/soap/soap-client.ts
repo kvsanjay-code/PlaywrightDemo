@@ -8,6 +8,7 @@ import {
   ReadRexPayload,
   ReleaseRexToPrintPayload,
   LodgeCustomCertificatePayload,
+  ReleaseCustomCertificateToPrintPayload,
 } from '../interfaces';
 import {
   buildOrderRexPayload,
@@ -17,6 +18,7 @@ import {
   buildReadRexPayload,
   buildReleaseRexToPrintPayload,
   buildLodgeCustomCertificatePayload,
+  buildReleaseCustomCertificateToPrintPayload,
 } from './builders';
 import { parseSoapResponse, parseReadRexResponse, SoapResult } from './response-parser';
 
@@ -29,7 +31,8 @@ const SOAP_ACTIONS = {
   replaceCertificate: 'http://agriculture.gov.au/nexdoc/RexCertificateSoap_1.0/ReplaceCertificate',
   readRex:               'http://agriculture.gov.au/nexdoc/ReadRexSoap_1.0/ReadRex',
   releaseRexToPrint:          'http://agriculture.gov.au/nexdoc/LodgeRexSoap_1.0/ReleaseRexToPrinter',
-  lodgeCustomCertificate:     'http://agriculture.gov.au/nexdoc/CustomCertificateSoap_1.0/LodgeCustomCertificateDetails',
+  lodgeCustomCertificate:              'http://agriculture.gov.au/nexdoc/CustomCertificateSoap_1.0/LodgeCustomCertificateDetails',
+  releaseCustomCertificateToPrint:     'http://agriculture.gov.au/nexdoc/CustomCertificateSoap_1.0/ReleaseCustomCertificateToPrint',
 } as const;
 
 // ─── SoapClient ───────────────────────────────────────────────────────────────
@@ -85,6 +88,11 @@ export class SoapClient {
   async lodgeCustomCertificate(payload: LodgeCustomCertificatePayload): Promise<SoapResult> {
     const xml = buildLodgeCustomCertificatePayload(payload, this.header);
     return this.send(this.config.customCertificateServiceUrl, SOAP_ACTIONS.lodgeCustomCertificate, xml);
+  }
+
+  async releaseCustomCertificateToPrint(payload: ReleaseCustomCertificateToPrintPayload): Promise<SoapResult> {
+    const xml = buildReleaseCustomCertificateToPrintPayload(payload, this.header);
+    return this.send(this.config.customCertificateServiceUrl, SOAP_ACTIONS.releaseCustomCertificateToPrint, xml);
   }
 
   async readRex(payload: ReadRexPayload): Promise<SoapResult> {

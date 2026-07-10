@@ -19,6 +19,7 @@ import {
   ReplaceCertificatePayload,
   ReleaseRexToPrintPayload,
   LodgeCustomCertificatePayload,
+  ReleaseCustomCertificateToPrintPayload,
   Identification,
 } from '../interfaces';
 
@@ -43,6 +44,15 @@ export interface LodgeCustomCertificateResult {
   lastAmendmentTimestamp?: string;
   exporterReference?: string;
   customCertificateLines: ParsedCustomCertLine[];
+  notices: { noticeId: string; noticeType: string; noticeMessage: string }[];
+}
+
+/** Result returned by releaseCustomCertificateToPrintStep. */
+export interface ReleaseCustomCertificateToPrintResult {
+  customCertificateRequestId?: string;
+  complianceStatus?: string;
+  permitNumber?: string;
+  lastAmendmentTimestamp?: string;
   notices: { noticeId: string; noticeType: string; noticeMessage: string }[];
 }
 
@@ -175,6 +185,17 @@ export async function releaseRexToPrintStep(client: SoapClient, state: RexState)
 }
 
 /**
+ * Converts a LodgeCustomCertificateResult into the identification payload required by
+ * ReleaseCustomCertificateToPrint. Maps lastAmendmentTimestamp → lastAmendDateTime.
+ */
+export function toCustomCertIdentification(result: LodgeCustomCertificateResult): ReleaseCustomCertificateToPrintPayload {
+  return {
+    customCertificateRequestId: requireField('toCustomCertIdentification', 'customCertificateRequestId', result.customCertificateRequestId),
+    lastAmendDateTime:          requireField('toCustomCertIdentification', 'lastAmendmentTimestamp',     result.lastAmendmentTimestamp),
+  };
+}
+
+/**
  * Calls CustomCertificateService.LodgeCustomCertificateDetails.
  * Flow: LODGE (printIndicator=C) → staff portal authorise → lodgeCustomCertificateStep.
  * productLines must include the rexNumber from the LODGE response and netQuantity from the REX.
@@ -191,6 +212,26 @@ export async function lodgeCustomCertificateStep(
     lastAmendmentTimestamp:     result.lastAmendmentTimestamp,
     exporterReference:          result.exporterReferences,
     customCertificateLines:     result.customCertificateLines,
+    notices:                    result.notices,
+  };
+}
+
+/**
+ * Calls CustomCertificateService.ReleaseCustomCertificateToPrint.
+ * Must be called after lodgeCustomCertificateStep — pass toCustomCertIdentification(certResult)
+ * to build the payload from the lodge response.
+ */
+export async function releaseCustomCertificateToPrintStep(
+  client: SoapClient,
+  payload: ReleaseCustomCertificateToPrintPayload,
+): Promise<ReleaseCustomCertificateToPrintResult> {
+  const result = await client.releaseCustomCertificateToPrint(payload);
+  assertSuccess('RELEASE_CUSTOM_CERTIFICATE_TO_PRINT', result);
+  return {
+    customCertificateRequestId: result.customCertificateRequestId,
+    complianceStatus:           result.complianceStatus,
+    permitNumber:               result.permitNumber,
+    lastAmendmentTimestamp:     result.lastAmendmentTimestamp,
     notices:                    result.notices,
   };
 }

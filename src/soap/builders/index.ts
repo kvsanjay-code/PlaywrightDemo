@@ -5,3 +5,4 @@ export { buildReplaceCertificatePayload } from './replace-certificate.builder';
 export { buildReadRexPayload } from './read-rex.builder';
 export { buildReleaseRexToPrintPayload } from './release-rex-to-print.builder';
 export { buildLodgeCustomCertificatePayload } from './lodge-custom-certificate.builder';
+export { buildReleaseCustomCertificateToPrintPayload } from './release-custom-certificate-to-print.builder';

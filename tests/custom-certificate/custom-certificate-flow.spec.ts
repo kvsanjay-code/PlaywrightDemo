@@ -7,7 +7,7 @@
  */
 
 import { test, expect } from 'src/fixtures';
-import { lodgeStep, lodgeCustomCertificateStep } from 'src/helpers';
+import { lodgeStep, lodgeCustomCertificateStep, releaseCustomCertificateToPrintStep, toCustomCertIdentification } from 'src/helpers';
 import { buildDefaultLodgePayload } from 'test-data/commodities/horticulture';
 import { buildDefaultLodgeCustomCertificatePayload } from 'test-data/custom-certificate-defaults';
 import { PrintIndicator } from 'src/interfaces';
@@ -107,4 +107,48 @@ test('TC-CC03 — empty consigneeName triggers OSB-382505 schema validation faul
     expect(result.osbFault?.errorCode, 'OSB error code should be OSB-382505').toBe('OSB-382505');
     console.log('OSB fault:', result.osbFault);
   }
+});
+
+// ─── TC-CC04: Capture customCertificateRequestId and lastAmendmentTimestamp ───
+
+test('TC-CC04 — LODGE (C) → authorise → capture requestId and timestamp', async ({
+  soapClient,
+  authoriseRex,
+}) => {
+  // Step 1 — Lodge horticulture REX with print indicator C
+  const lodgeState = await lodgeStep(
+    soapClient,
+    buildDefaultLodgePayload({ printIndicator: PrintIndicator.Custom }),
+  );
+  console.log('LODGE complete:', lodgeState);
+
+  // Step 2 — Staff Portal: login → search → inspect → authorise
+  await authoriseRex(lodgeState.rexNumber, {
+    authoriseComments: 'Authorised — TC-CC04',
+  });
+  console.log('REX authorised:', lodgeState.rexNumber);
+
+  // Step 3 — Lodge CustomCertificate and capture response identifiers
+  const certResult = await lodgeCustomCertificateStep(
+    soapClient,
+    buildDefaultLodgeCustomCertificatePayload(lodgeState.rexNumber),
+  );
+
+  const { customCertificateRequestId, lastAmendmentTimestamp } = certResult;
+  console.log('CustomCertificateRequestId:', customCertificateRequestId);
+  console.log('LastAmendmentTimestamp:    ', lastAmendmentTimestamp);
+
+  expect(customCertificateRequestId, 'customCertificateRequestId should be present').toBeTruthy();
+  expect(lastAmendmentTimestamp,     'lastAmendmentTimestamp should be present').toBeTruthy();
+
+  // Step 4 — Release CustomCertificate to print
+  const releaseResult = await releaseCustomCertificateToPrintStep(
+    soapClient,
+    toCustomCertIdentification(certResult),
+  );
+  console.log('ReleaseCustomCertificateToPrint complete:', releaseResult);
+
+  // Assertions
+  expect(releaseResult.complianceStatus, 'Compliance status should be COMP').toBe('COMP');
+  expect(releaseResult.permitNumber,     'Permit number should be present').toBeTruthy();
 });
