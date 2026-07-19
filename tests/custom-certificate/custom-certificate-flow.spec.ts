@@ -9,7 +9,7 @@
 import { test, expect } from 'src/fixtures';
 import { lodgeStep, lodgeCustomCertificateStep, releaseCustomCertificateToPrintStep, toCustomCertIdentification } from 'src/helpers';
 import { buildDefaultLodgePayload } from 'test-data/commodities/horticulture';
-import { buildDefaultLodgeCustomCertificatePayload } from 'test-data/custom-certificate-defaults';
+import { buildDefaultLodgeCustomCertificatePayload, DEFAULTS } from 'test-data/custom-certificate-defaults';
 import { PrintIndicator } from 'src/interfaces';
 
 // ─── TC-CC01: Full CustomCertificate flow — happy path ──────────────────────────
@@ -151,4 +151,57 @@ test('TC-CC04 — LODGE (C) → authorise → capture requestId and timestamp', 
   // Assertions
   expect(releaseResult.complianceStatus, 'Compliance status should be COMP').toBe('COMP');
   expect(releaseResult.permitNumber,     'Permit number should be present').toBeTruthy();
+});
+
+// ─── TC-CC05: Two REX → single CustomCertificate request with two product lines ─
+
+test('TC-CC05 — two authorised REX → LodgeCustomCertificateDetails with two product lines', async ({
+  soapClient,
+  authoriseRex,
+}) => {
+  // Step 1 — Lodge two horticulture REX records
+  const lodgeState1 = await lodgeStep(
+    soapClient,
+    buildDefaultLodgePayload({ printIndicator: PrintIndicator.Custom }),
+  );
+  console.log('LODGE 1 complete:', lodgeState1);
+
+  const lodgeState2 = await lodgeStep(
+    soapClient,
+    buildDefaultLodgePayload({ printIndicator: PrintIndicator.Custom }),
+  );
+  console.log('LODGE 2 complete:', lodgeState2);
+
+  // Step 2 — Authorise both REX records
+  await authoriseRex(lodgeState1.rexNumber, { authoriseComments: 'Authorised — TC-CC05 REX 1' });
+  console.log('REX 1 authorised:', lodgeState1.rexNumber);
+
+  await authoriseRex(lodgeState2.rexNumber, { authoriseComments: 'Authorised — TC-CC05 REX 2' });
+  console.log('REX 2 authorised:', lodgeState2.rexNumber);
+
+  // Step 3 — Lodge CustomCertificate with both REX numbers as separate product lines
+  const certResult = await lodgeCustomCertificateStep(
+    soapClient,
+    buildDefaultLodgeCustomCertificatePayload(lodgeState1.rexNumber, {
+      additionalProductLines: [
+        {
+          requestLineNumber:     '2',
+          rexNumber:             lodgeState2.rexNumber,
+          rexProductLineNumber:  '1',
+          certificateLineNumber: '2',
+          productDetails: {
+            netQuantity:          { value: DEFAULTS.netQuantityValue, unit: DEFAULTS.netQuantityUnit },
+            outerPackageQuantity: { value: DEFAULTS.outerPackageQty,  packageType: DEFAULTS.outerPackageType },
+          },
+        },
+      ],
+    }),
+  );
+  console.log('LodgeCustomCertificate complete:', certResult);
+
+  // Assertions
+  expect(certResult.customCertificateRequestId, 'Should return a customCertificateRequestId').toBeTruthy();
+  expect(certResult.customCertificateLines.length, 'Should return two certificate lines').toBe(2);
+  console.log('CustomCertificateRequestId:', certResult.customCertificateRequestId);
+  console.log('CertificateLines:', certResult.customCertificateLines);
 });

@@ -13,6 +13,7 @@ import {
   LodgeCustomCertificatePayload,
   CustomCertificateImportPermit,
   CustomCertificateContainer,
+  CustomCertificateProductLine,
   PrintIndicator,
 } from 'src/interfaces';
 import { futureDateISO, randomExporterReference } from 'src/helpers';
@@ -88,6 +89,9 @@ export interface CustomCertificateOverrides {
 
   // Declaration
   exporterDeclarationCode?:    Nullable<string>;
+
+  // Additional product lines (appended after the default line 1; use when covering multiple REX numbers)
+  additionalProductLines?:     CustomCertificateProductLine[];
 }
 
 // ─── Builder ──────────────────────────────────────────────────────────────────
@@ -138,9 +142,9 @@ export function buildDefaultLodgeCustomCertificatePayload(
 
     productLines: [
       {
-        requestLineNumber:    '1',
+        requestLineNumber:     '1',
         rexNumber,
-        rexProductLineNumber: o(D.rexProductLineNumber, overrides.rexProductLineNumber)!,
+        rexProductLineNumber:  o(D.rexProductLineNumber,  overrides.rexProductLineNumber)!,
         certificateLineNumber: o(D.certificateLineNumber, overrides.certificateLineNumber)!,
         productDetails: {
           netQuantity:          { value: o(D.netQuantityValue, overrides.netQuantityValue)!, unit: o(D.netQuantityUnit, overrides.netQuantityUnit)! },
@@ -148,6 +152,7 @@ export function buildDefaultLodgeCustomCertificatePayload(
         },
         containers: overrides.containers,
       },
+      ...(overrides.additionalProductLines ?? []),
     ],
 
     exporterDeclarationCode: o(D.exporterDeclarationCode, overrides.exporterDeclarationCode)!,
