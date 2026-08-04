@@ -119,6 +119,9 @@ function buildDefaultExportDetails(d: CommodityDefaults, overrides: PayloadOverr
 
     loadingPorts:   { loadingPort:   [o(d.loadingPort,   overrides.loadingPort)!] },
     dischargePorts: { dischargePort: [o(d.dischargePort, overrides.dischargePort)!] },
+    transitCountries: overrides.transitCountry
+      ? { transitCountry: [overrides.transitCountry] }
+      : undefined,
 
     importedProductFlag:                            'N',
     manufacturedTreatedPackagedLabelledInAustralia: 'Y',

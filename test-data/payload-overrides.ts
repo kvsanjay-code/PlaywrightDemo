@@ -34,6 +34,7 @@ export interface PayloadOverrides {
   shippingCompany?:    Nullable<string>;
   loadingPort?:        Nullable<string>;
   dischargePort?:      Nullable<string>;
+  transitCountry?:     Nullable<string>;
   euPlaceOfDestinationDetail?: EuPlaceOfDestinationDetail;
   // Product line
   productType?:        Nullable<string>;
