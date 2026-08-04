@@ -46,4 +46,14 @@ export class LoginPage {
     await this.loginButton().click();
     await this.page.waitForURL(`${this.baseUrl}/**`, { waitUntil: 'networkidle' });
   }
+
+  async loginIfNeeded(username: string, password: string): Promise<void> {
+    await this.navigate();
+    const isLoginForm = await this.usernameField().isVisible({ timeout: 3000 }).catch(() => false);
+    if (!isLoginForm) return;
+    await this.usernameField().fill(username);
+    await this.passwordField().fill(password);
+    await this.loginButton().click();
+    await this.page.waitForURL(`${this.baseUrl}/**`, { waitUntil: 'networkidle' });
+  }
 }

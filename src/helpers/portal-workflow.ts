@@ -36,7 +36,7 @@ export function createAuthoriseRex(
 
     const comments = options.authoriseComments ?? 'Authorised via automated test';
 
-    await loginPage.login(config.staffUsername, config.staffPassword);
+    await loginPage.loginIfNeeded(config.staffUsername, config.staffPassword);
     await rexSearchPage.searchByRexNumber(rexNumber);
     await rexDetailPage.inspectAndAuthorise(inspection, comments);
   };
