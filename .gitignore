@@ -11,3 +11,6 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# TypeScript compiler output — not used, tests run directly from .ts
+/dist/

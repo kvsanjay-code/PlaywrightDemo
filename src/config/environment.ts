@@ -18,6 +18,7 @@ export interface EnvironmentConfig {
   rexCertificateServiceUrl: string;
   readRexServiceUrl: string;
   customCertificateServiceUrl: string;
+  readCertificateServiceUrl: string;
 
   // Staff portal
   staffPortalUrl: string;
@@ -46,6 +47,7 @@ function loadConfig(): EnvironmentConfig {
     rexCertificateServiceUrl:    requireEnv('REX_CERTIFICATE_SERVICE_URL'),
     readRexServiceUrl:           requireEnv('READ_REX_SERVICE_URL'),
     customCertificateServiceUrl: requireEnv('CUSTOM_CERTIFICATE_SERVICE_URL'),
+    readCertificateServiceUrl:  requireEnv('READ_CERTIFICATE_SERVICE_URL'),
     staffPortalUrl:                    requireEnv('STAFF_PORTAL_URL'),
     staffUsername:                     requireEnv('STAFF_USERNAME'),
     staffPassword:                     requireEnv('STAFF_PASSWORD'),

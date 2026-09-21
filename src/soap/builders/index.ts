@@ -3,6 +3,7 @@ export { buildLodgeRexPayload } from './lodge-rex.builder';
 export { buildAmendRexPayload } from './amend-rex.builder';
 export { buildReplaceCertificatePayload } from './replace-certificate.builder';
 export { buildReadRexPayload } from './read-rex.builder';
+export { buildReadCertificatePayload } from './read-certificate.builder';
 export { buildReleaseRexToPrintPayload } from './release-rex-to-print.builder';
 export { buildLodgeCustomCertificatePayload } from './lodge-custom-certificate.builder';
 export { buildReleaseCustomCertificateToPrintPayload } from './release-custom-certificate-to-print.builder';
