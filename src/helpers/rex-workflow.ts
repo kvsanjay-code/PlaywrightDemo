@@ -58,11 +58,12 @@ export interface ReleaseCustomCertificateToPrintResult {
 
 /** Result returned by readCertificateStep. */
 export interface ReadCertificateResult {
-  rexNumber?:        string;
-  complianceStatus?: string;
-  permitNumber?:     string;
-  notices:           { noticeId: string; noticeType: string; noticeMessage: string }[];
-  rawXml:            string;
+  rexNumber?:          string;
+  complianceStatus?:   string;
+  permitNumber?:       string;
+  certificateNumber?:  string;
+  notices:             { noticeId: string; noticeType: string; noticeMessage: string }[];
+  rawXml:              string;
 }
 
 /** Result returned by releaseRexToPrintStep. */
@@ -168,11 +169,12 @@ export async function readCertificateStep(client: SoapClient, rexNumber: string)
   const result = await client.readCertificate({ rexNumber });
   assertSuccess('READ_CERTIFICATE', result);
   return {
-    rexNumber:        result.rexNumber,
-    complianceStatus: result.complianceStatus,
-    permitNumber:     result.permitNumber,
-    notices:          result.notices,
-    rawXml:           result.rawXml,
+    rexNumber:         result.rexNumber,
+    complianceStatus:  result.complianceStatus,
+    permitNumber:      result.permitNumber,
+    certificateNumber: result.certificateNumber,
+    notices:           result.notices,
+    rawXml:            result.rawXml,
   };
 }
 

@@ -1,32 +1,25 @@
 /**
  * login.page.ts
  *
- * Page Object for the Staff Portal login page.
- * Handles SIT and SIT2 login form variants.
+ * Page Object for the eCert login page.
  */
 
 import { Page, Locator } from '@playwright/test';
-import { Environment } from '../../config/environment';
 
-export class LoginPage {
+export class ECertLoginPage {
   constructor(
     private readonly page: Page,
     private readonly baseUrl: string,
-    private readonly env: Environment,
   ) {}
 
   // ── Locators ────────────────────────────────────────────────────────────────
 
-  private usernameField(): Locator {
-    return this.env === 'sit2'
-      ? this.page.getByRole('textbox', { name: 'Email or Client ID' })
-      : this.page.getByLabel('Username');
+  private loginField(): Locator {
+    return this.page.getByLabel('Login');
   }
 
   private passwordField(): Locator {
-    return this.env === 'sit2'
-      ? this.page.getByRole('textbox', { name: 'password' })
-      : this.page.getByLabel('Password');
+    return this.page.getByLabel('Password');
   }
 
   private loginButton(): Locator {
@@ -41,7 +34,7 @@ export class LoginPage {
 
   async login(username: string, password: string): Promise<void> {
     await this.navigate();
-    await this.usernameField().fill(username);
+    await this.loginField().fill(username);
     await this.passwordField().fill(password);
     await this.loginButton().click();
     await this.page.waitForURL(`${this.baseUrl}/**`);
@@ -49,9 +42,9 @@ export class LoginPage {
 
   async loginIfNeeded(username: string, password: string): Promise<void> {
     await this.navigate();
-    const isLoginForm = await this.usernameField().isVisible({ timeout: 3000 }).catch(() => false);
+    const isLoginForm = await this.loginField().isVisible({ timeout: 3000 }).catch(() => false);
     if (!isLoginForm) return;
-    await this.usernameField().fill(username);
+    await this.loginField().fill(username);
     await this.passwordField().fill(password);
     await this.loginButton().click();
     await this.page.waitForURL(`${this.baseUrl}/**`);

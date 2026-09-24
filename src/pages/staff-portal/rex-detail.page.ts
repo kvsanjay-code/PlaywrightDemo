@@ -76,7 +76,7 @@ export class RexDetailPage {
 
   async addInspectionDetails(details: InspectionDetails): Promise<void> {
     await this.addInspectionLink().click();
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState('domcontentloaded');
 
     await this.startDateField().fill(details.startDate);
     await this.endDateField().fill(details.endDate);
@@ -90,16 +90,16 @@ export class RexDetailPage {
     }
 
     await this.saveButton().click();
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState('domcontentloaded');
   }
 
   async authorise(comments: string): Promise<void> {
     await this.authoriseLink().click();
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState('domcontentloaded');
 
     await this.commentsField().fill(comments);
     await this.submitButton().click();
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState('domcontentloaded');
   }
 
   async inspectAndAuthorise(details: InspectionDetails, comments: string): Promise<void> {

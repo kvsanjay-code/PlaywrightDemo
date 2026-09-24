@@ -25,6 +25,11 @@ export interface EnvironmentConfig {
   staffUsername: string;
   staffPassword: string;
 
+  // eCert portal
+  ecertUrl: string;
+  ecertUsername: string;
+  ecertPassword: string;
+
   // Payload identifiers
   ownerExporterId:                   string;
   certificateRequiredClientGroup:    string;
@@ -51,6 +56,9 @@ function loadConfig(): EnvironmentConfig {
     staffPortalUrl:                    requireEnv('STAFF_PORTAL_URL'),
     staffUsername:                     requireEnv('STAFF_USERNAME'),
     staffPassword:                     requireEnv('STAFF_PASSWORD'),
+    ecertUrl:                          requireEnv('ECERT_URL'),
+    ecertUsername:                     requireEnv('ECERT_USERNAME'),
+    ecertPassword:                     requireEnv('ECERT_PASSWORD'),
     ownerExporterId:                   requireEnv('OWNER_EXPORTER_ID'),
     certificateRequiredClientGroup:    requireEnv('CERTIFICATE_REQUIRED_CLIENT_GROUP'),
   };

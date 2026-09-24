@@ -1,35 +1,30 @@
 /**
- * rex-search.page.ts
+ * certificate-search.page.ts
  *
- * Page Object for the REX search / home page.
- * Allows searching for a REX record by number and navigating to its detail view.
+ * Page Object for the eCert certificate search page.
+ * Searches for a certificate by its certificate number and opens its details.
  */
 
 import { Page, Locator } from '@playwright/test';
 
-export class RexSearchPage {
+export class ECertSearchPage {
   constructor(private readonly page: Page) {}
 
   // ── Locators ────────────────────────────────────────────────────────────────
 
-  private rexNumberInput(): Locator {
-    return this.page.getByLabel('REX Number');
+  private certificateNumberInput(): Locator {
+    return this.page.getByLabel('Certificate Number');
   }
 
   private searchButton(): Locator {
     return this.page.getByRole('button', { name: 'Search' });
   }
 
-  private rexLink(rexNumber: string): Locator {
-    return this.page.getByRole('link', { name: rexNumber });
-  }
-
   // ── Actions ─────────────────────────────────────────────────────────────────
 
-  async searchByRexNumber(rexNumber: string): Promise<void> {
-    await this.rexNumberInput().fill(rexNumber);
+  async searchByCertificateNumber(certificateNumber: string): Promise<void> {
+    await this.certificateNumberInput().fill(certificateNumber);
     await this.searchButton().click();
-    await this.rexLink(rexNumber).click();
     await this.page.waitForLoadState('domcontentloaded');
   }
 }
