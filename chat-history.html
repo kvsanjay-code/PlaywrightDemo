@@ -1017,5 +1017,28 @@ Asked clarifying questions on TC12-14 product/destination and whether TC15/16 ar
     </div>
 
   </div>
+
+  <div class="session">
+    <div class="session-date">Session: OSB fault detail + ReadCertificateResult trim (2026-09-24)</div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">what if invalid response and certificatenumber is not reveived when OSB error or any other error</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Explained the two existing guards in readCertificateStep (assertSuccess throws on any SOAP fault before certificateNumber extraction; requireField throws if a nominally-successful response still lacks certificateNumber), so it can never come back undefined. Found and fixed a real gap: assertSuccess's thrown error only included faultCode/faultString/faultItems, silently dropping osbFault (errorCode/reason/ValidationFailureDetail messages) for OSB-382505-style errors — now appended to the error message for every workflow step that uses assertSuccess, not just ReadCertificate.</div>
+    </div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">readCertificateStep is only expected to return certificateNumber any error messages and raw xml</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Confirmed via grep that nothing reads .rexNumber/.complianceStatus/.permitNumber off a ReadCertificateResult anywhere in the codebase, then trimmed the interface down to exactly certificateNumber, notices, and rawXml. readCertificateStep still takes rexNumber as a parameter (needed for the request) but no longer echoes it back in the result. tsc --noEmit confirmed clean, no other call sites broke.</div>
+    </div>
+
+  </div>
 </body>
 </html>

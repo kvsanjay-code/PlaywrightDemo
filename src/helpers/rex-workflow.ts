@@ -58,14 +58,10 @@ export interface ReleaseCustomCertificateToPrintResult {
 
 /** Result returned by readCertificateStep. */
 export interface ReadCertificateResult {
-  /** The rexNumber the certificate was requested for — the service itself doesn't echo it back. */
-  rexNumber:           string;
-  complianceStatus?:   string;
-  permitNumber?:       string;
   /** e.g. AU001100110011 — required to look up the certificate in the eCert portal. */
-  certificateNumber:   string;
-  notices:             { noticeId: string; noticeType: string; noticeMessage: string }[];
-  rawXml:              string;
+  certificateNumber: string;
+  notices:           { noticeId: string; noticeType: string; noticeMessage: string }[];
+  rawXml:            string;
 }
 
 /** Result returned by releaseRexToPrintStep. */
@@ -85,10 +81,14 @@ export interface ReleaseRexToPrintResult {
  */
 function assertSuccess(operation: string, result: SoapResult): asserts result is SoapSuccessResult {
   if (!result.success) {
-    const errors = result.faultItems.length
+    const faultItemLines = result.faultItems.length
       ? '\n  ' + result.faultItems.map(e => `[${e.faultCode}] ${e.faultMessage} (${e.faultReason})`).join('\n  ')
       : '';
-    throw new Error(`${operation} SOAP fault — [${result.faultCode}] ${result.faultString}${errors}`);
+    const osbLines = result.osbFault
+      ? `\n  OSB [${result.osbFault.errorCode}] ${result.osbFault.reason}` +
+        (result.osbFault.messages.length ? '\n    ' + result.osbFault.messages.join('\n    ') : '')
+      : '';
+    throw new Error(`${operation} SOAP fault — [${result.faultCode}] ${result.faultString}${faultItemLines}${osbLines}`);
   }
 }
 
@@ -165,18 +165,14 @@ export async function readRexStep(client: SoapClient, rexNumber: string): Promis
 }
 
 /**
- * Calls ReadCertificateService.ReadCertificate to fetch certificate details for a REX number.
- * The response itself doesn't echo back rexNumber, so we carry through the value it was
- * requested with; certificateNumber is required since it's this step's whole purpose —
- * looking up the certificate in the eCert portal depends on it.
+ * Calls ReadCertificateService.ReadCertificate to fetch the certificate number for a REX number.
+ * certificateNumber is required since it's this step's whole purpose — looking up the
+ * certificate in the eCert portal depends on it.
  */
 export async function readCertificateStep(client: SoapClient, rexNumber: string): Promise<ReadCertificateResult> {
   const result = await client.readCertificate({ rexNumber });
   assertSuccess('READ_CERTIFICATE', result);
   return {
-    rexNumber,
-    complianceStatus:  result.complianceStatus,
-    permitNumber:      result.permitNumber,
     certificateNumber: requireField('READ_CERTIFICATE', 'certificateNumber', result.certificateNumber),
     notices:           result.notices,
     rawXml:            result.rawXml,
