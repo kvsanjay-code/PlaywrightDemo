@@ -944,5 +944,37 @@ Asked clarifying questions on TC12-14 product/destination and whether TC15/16 ar
     </div>
 
   </div>
+
+  <div class="session">
+    <div class="session-date">Session: Fix eCert login wait + timeouts (2026-09-24)</div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">await this.page.waitForURL(`${this.baseUrl}/**`); in login page is not working as baseurl is not the url we get after login. i suggest we should wait for searchCertificatesLink() to load in home.page.ts</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Removed the broken waitForURL() from ECertLoginPage.login()/loginIfNeeded() — it no longer asserts anything about the destination URL. Added a public ECertHomePage.waitForLoad() that waits for searchCertificatesLink() to become visible, called from ecert-workflow.ts's createDownloadCertificateXml() right after loginIfNeeded() and before goToSearch(), keeping the login→home coupling in the workflow layer rather than inside LoginPage itself.</div>
+    </div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">how long it will wait before it fail — [pasted waitForLoad() snippet]</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Explained that with no explicit timeout on waitFor() and no use.actionTimeout configured, the wait is bounded by the overall test timeout (playwright.config.ts timeout: 60_000 at the time), not a separate fixed action timeout — so it competes with everything else the test does for that budget.</div>
+    </div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">I want it to wait max 30 seconds and test timeout as a project setting for 4 mins</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Added timeout: 30_000 to ECertHomePage.waitForLoad()'s waitFor() call, and changed playwright.config.ts's global timeout from 60_000 to 240_000 (4 minutes). tsc --noEmit confirmed clean.</div>
+    </div>
+
+  </div>
 </body>
 </html>

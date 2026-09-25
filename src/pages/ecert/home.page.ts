@@ -18,6 +18,11 @@ export class ECertHomePage {
 
   // ── Actions ─────────────────────────────────────────────────────────────────
 
+  /** Confirms the home page has loaded — used to detect a successful login. */
+  async waitForLoad(): Promise<void> {
+    await this.searchCertificatesLink().waitFor({ state: 'visible', timeout: 30_000 });
+  }
+
   async goToSearch(): Promise<void> {
     await this.searchCertificatesLink().click();
     await this.page.waitForLoadState('domcontentloaded');

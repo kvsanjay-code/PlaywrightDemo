@@ -16,6 +16,8 @@ export type DownloadCertificateXmlFn = (certificateNumber: string) => Promise<Do
  * Called once in the fixture — tests just use downloadCertificateXml(certificateNumber).
  *
  * Flow: login (if needed) -> home -> search by certificate number -> download XML.
+ * Waits on homePage.waitForLoad() rather than a login-page URL match, since the
+ * eCert portal doesn't redirect back to a URL under its own baseUrl after login.
  */
 export function createDownloadCertificateXml(
   loginPage: ECertLoginPage,
@@ -25,6 +27,7 @@ export function createDownloadCertificateXml(
 ): DownloadCertificateXmlFn {
   return async (certificateNumber: string) => {
     await loginPage.loginIfNeeded(config.ecertUsername, config.ecertPassword);
+    await homePage.waitForLoad();
     await homePage.goToSearch();
     await searchPage.searchByCertificateNumber(certificateNumber);
     return detailsPage.downloadCertificateXml();
