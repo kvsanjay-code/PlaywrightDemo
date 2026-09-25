@@ -31,7 +31,9 @@ test('TC-RC01 — LODGE -> authorise -> ReadCertificate returns certificate deta
   console.log('ReadCertificate complete:', certificate);
 
   // Assertions
-  expect(certificate.rexNumber, 'Should return the same rexNumber requested').toBe(lodgeState.rexNumber);
+  // Note: ReadCertificateService doesn't echo rexNumber back — readCertificateStep carries
+  // through the value it was requested with, so asserting equality here wouldn't test anything.
+  expect(certificate.certificateNumber, 'Should return an AU-prefixed certificate number').toMatch(/^AU\d+$/);
 });
 
 // ─── TC-RC02: ReadCertificate for an unknown REX number returns a fault ────────

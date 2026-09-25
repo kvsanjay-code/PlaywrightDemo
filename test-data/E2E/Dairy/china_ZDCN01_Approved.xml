@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<certificates>
+	<certificate no="{B[CertificateNumber_Approved]}" status="Approved">
+		<issue_date>.*</issue_date>
+		<related_document purpose="Supports" no=".*" type="Export Permit"/>
+		<exporting_country country_code="AU">
+			<country_name>AUSTRALIA</country_name>
+			<competent_authority>Department of Agriculture, Fisheries and Forestry</competent_authority>
+		</exporting_country>
+		<importing_country country_code="CN">
+			<country_name>CHINA</country_name>
+		</importing_country>
+		<title>
+			<text language="en">HEALTH CERTIFICATE FOR INFANT FORMULA</text>
+			<text language="cn">婴儿配方奶粉 健康证明/卫生证书</text>
+		</title>
+		<exporter id="JA52016">
+			<name>EXPORTER TOSCA-PARENT-ENTITY1</name>
+			<address>18 MARCUS CLARKE ST, CANBERRA ACT 2601, AUSTRALIA</address>
+		</exporter>
+		<consignee>
+			<name>TEST CO.,LIMITED</name>
+			<address>TEST FIRST LINE, TST ST, SHEUNG WAN HONG KONG 302579-ZIP, HONG KONG</address>
+		</consignee>
+		<departure_date>.*</departure_date>
+		<loading_port country_code="AU" city_code="AUMEL">MELBOURNE</loading_port>
+		<final_destination>SHANGHAI</final_destination>
+		<inspection_port country_code="CN" city_code="CNPVG">SHANGHAI PUDONG INTERNATIONAL APT</inspection_port>
+		<discharge_port country_code="CN" city_code="CNPVG">SHANGHAI PUDONG INTERNATIONAL APT</discharge_port>
+		<transport mode="Air">
+			<transport_mode>Air</transport_mode>
+			<craft>OOCL KUALALUMPUR</craft>
+			<conveyance_ref>HO1656</conveyance_ref>
+		</transport>
+		<product item="1">
+			<description>CAREBIRTH ROYALE A2 INFANT FORMULA 0-6 MONTHS 800G</description>
+			<origin_source country="Australia" country_code="AU"/>
+			<classification type="AHECC">19011000</classification>
+			<package level="1" type_code="CT" package_type="CARTONS" package_number="269">269 CARTONS</package>
+			<weight type="NET" amount="1291.200" unit="KGM" unit_name="Kilogram">1291.200 Kilogram NET</weight>
+			<processing>
+				<processing_type code="PC">PC</processing_type>
+				<premises id="555" name="TEST ESTABLISHMENT FOR EXPORT WITH OCCUPIER NAME OF 55" address="PLANT ADDRESS LINE 1               ADDRESS LINE 2                     ADDRESS LINE 3 - - - - - - - - - 35 CANBERRA ACT 2600"/>
+				<dates>
+					<start_date day="3" month="3" year="2026">2026-03-03</start_date>
+					<end_date day="3" month="3" year="2026">2026-03-03</end_date>
+				</dates>
+			</processing>
+		</product>
+		<product item="2">
+			<description>CAREBIRTH ROYALE A2 INFANT FORMULA 0-6 MONTHS 800G</description>
+			<origin_source country="Australia" country_code="AU"/>
+			<classification type="AHECC">19011000</classification>
+			<package level="1" type_code="CT" package_type="CARTONS" package_number="1">1 CARTONS</package>
+			<weight type="NET" amount="3.200" unit="KGM" unit_name="Kilogram">3.200 Kilogram NET</weight>
+			<processing>
+				<processing_type code="PC">PC</processing_type>
+				<premises id="555" name="TEST ESTABLISHMENT FOR EXPORT WITH OCCUPIER NAME OF 55" address="PLANT ADDRESS LINE 1               ADDRESS LINE 2                     ADDRESS LINE 3 - - - - - - - - - 35 CANBERRA ACT 2600"/>
+				<dates>
+					<start_date day="3" month="3" year="2026">2026-03-03</start_date>
+					<end_date day="3" month="3" year="2026">2026-03-03</end_date>
+				</dates>
+			</processing>
+		</product>
+		<approval type="Certificate Authentication">
+			<declaration>
+				<statement language="en">The above product has been tested in Australia and found to be free of Enterobacter sakazakii.</statement>
+				<statement language="cn">以上产品已在澳大利亚经过检测 ，不含阪岐肠杆菌。</statement>
+			</declaration>
+			<declaration>
+				<statement language="en">Animals from which these products were taken were free from clinical diseases caused by agents listed in the Office International des Epizooties List A for the species concerned and live in an area free of these diseases. I further certify that Foot and Mouth Disease, Rinderpest and Bovine Spongiform Encephalopathy do not exist in Australia</statement>
+				<statement language="cn">此产品所涉及动物均未被国际动物流行病名录A中关注的种类和在这些疾病非疫区存活的种类临床疾病感染。我还证明口蹄疫，牛瘟和疯牛病在澳洲未存在</statement>
+			</declaration>
+			<declaration>
+				<statement language="en">The above dairy products have been prepared from pasteurised milk or milk that has received treatment of equivalent severity.</statement>
+				<statement language="cn">以上乳制品是由经过巴氏消毒或同等程度处理的奶生产的。</statement>
+			</declaration>
+			<declaration>
+				<statement language="en">I hereby certify that to the best of my knowledge the conditions or restrictions applicable under the particular inspection system prescribed under the Export Control Act have been complied with in respect of the prescribed goods described above, being goods that are 1.In sound condition 2. Fit for human consumption 3. Of Australian Origin</statement>
+				<statement language="cn">兹证明适用在出口管理法案下的特殊检验体制下的条件和限制与上述规定货品描述相一致, 货品是: 1. 在良好环境中 2. 适宜人类消费 3. 原产自澳大利亚</statement>
+			</declaration>
+			<name>Stewart Lowden</name>
+			<qualifications>BVSC</qualifications>
+			<role>Official Veterinarian</role>
+			<date>.*</date>
+		</approval>
+	</certificate>
+</certificates>

@@ -58,10 +58,12 @@ export interface ReleaseCustomCertificateToPrintResult {
 
 /** Result returned by readCertificateStep. */
 export interface ReadCertificateResult {
-  rexNumber?:          string;
+  /** The rexNumber the certificate was requested for — the service itself doesn't echo it back. */
+  rexNumber:           string;
   complianceStatus?:   string;
   permitNumber?:       string;
-  certificateNumber?:  string;
+  /** e.g. AU001100110011 — required to look up the certificate in the eCert portal. */
+  certificateNumber:   string;
   notices:             { noticeId: string; noticeType: string; noticeMessage: string }[];
   rawXml:              string;
 }
@@ -164,15 +166,18 @@ export async function readRexStep(client: SoapClient, rexNumber: string): Promis
 
 /**
  * Calls ReadCertificateService.ReadCertificate to fetch certificate details for a REX number.
+ * The response itself doesn't echo back rexNumber, so we carry through the value it was
+ * requested with; certificateNumber is required since it's this step's whole purpose —
+ * looking up the certificate in the eCert portal depends on it.
  */
 export async function readCertificateStep(client: SoapClient, rexNumber: string): Promise<ReadCertificateResult> {
   const result = await client.readCertificate({ rexNumber });
   assertSuccess('READ_CERTIFICATE', result);
   return {
-    rexNumber:         result.rexNumber,
+    rexNumber,
     complianceStatus:  result.complianceStatus,
     permitNumber:      result.permitNumber,
-    certificateNumber: result.certificateNumber,
+    certificateNumber: requireField('READ_CERTIFICATE', 'certificateNumber', result.certificateNumber),
     notices:           result.notices,
     rawXml:            result.rawXml,
   };

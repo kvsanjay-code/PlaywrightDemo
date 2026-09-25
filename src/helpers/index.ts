@@ -5,3 +5,5 @@ export { createAuthoriseRex } from './portal-workflow';
 export type { PortalAuthoriseOptions, AuthoriseRexFn } from './portal-workflow';
 export { createDownloadCertificateXml } from './ecert-workflow';
 export type { DownloadCertificateXmlFn } from './ecert-workflow';
+export { saveDownload } from './download-utils';
+export { readExpectedCertificateXml, assertCertificateXmlMatches } from './xml-compare';
