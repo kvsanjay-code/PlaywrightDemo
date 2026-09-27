@@ -1040,5 +1040,37 @@ Asked clarifying questions on TC12-14 product/destination and whether TC15/16 ar
     </div>
 
   </div>
+
+  <div class="session">
+    <div class="session-date">Session: Stale work-copy debugging + mask-based XML comparison (2026-09-26/27)</div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">I am getting soap response like this when I call readcertificate and getting error on line 176 of rex-workflow.ts as it is expecting certificate number as mandatory — [pasted a parsed result object missing the certificateNumber key entirely]</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Verified extractTag against the user's exact rawXml — certificateNumber parsed correctly (AU0011484391) with the current response-parser.ts, so the pasted object couldn't have come from this repo's current code (missing key entirely, plus "exporterReference" singular vs this repo's "exporterReferences"). Asked whether they were on a stale checkout.</div>
+    </div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">I have pasted the code u have generated and created another copy of project at my work / which file I need to check the above 3 lines / line 171 and 182 are missing let me add that and give another try</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Explained their work machine is a manually-copied project, not a git clone, so it can silently drift from this repo. Printed the full current src/soap/response-parser.ts and pinpointed the exact 3 lines (interface field, extraction, return) needed for certificateNumber to parse, with surrounding context so they could paste them in correctly. Flagged the drift risk for future fixes.</div>
+    </div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">[Tosca screenshot of STRINGREPLACE buffer steps normalizing date fields] in downloaded file I want to replace all the date fields, I have replaced already in the sample file to compare with .*, and I have used the attached screenshot style in tosca u can do that in playwright. I want to replace the {B[CertificateNumber_Approved]} with the certificate number in the sample to compare — expected outcome</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Rewrote xml-compare.ts from a "build one regex from the template" approach to a mask-then-compare approach mirroring the Tosca pattern: maskDynamicFields() regex-replaces issue_date/departure_date/date elements (any attributes/content) down to the template's literal "&lt;tag&gt;.*&lt;/tag&gt;" form, plus related_document's no attribute; the certificate number placeholder is substituted into the template to build a concrete expected outcome; both sides compared via expect().toBe() for a proper Playwright diff on mismatch instead of a hand-rolled error. Verified end-to-end against a synthetic actual XML with day/month/year-attributed dates — masked output matched the template exactly once formatted. tsc --noEmit clean.</div>
+    </div>
+
+  </div>
 </body>
 </html>

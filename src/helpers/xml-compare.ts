@@ -5,38 +5,45 @@
  * (see test-data/E2E/**\/*.xml). Templates use two markers for values that
  * vary per test run:
  *
- *   .*                              — wildcard, matches any text (dates, timestamps, etc.)
+ *   .*                              — wildcard for dynamic fields (dates, timestamps, etc.)
  *   {B[CertificateNumber_Approved]} — replaced with the actual certificate number
  *
- * Both XMLs are reformatted with the same options before comparing, so
- * differences in whitespace/indentation between the sample file and the
- * live download don't cause false mismatches.
+ * The comparison masks those same dynamic fields in the downloaded XML down
+ * to the literal ".*" text already used in the template, substitutes the real
+ * certificate number into the template to build the concrete expected
+ * outcome, then does a straight string comparison — so a mismatch shows up
+ * as a normal Playwright diff instead of a plain pass/fail.
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { expect } from '@playwright/test';
 import format from 'xml-formatter';
 
 const CERTIFICATE_NUMBER_PLACEHOLDER = '{B[CertificateNumber_Approved]}';
-const WILDCARD = '.*';
 const XML_FORMAT_OPTIONS = { collapseContent: true, indentation: '  ', lineSeparator: '\n' } as const;
 
-function escapeRegex(text: string): string {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
+/** Element local names whose content varies per test run and gets masked to ".*" before comparing. */
+const DYNAMIC_DATE_TAGS = ['issue_date', 'departure_date', 'date'];
 
 /**
- * Turns a formatted template into a regex: literal text is escaped, "*.*"
- * markers become wildcards, and the certificate number placeholder is
- * replaced with the (escaped) actual certificate number.
+ * Masks known dynamic fields in a downloaded certificate XML down to the same
+ * literal ".*" markers already used in the expected template, so the two can
+ * be compared as plain strings. Extend DYNAMIC_DATE_TAGS (or add another
+ * .replace() below) when a new template introduces another dynamic field.
  */
-function buildExpectedPattern(formattedTemplate: string, certificateNumber: string): RegExp {
-  const pattern = formattedTemplate
-    .split(CERTIFICATE_NUMBER_PLACEHOLDER)
-    .map(part => part.split(WILDCARD).map(escapeRegex).join(WILDCARD))
-    .join(escapeRegex(certificateNumber));
+function maskDynamicFields(xml: string): string {
+  let masked = xml;
 
-  return new RegExp(`^${pattern}$`, 's');
+  for (const tag of DYNAMIC_DATE_TAGS) {
+    const pattern = new RegExp(`<(?:[\\w]+:)?${tag}(?:\\s[^>]*)?>[\\s\\S]*?<\\/(?:[\\w]+:)?${tag}>`, 'gi');
+    masked = masked.replace(pattern, `<${tag}>.*</${tag}>`);
+  }
+
+  // related_document's "no" attribute (export permit number) also varies per run.
+  masked = masked.replace(/(<related_document\b[^>]*\bno=")[^"]*(")/gi, '$1.*$2');
+
+  return masked;
 }
 
 /** Reads an expected-XML template from test-data/<relativePath>. */
@@ -45,29 +52,23 @@ export function readExpectedCertificateXml(relativePath: string): string {
 }
 
 /**
- * Asserts the downloaded certificate XML matches the expected template,
- * ignoring ".*"-marked dynamic fields and substituting certificateNumber
- * for the {B[CertificateNumber_Approved]} placeholder.
- *
- * Throws with both formatted XMLs in the error message on mismatch, so the
- * diff is visible in the test report / console output.
+ * Asserts the downloaded certificate XML matches the expected template:
+ * dynamic date fields are masked to ".*" on the actual side, and
+ * {B[CertificateNumber_Approved]} is substituted with the real certificate
+ * number on the expected side, before comparing as formatted strings.
  */
 export function assertCertificateXmlMatches(
   actualXml: string,
   expectedTemplate: string,
   certificateNumber: string,
 ): void {
-  const formattedActual = format(actualXml, XML_FORMAT_OPTIONS);
-  const formattedExpected = format(expectedTemplate, XML_FORMAT_OPTIONS);
+  const expectedOutcome = expectedTemplate.split(CERTIFICATE_NUMBER_PLACEHOLDER).join(certificateNumber);
 
-  const pattern = buildExpectedPattern(formattedExpected, certificateNumber);
+  const formattedActual = format(maskDynamicFields(actualXml), XML_FORMAT_OPTIONS);
+  const formattedExpected = format(expectedOutcome, XML_FORMAT_OPTIONS);
 
-  if (!pattern.test(formattedActual)) {
-    throw new Error(
-      'Downloaded certificate XML did not match the expected template ' +
-      `(certificateNumber="${certificateNumber}").\n\n` +
-      `--- Actual ---\n${formattedActual}\n\n` +
-      `--- Expected (template) ---\n${formattedExpected}\n`,
-    );
-  }
+  expect(
+    formattedActual,
+    `Downloaded certificate XML should match the expected template for certificateNumber="${certificateNumber}" (dates masked)`,
+  ).toBe(formattedExpected);
 }
