@@ -1192,5 +1192,28 @@ Asked clarifying questions on TC12-14 product/destination and whether TC15/16 ar
     </div>
 
   </div>
+
+  <div class="session">
+    <div class="session-date">Session: Fix XML comparison masking bugs from real test failures (2026-09-28)</div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">[Pasted 3 real diff screenshots from test execution] i got three failures in the test case execution — XML comparision passed in approved test step but failed in replaced and revoked</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Diagnosed from the diffs: DYNAMIC_DATE_TAGS was missing certificate_issue_date/revision_date (Revoked template) and document_date (Replaced template's "Replaced by" reference) — only issue_date/departure_date/date were masked, which is why Approved passed and Replaced/Revoked didn't. Also found the related_document "no" masking regex was too broad — it wiped the "Replaced by" reference's real original-certificate-number down to ".*" instead of leaving it intact to match the substituted placeholder; scoped it to purpose="Supports" only. Fixed china_ZDCN01_Replaced.xml's &lt;date&gt; -&gt; &lt;document_date&gt; tag name to match reality. Independently found and fixed a fourth issue via verification script: real eCert responses declare encoding="UTF-8" while templates were typed as "utf-8" — added normalizeXmlDeclarationEncoding() applied to both sides. Verified all fixes against synthetic data matching the exact reported failures before considering it done.</div>
+    </div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">yes only xml comparison is not working and that UTF-8 upper case I have actually modified in read codebase / please update them them uppercase UTF-8</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Confirmed the runtime normalizeXmlDeclarationEncoding() fix makes template casing irrelevant either way, then updated all three template files' &lt;?xml ... encoding="utf-8"?&gt; declarations to uppercase "UTF-8" per request, matching the user's separately-modified work copy.</div>
+    </div>
+
+  </div>
 </body>
 </html>

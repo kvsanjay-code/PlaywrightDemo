@@ -36,7 +36,23 @@ function certificateNumberPlaceholder(key: string): string {
 }
 
 /** Element local names whose content varies per test run and gets masked to ".*" before comparing. */
-const DYNAMIC_DATE_TAGS = ['issue_date', 'departure_date', 'date'];
+const DYNAMIC_DATE_TAGS = [
+  'issue_date',
+  'departure_date',
+  'date',
+  'certificate_issue_date',   // Revoked template
+  'revision_date',            // Revoked template
+  'document_date',            // Replaced template's "Replaced by" related_document
+];
+
+/**
+ * Normalizes the XML declaration's encoding value to a consistent case
+ * (e.g. real eCert responses use "UTF-8", templates were typed as "utf-8") —
+ * XML treats these as equivalent, but a plain string comparison doesn't.
+ */
+function normalizeXmlDeclarationEncoding(xml: string): string {
+  return xml.replace(/(<\?xml[^>]*\bencoding=")[^"]*(")/i, (_match, prefix, suffix) => `${prefix}UTF-8${suffix}`);
+}
 
 /**
  * Masks known dynamic fields in a downloaded certificate XML down to the same
@@ -52,8 +68,15 @@ function maskDynamicFields(xml: string): string {
     masked = masked.replace(pattern, `<${tag}>.*</${tag}>`);
   }
 
-  // related_document's "no" attribute (export permit number) also varies per run.
-  masked = masked.replace(/(<related_document\b[^>]*\bno=")[^"]*(")/gi, '$1.*$2');
+  // related_document's "no" attribute (export permit number) varies per run — but only
+  // for the "Supports" reference. The "Replaced by" reference's "no" is the original
+  // certificate number, which must stay intact to match the substituted placeholder.
+  masked = masked.replace(
+    /(<related_document\b(?=[^>]*\bpurpose="Supports")[^>]*\bno=")[^"]*(")/gi,
+    '$1.*$2',
+  );
+
+  masked = normalizeXmlDeclarationEncoding(masked);
 
   return masked;
 }
@@ -92,7 +115,7 @@ export function assertCertificateXmlMatches(
   }
 
   const formattedActual = format(maskDynamicFields(actualXml), XML_FORMAT_OPTIONS);
-  const formattedExpected = format(expectedOutcome, XML_FORMAT_OPTIONS);
+  const formattedExpected = format(normalizeXmlDeclarationEncoding(expectedOutcome), XML_FORMAT_OPTIONS);
 
   const passed = formattedActual === formattedExpected;
   const labelledNumbers = Object.entries(placeholderValues).map(([k, v]) => `${k}="${v}"`).join(', ');

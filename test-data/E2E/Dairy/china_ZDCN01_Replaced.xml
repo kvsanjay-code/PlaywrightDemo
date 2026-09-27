@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <certificates>
 	<certificate no="{B[CertificateNumber_Replaced]}" status="Approved">
 		<issue_date>.*</issue_date>
 		<related_document purpose="Supports" no=".*" type="Export Permit"/>
 		<related_document purpose="Replaced by" no="{B[CertificateNumber_Approved]}" type="Export Certificate">
-			<date>.*</date>
+			<document_date>.*</document_date>
 		</related_document>
 		<exporting_country country_code="AU">
 			<country_name>AUSTRALIA</country_name>
