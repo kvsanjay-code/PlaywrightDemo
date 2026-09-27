@@ -13,6 +13,9 @@
  *   ecertSearchPage              — ECertSearchPage (search by certificate number).
  *   ecertCertificateDetailsPage  — ECertCertificateDetailsPage (download, confirm, print, status).
  *   downloadCertificateXml       — one-call helper: login → home → search → download certificate XML.
+ *   tasksPage                    — TasksPage (Staff Portal/NEXDOC Tasks list — search, open a task).
+ *   taskDetailPage               — TaskDetailPage (approve/reject a task; approve opens a new tab).
+ *   approveReplaceTask           — one-call helper: login → Tasks → open task → approve → replace-certificate popup flow.
  *
  * All tests should import { test, expect } from '../fixtures' rather than
  * from '@playwright/test' directly so they automatically get these fixtures.
@@ -20,10 +23,11 @@
 
 import { test as base } from '@playwright/test';
 import { SoapClient } from '../soap';
-import { LoginPage, RexSearchPage, RexDetailPage, ECertLoginPage, ECertHomePage, ECertSearchPage, ECertCertificateDetailsPage } from '../pages';
+import { LoginPage, RexSearchPage, RexDetailPage, ECertLoginPage, ECertHomePage, ECertSearchPage, ECertCertificateDetailsPage, TasksPage, TaskDetailPage } from '../pages';
 import { config } from '../config/environment';
 import { createAuthoriseRex, AuthoriseRexFn } from '../helpers/portal-workflow';
 import { createDownloadCertificateXml, DownloadCertificateXmlFn } from '../helpers/ecert-workflow';
+import { createApproveReplaceTask, ApproveReplaceTaskFn } from '../helpers/staff-portal-tasks-workflow';
 
 // ─── Fixture type declarations ────────────────────────────────────────────────
 
@@ -49,6 +53,13 @@ type RexFixtures = {
   ecertCertificateDetailsPage: ECertCertificateDetailsPage;
   /** One-call eCert workflow: login → home → search → download certificate XML. */
   downloadCertificateXml: DownloadCertificateXmlFn;
+
+  /** Staff Portal (NEXDOC) Tasks list page object — search, open a task. */
+  tasksPage: TasksPage;
+  /** Staff Portal (NEXDOC) Task detail page object — approve/reject; approve opens a new tab. */
+  taskDetailPage: TaskDetailPage;
+  /** One-call Staff Portal workflow: login → Tasks → open task → approve → replace-certificate popup flow. */
+  approveReplaceTask: ApproveReplaceTaskFn;
 };
 
 // ─── Extended test object ─────────────────────────────────────────────────────
@@ -97,6 +108,18 @@ export const test = base.extend<RexFixtures>({
     await use(
       createDownloadCertificateXml(ecertLoginPage, ecertHomePage, ecertSearchPage, ecertCertificateDetailsPage),
     );
+  },
+
+  tasksPage: async ({ page }, use) => {
+    await use(new TasksPage(page));
+  },
+
+  taskDetailPage: async ({ page }, use) => {
+    await use(new TaskDetailPage(page));
+  },
+
+  approveReplaceTask: async ({ loginPage, rexSearchPage, tasksPage, taskDetailPage }, use) => {
+    await use(createApproveReplaceTask(loginPage, rexSearchPage, tasksPage, taskDetailPage));
   },
 });
 

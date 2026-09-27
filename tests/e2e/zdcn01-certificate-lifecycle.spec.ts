@@ -9,12 +9,17 @@
  *           commodities), so this step goes straight from LODGE to ReadCertificate.
  *
  * Replaced: REPLACE (departureDate pushed out to futureDateISO(10)) -> capture
- *           serviceRequestId -> [placeholder: Staff Portal approval of the service
- *           request — not yet automated] -> ReadCertificate for the new certificate
- *           number -> the original (Approved) certificate is now superseded, so it's
- *           verified against china_ZDCN01_Revoked.xml -> the new certificate is
- *           verified against china_ZDCN01_Replaced.xml (references both certificate
- *           numbers).
+ *           serviceRequestId -> Staff Portal: approveReplaceTask approves it via
+ *           Tasks -> open task -> Approve (new tab) -> Reason 1 "ADDITION OF LINE"
+ *           -> submit -> submit certificate replacement option -> confirmation ->
+ *           ReadCertificate for the new certificate number -> the original (Approved)
+ *           certificate is now superseded, so it's verified against
+ *           china_ZDCN01_Revoked.xml -> the new certificate is verified against
+ *           china_ZDCN01_Replaced.xml (references both certificate numbers).
+ *
+ *           ASSUMPTION: the Staff Portal Task ID that approveReplaceTask searches for
+ *           is the same value as REPLACE's serviceRequestId. Correct if the portal
+ *           surfaces a different task identifier.
  *
  * Revoked:  READ REX -> CancelRex -> capture serviceRequestIdentifier -> [placeholder:
  *           Staff Portal approval of the service request — not yet automated] -> the
@@ -41,6 +46,7 @@ import { buildDefaultLodgePayload, buildDefaultReplacePayload } from 'test-data/
 test('E2E-ZDCN01 — Dairy (China) certificate lifecycle: Approved -> Replaced -> Revoked', async ({
   soapClient,
   downloadCertificateXml,
+  approveReplaceTask,
 }) => {
   let rexState: RexState;
   let certificateNumberApproved: string;
@@ -74,8 +80,9 @@ test('E2E-ZDCN01 — Dairy (China) certificate lifecycle: Approved -> Replaced -
     const replaceResult = await replaceStep(soapClient, replacePayload);
     console.log('REPLACE complete — serviceRequestId:', replaceResult.serviceRequestId);
 
-    // Step 2 — Staff Portal: approve the service request (not yet automated)
-    console.log(`TODO: Staff Portal approval required for serviceRequestId="${replaceResult.serviceRequestId}" (placeholder — not yet automated)`);
+    // Step 2 — Staff Portal: approve the service request (Task ID assumed == serviceRequestId)
+    await approveReplaceTask(replaceResult.serviceRequestId!);
+    console.log('Staff Portal: replace task approved for serviceRequestId:', replaceResult.serviceRequestId);
 
     // Step 3 — ReadCertificateService: retrieve the new certificate number
     const certificate = await readCertificateStep(soapClient, rexState.rexNumber);

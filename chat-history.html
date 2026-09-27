@@ -1150,5 +1150,19 @@ Asked clarifying questions on TC12-14 product/destination and whether TC15/16 ar
     </div>
 
   </div>
+
+  <div class="session">
+    <div class="session-date">Session: Staff Portal Tasks/Approve-Replace workflow (2026-09-27)</div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">[Pasted 6 NEXDOC staff portal screenshots — Tasks list, Task detail with Approve/Reject, Replace certificate reasons, Certificate replacement option, confirmation banner] I want to add two Staffportal todo methods, lets do the first one in replace part — staffportal_approve_replacetask steps: login (remove waitForURL from login), wait for ExportLink().visible on rex-search.page, click Tasks, search with task id, wait for grid results, click the task id, click Approve, new tab opens, choose Addition of line in Reason 1, click submit, on Certificate replacement option screen click submit, wait for the "Certificate replacements created" banner. Not adding login page since we already have login.page in plant authorise.</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Removed the unreliable waitForURL from staff-portal login.page.ts (same fix as eCert). Added RexSearchPage.waitForLoad() waiting for the "Exports" nav link as the login-success signal. Created 4 new page objects: tasks.page.ts (search/open task), task-detail.page.ts (approve() captures the new tab via context().waitForEvent('page')), replace-certificate.page.ts (select Reason 1, submit), certificate-replacement-option.page.ts (submit, wait for confirmation banner). Added staff-portal-tasks-workflow.ts's createApproveReplaceTask() chaining the whole flow, wired into fixtures as approveReplaceTask, and replaced the Replaced step's TODO placeholder in zdcn01-certificate-lifecycle.spec.ts with a real call using replaceResult.serviceRequestId as the Task ID. Flagged two unverified assumptions: the exact label of the Task ID search field (screenshot only clearly showed "Show tasks" and a field literally labeled "Pending"), and whether the portal's Task ID actually equals serviceRequestId. tsc --noEmit clean, test discoverable via --list.</div>
+    </div>
+
+  </div>
 </body>
 </html>

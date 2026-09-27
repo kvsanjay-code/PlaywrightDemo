@@ -24,7 +24,16 @@ export class RexSearchPage {
     return this.page.getByRole('link', { name: rexNumber });
   }
 
+  private exportsLink(): Locator {
+    return this.page.getByRole('link', { name: 'Exports' });
+  }
+
   // ── Actions ─────────────────────────────────────────────────────────────────
+
+  /** Confirms the portal has loaded — used to detect a successful login. */
+  async waitForLoad(): Promise<void> {
+    await this.exportsLink().waitFor({ state: 'visible', timeout: 30_000 });
+  }
 
   async searchByRexNumber(rexNumber: string): Promise<void> {
     await this.rexNumberInput().fill(rexNumber);

@@ -7,3 +7,5 @@ export { createDownloadCertificateXml } from './ecert-workflow';
 export type { DownloadCertificateXmlFn } from './ecert-workflow';
 export { saveDownload } from './download-utils';
 export { readExpectedCertificateXml, assertCertificateXmlMatches } from './xml-compare';
+export { createApproveReplaceTask } from './staff-portal-tasks-workflow';
+export type { ApproveReplaceTaskFn } from './staff-portal-tasks-workflow';
