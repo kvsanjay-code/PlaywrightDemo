@@ -11,13 +11,11 @@
  * The comparison masks those same dynamic fields in the downloaded XML down
  * to the literal ".*" text already used in the template, substitutes the real
  * certificate number into the template to build the concrete expected
- * outcome, then does a straight string comparison — so a mismatch shows up
- * as a normal Playwright diff instead of a plain pass/fail.
+ * outcome, then does a straight string comparison.
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { expect } from '@playwright/test';
 import format from 'xml-formatter';
 
 const CERTIFICATE_NUMBER_PLACEHOLDER = '{B[CertificateNumber_Approved]}';
@@ -56,6 +54,9 @@ export function readExpectedCertificateXml(relativePath: string): string {
  * dynamic date fields are masked to ".*" on the actual side, and
  * {B[CertificateNumber_Approved]} is substituted with the real certificate
  * number on the expected side, before comparing as formatted strings.
+ *
+ * Throws with both formatted XMLs in the error message on mismatch, so the
+ * diff is visible in the test report / console output.
  */
 export function assertCertificateXmlMatches(
   actualXml: string,
@@ -67,8 +68,11 @@ export function assertCertificateXmlMatches(
   const formattedActual = format(maskDynamicFields(actualXml), XML_FORMAT_OPTIONS);
   const formattedExpected = format(expectedOutcome, XML_FORMAT_OPTIONS);
 
-  expect(
-    formattedActual,
-    `Downloaded certificate XML should match the expected template for certificateNumber="${certificateNumber}" (dates masked)`,
-  ).toBe(formattedExpected);
+  if (formattedActual !== formattedExpected) {
+    throw new Error(
+      `Downloaded certificate did not match the expected template (certificateNumber="${certificateNumber}")\n` +
+      `--Actual--\n${formattedActual}\n` +
+      `--Expected--\n${formattedExpected}`,
+    );
+  }
 }

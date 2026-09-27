@@ -1071,6 +1071,15 @@ Asked clarifying questions on TC12-14 product/destination and whether TC15/16 ar
       <div class="bubble">Rewrote xml-compare.ts from a "build one regex from the template" approach to a mask-then-compare approach mirroring the Tosca pattern: maskDynamicFields() regex-replaces issue_date/departure_date/date elements (any attributes/content) down to the template's literal "&lt;tag&gt;.*&lt;/tag&gt;" form, plus related_document's no attribute; the certificate number placeholder is substituted into the template to build a concrete expected outcome; both sides compared via expect().toBe() for a proper Playwright diff on mismatch instead of a hand-rolled error. Verified end-to-end against a synthetic actual XML with day/month/year-attributed dates — masked output matched the template exactly once formatted. tsc --noEmit clean.</div>
     </div>
 
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">when there is a change in output I like the previous style — downloaded certificate did not match the expected template (certificatenumber = "") --Actual-- xml --Expected-- xml</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Reverted assertCertificateXmlMatches's failure output from expect().toBe() back to a thrown Error with explicit --Actual--/--Expected-- sections, keeping the mask-then-compare logic (dynamic date masking + certificate number substitution) unchanged underneath.</div>
+    </div>
+
   </div>
 </body>
 </html>
