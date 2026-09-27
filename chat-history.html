@@ -1095,5 +1095,19 @@ Asked clarifying questions on TC12-14 product/destination and whether TC15/16 ar
     </div>
 
   </div>
+
+  <div class="session">
+    <div class="session-date">Session: Non-blocking certificate XML comparison (2026-09-27)</div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">I want to log the expected results vs actual results in test log even if it is successful or failed. I don't want to test to fail and stop immediately if xml comparision failed as I want to continue replace and revoke steps to continue and lets tester investigate why the comparision is failed</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Changed assertCertificateXmlMatches to always console.log --Actual--/--Expected-- (with a MATCH/MISMATCH prefix) regardless of outcome, and switched from throw new Error(...) to expect.soft(...).toBe(...) — Playwright's soft-assertion API records a failure (test still reports as failed overall) without throwing, so the Approved test.step no longer aborts the rest of the E2E lifecycle test; Replaced/Revoked still run even if the Approved XML comparison mismatches. No changes needed to zdcn01-certificate-lifecycle.spec.ts itself. Flagged that Replaced/Revoked will need their own guard once implemented if they shouldn't proceed on a mismatched Approved certificate. tsc --noEmit clean.</div>
+    </div>
+
+  </div>
 </body>
 </html>

@@ -12,10 +12,17 @@
  * to the literal ".*" text already used in the template, substitutes the real
  * certificate number into the template to build the concrete expected
  * outcome, then does a straight string comparison.
+ *
+ * The result is always logged (pass or fail), and a mismatch is recorded as
+ * a soft failure rather than thrown — so it doesn't abort the rest of a
+ * multi-step test (e.g. the Replaced/Revoked steps of the E2E lifecycle
+ * test still run, and the tester can investigate the Approved mismatch
+ * separately from whatever Replaced/Revoked report).
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { expect } from '@playwright/test';
 import format from 'xml-formatter';
 
 const CERTIFICATE_NUMBER_PLACEHOLDER = '{B[CertificateNumber_Approved]}';
@@ -50,13 +57,14 @@ export function readExpectedCertificateXml(relativePath: string): string {
 }
 
 /**
- * Asserts the downloaded certificate XML matches the expected template:
+ * Compares the downloaded certificate XML against the expected template:
  * dynamic date fields are masked to ".*" on the actual side, and
  * {B[CertificateNumber_Approved]} is substituted with the real certificate
  * number on the expected side, before comparing as formatted strings.
  *
- * Throws with both formatted XMLs in the error message on mismatch, so the
- * diff is visible in the test report / console output.
+ * Always logs both sides (pass or fail). On a mismatch, records a soft
+ * failure (test ends up reported as failed) without throwing, so the
+ * caller's remaining steps keep running.
  */
 export function assertCertificateXmlMatches(
   actualXml: string,
@@ -68,11 +76,16 @@ export function assertCertificateXmlMatches(
   const formattedActual = format(maskDynamicFields(actualXml), XML_FORMAT_OPTIONS);
   const formattedExpected = format(expectedOutcome, XML_FORMAT_OPTIONS);
 
-  if (formattedActual !== formattedExpected) {
-    throw new Error(
-      `Downloaded certificate did not match the expected template (certificateNumber="${certificateNumber}")\n` +
-      `--Actual--\n${formattedActual}\n` +
-      `--Expected--\n${formattedExpected}`,
-    );
-  }
+  const passed = formattedActual === formattedExpected;
+
+  console.log(
+    `Certificate XML comparison (certificateNumber="${certificateNumber}") — ${passed ? 'MATCH' : 'MISMATCH'}\n` +
+    `--Actual--\n${formattedActual}\n` +
+    `--Expected--\n${formattedExpected}`,
+  );
+
+  expect.soft(
+    formattedActual,
+    `Downloaded certificate did not match the expected template (certificateNumber="${certificateNumber}")`,
+  ).toBe(formattedExpected);
 }
