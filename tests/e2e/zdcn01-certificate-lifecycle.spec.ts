@@ -23,7 +23,7 @@
  *
  * Revoked:  READ REX -> CancelRex -> capture serviceRequestIdentifier -> Staff Portal:
  *           approveCancelTask approves it via Exports -> Tasks -> open task -> Approve
- *           (no popup, unlike Replaced) -> the Replaced certificate is now the Revoked
+ *           (no new tab, unlike Replaced) -> the Replaced certificate is now the Revoked
  *           one -> verified against china_ZDCN01_Revoked.xml.
  *
  *           CONFIRMED: a live Task detail screenshot showed the Task ID

@@ -33,13 +33,13 @@ export function createApproveReplaceTask(
     await tasksPage.waitForResults(taskId);
     await tasksPage.openTask(taskId);
 
-    const popup = await taskDetailPage.approve();
+    const newTab = await taskDetailPage.approve();
 
-    const replaceCertificatePage = new ReplaceCertificatePage(popup);
+    const replaceCertificatePage = new ReplaceCertificatePage(newTab);
     await replaceCertificatePage.selectReason1(reasonOne);
     await replaceCertificatePage.submit();
 
-    const certificateReplacementOptionPage = new CertificateReplacementOptionPage(popup);
+    const certificateReplacementOptionPage = new CertificateReplacementOptionPage(newTab);
     await certificateReplacementOptionPage.submit();
     await certificateReplacementOptionPage.waitForReplacementCreated();
   };
@@ -52,8 +52,8 @@ export type ApproveCancelTaskFn = (taskId: string) => Promise<void>;
  *
  *   login (if needed) -> Exports -> Tasks -> search by task ID -> open task -> Approve.
  *
- * Unlike a replace task, approving a cancel task resolves in place — no popup,
- * no follow-up screen.
+ * Unlike a replace task, approving a cancel task resolves in place — no new
+ * tab, no follow-up screen.
  *
  * Called once in the fixture — tests just use approveCancelTask(taskId).
  */

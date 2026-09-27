@@ -1178,5 +1178,19 @@ Asked clarifying questions on TC12-14 product/destination and whether TC15/16 ar
     </div>
 
   </div>
+
+  <div class="session">
+    <div class="session-date">Session: Close previous tab after Approve opens new tab (2026-09-28)</div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">I saw u have added popup but it is not popup actually a new tab is open. we want to close the previous tab once the new tab is open</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Updated TaskDetailPage.approve() to call await this.page.close() right after the new tab loads and before returning it, so only the new tab stays open for the rest of the Replace Certificate flow. Renamed "popup" to "new tab" throughout task-detail.page.ts, certificate-replacement-option.page.ts, staff-portal-tasks-workflow.ts, base-fixtures.ts, and the E2E test's header comment. tsc --noEmit clean.</div>
+    </div>
+
+  </div>
 </body>
 </html>

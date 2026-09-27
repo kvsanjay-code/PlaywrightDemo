@@ -23,17 +23,21 @@ export class TaskDetailPage {
 
   // ── Actions ─────────────────────────────────────────────────────────────────
 
-  /** Clicks Approve and returns the new tab it opens (the Replace Certificate flow). */
+  /**
+   * Clicks Approve, which opens the Replace Certificate flow in a new tab, then
+   * closes this Task detail tab so only the new tab remains open, and returns it.
+   */
   async approve(): Promise<Page> {
-    const [popup] = await Promise.all([
+    const [newTab] = await Promise.all([
       this.page.context().waitForEvent('page'),
       this.approveButton().click(),
     ]);
-    await popup.waitForLoadState('domcontentloaded');
-    return popup;
+    await newTab.waitForLoadState('domcontentloaded');
+    await this.page.close();
+    return newTab;
   }
 
-  /** Clicks Approve for tasks that resolve in place, with no follow-up popup (e.g. Cancel tasks). */
+  /** Clicks Approve for tasks that resolve in place, with no follow-up tab (e.g. Cancel tasks). */
   async approveDirect(): Promise<void> {
     await this.approveButton().click();
   }

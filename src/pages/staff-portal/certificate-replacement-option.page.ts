@@ -2,7 +2,7 @@
  * certificate-replacement-option.page.ts
  *
  * Page Object for the Staff Portal (NEXDOC) "Certificate replacement option"
- * page — the second screen of the Replace Certificate popup flow. Submits
+ * page — the second screen of the Replace Certificate new-tab flow. Submits
  * with the pre-filled defaults and confirms the replacement was created.
  */
 

@@ -15,8 +15,8 @@
  *   downloadCertificateXml       — one-call helper: login → home → search → download certificate XML.
  *   tasksPage                    — TasksPage (Staff Portal/NEXDOC Tasks list — search, open a task).
  *   taskDetailPage               — TaskDetailPage (approve/reject a task; approve opens a new tab).
- *   approveReplaceTask           — one-call helper: login → Tasks → open task → approve → replace-certificate popup flow.
- *   approveCancelTask            — one-call helper: login → Exports → Tasks → open task → approve (no popup).
+ *   approveReplaceTask           — one-call helper: login → Tasks → open task → approve → replace-certificate new-tab flow.
+ *   approveCancelTask            — one-call helper: login → Exports → Tasks → open task → approve (no new tab).
  *
  * All tests should import { test, expect } from '../fixtures' rather than
  * from '@playwright/test' directly so they automatically get these fixtures.
@@ -59,9 +59,9 @@ type RexFixtures = {
   tasksPage: TasksPage;
   /** Staff Portal (NEXDOC) Task detail page object — approve/reject; approve opens a new tab. */
   taskDetailPage: TaskDetailPage;
-  /** One-call Staff Portal workflow: login → Tasks → open task → approve → replace-certificate popup flow. */
+  /** One-call Staff Portal workflow: login → Tasks → open task → approve → replace-certificate new-tab flow. */
   approveReplaceTask: ApproveReplaceTaskFn;
-  /** One-call Staff Portal workflow: login → Exports → Tasks → open task → approve (no popup). */
+  /** One-call Staff Portal workflow: login → Exports → Tasks → open task → approve (no new tab). */
   approveCancelTask: ApproveCancelTaskFn;
 };
 
