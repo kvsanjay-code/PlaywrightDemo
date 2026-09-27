@@ -44,3 +44,35 @@ export function createApproveReplaceTask(
     await certificateReplacementOptionPage.waitForReplacementCreated();
   };
 }
+
+export type ApproveCancelTaskFn = (taskId: string) => Promise<void>;
+
+/**
+ * Approves a CancelRex task in the Staff Portal (NEXDOC):
+ *
+ *   login (if needed) -> Exports -> Tasks -> search by task ID -> open task -> Approve.
+ *
+ * Unlike a replace task, approving a cancel task resolves in place — no popup,
+ * no follow-up screen.
+ *
+ * Called once in the fixture — tests just use approveCancelTask(taskId).
+ */
+export function createApproveCancelTask(
+  loginPage: LoginPage,
+  rexSearchPage: RexSearchPage,
+  tasksPage: TasksPage,
+  taskDetailPage: TaskDetailPage,
+): ApproveCancelTaskFn {
+  return async (taskId: string) => {
+    await loginPage.loginIfNeeded(config.staffUsername, config.staffPassword);
+    await rexSearchPage.waitForLoad();
+    await rexSearchPage.goToExports();
+
+    await tasksPage.goToTasks();
+    await tasksPage.searchByTaskId(taskId);
+    await tasksPage.waitForResults(taskId);
+    await tasksPage.openTask(taskId);
+
+    await taskDetailPage.approveDirect();
+  };
+}

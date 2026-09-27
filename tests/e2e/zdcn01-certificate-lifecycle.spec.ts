@@ -21,10 +21,14 @@
  *           is the same value as REPLACE's serviceRequestId. Correct if the portal
  *           surfaces a different task identifier.
  *
- * Revoked:  READ REX -> CancelRex -> capture serviceRequestIdentifier -> [placeholder:
- *           Staff Portal approval of the service request — not yet automated] -> the
- *           Replaced certificate is now the Revoked one -> verified against
- *           china_ZDCN01_Revoked.xml.
+ * Revoked:  READ REX -> CancelRex -> capture serviceRequestIdentifier -> Staff Portal:
+ *           approveCancelTask approves it via Exports -> Tasks -> open task -> Approve
+ *           (no popup, unlike Replaced) -> the Replaced certificate is now the Revoked
+ *           one -> verified against china_ZDCN01_Revoked.xml.
+ *
+ *           CONFIRMED: a live Task detail screenshot showed the Task ID
+ *           ("02261372101962") matching a CancelRex serviceRequestIdentifier exactly,
+ *           so Task ID == serviceRequestIdentifier for Cancel tasks.
  */
 
 import * as fs from 'fs';
@@ -47,6 +51,7 @@ test('E2E-ZDCN01 — Dairy (China) certificate lifecycle: Approved -> Replaced -
   soapClient,
   downloadCertificateXml,
   approveReplaceTask,
+  approveCancelTask,
 }) => {
   let rexState: RexState;
   let certificateNumberApproved: string;
@@ -115,8 +120,9 @@ test('E2E-ZDCN01 — Dairy (China) certificate lifecycle: Approved -> Replaced -
     const cancelResult = await cancelRexStep(soapClient, currentState, 'Certificate revocation — E2E-ZDCN01 Revoked step');
     console.log('CancelRex complete — serviceRequestIdentifier:', cancelResult.serviceRequestIdentifier);
 
-    // Step 3 — Staff Portal: approve the service request (not yet automated)
-    console.log(`TODO: Staff Portal approval required for serviceRequestIdentifier="${cancelResult.serviceRequestIdentifier}" (placeholder — not yet automated)`);
+    // Step 3 — Staff Portal: approve the service request
+    await approveCancelTask(cancelResult.serviceRequestIdentifier);
+    console.log('Staff Portal: cancel task approved for serviceRequestIdentifier:', cancelResult.serviceRequestIdentifier);
 
     // Step 4 — The Replaced certificate is now the Revoked one — download and compare
     const certificateNumberRevoked = certificateNumberReplaced;

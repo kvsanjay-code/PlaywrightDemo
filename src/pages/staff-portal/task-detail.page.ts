@@ -2,7 +2,8 @@
  * task-detail.page.ts
  *
  * Page Object for the Staff Portal (NEXDOC) Task detail page.
- * Approving a replace task opens the Replace Certificate flow in a new tab.
+ * Approving a replace task opens the Replace Certificate flow in a new tab;
+ * approving a cancel task resolves in place with no follow-up screen.
  */
 
 import { Page, Locator } from '@playwright/test';
@@ -30,6 +31,11 @@ export class TaskDetailPage {
     ]);
     await popup.waitForLoadState('domcontentloaded');
     return popup;
+  }
+
+  /** Clicks Approve for tasks that resolve in place, with no follow-up popup (e.g. Cancel tasks). */
+  async approveDirect(): Promise<void> {
+    await this.approveButton().click();
   }
 
   async reject(): Promise<void> {

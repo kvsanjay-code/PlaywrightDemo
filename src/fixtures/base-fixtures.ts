@@ -16,6 +16,7 @@
  *   tasksPage                    — TasksPage (Staff Portal/NEXDOC Tasks list — search, open a task).
  *   taskDetailPage               — TaskDetailPage (approve/reject a task; approve opens a new tab).
  *   approveReplaceTask           — one-call helper: login → Tasks → open task → approve → replace-certificate popup flow.
+ *   approveCancelTask            — one-call helper: login → Exports → Tasks → open task → approve (no popup).
  *
  * All tests should import { test, expect } from '../fixtures' rather than
  * from '@playwright/test' directly so they automatically get these fixtures.
@@ -27,7 +28,7 @@ import { LoginPage, RexSearchPage, RexDetailPage, ECertLoginPage, ECertHomePage,
 import { config } from '../config/environment';
 import { createAuthoriseRex, AuthoriseRexFn } from '../helpers/portal-workflow';
 import { createDownloadCertificateXml, DownloadCertificateXmlFn } from '../helpers/ecert-workflow';
-import { createApproveReplaceTask, ApproveReplaceTaskFn } from '../helpers/staff-portal-tasks-workflow';
+import { createApproveReplaceTask, ApproveReplaceTaskFn, createApproveCancelTask, ApproveCancelTaskFn } from '../helpers/staff-portal-tasks-workflow';
 
 // ─── Fixture type declarations ────────────────────────────────────────────────
 
@@ -60,6 +61,8 @@ type RexFixtures = {
   taskDetailPage: TaskDetailPage;
   /** One-call Staff Portal workflow: login → Tasks → open task → approve → replace-certificate popup flow. */
   approveReplaceTask: ApproveReplaceTaskFn;
+  /** One-call Staff Portal workflow: login → Exports → Tasks → open task → approve (no popup). */
+  approveCancelTask: ApproveCancelTaskFn;
 };
 
 // ─── Extended test object ─────────────────────────────────────────────────────
@@ -120,6 +123,10 @@ export const test = base.extend<RexFixtures>({
 
   approveReplaceTask: async ({ loginPage, rexSearchPage, tasksPage, taskDetailPage }, use) => {
     await use(createApproveReplaceTask(loginPage, rexSearchPage, tasksPage, taskDetailPage));
+  },
+
+  approveCancelTask: async ({ loginPage, rexSearchPage, tasksPage, taskDetailPage }, use) => {
+    await use(createApproveCancelTask(loginPage, rexSearchPage, tasksPage, taskDetailPage));
   },
 });
 

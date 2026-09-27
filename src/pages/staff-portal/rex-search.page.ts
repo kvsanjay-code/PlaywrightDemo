@@ -35,6 +35,11 @@ export class RexSearchPage {
     await this.exportsLink().waitFor({ state: 'visible', timeout: 30_000 });
   }
 
+  async goToExports(): Promise<void> {
+    await this.exportsLink().click();
+    await this.page.waitForLoadState('domcontentloaded');
+  }
+
   async searchByRexNumber(rexNumber: string): Promise<void> {
     await this.rexNumberInput().fill(rexNumber);
     await this.searchButton().click();
