@@ -37,6 +37,7 @@ export interface SoapSuccessResult {
   permitNumber?: string;               // present when complianceStatus = 'COMP'
   certificateNumber?: string;          // present in ReadCertificateService response, e.g. AU0011437035
   serviceRequestId?: string;           // present in REPLACE response
+  serviceRequestIdentifier?: string;   // present in CancelRex response
   customCertificateRequestId?: string; // present in LodgeCustomCertificateDetails response
   notices: ParsedNotice[];
   rexLines: ParsedRexLine[];
@@ -170,6 +171,7 @@ function parseSuccess(xml: string): SoapSuccessResult {
   const permitNumber               = extractTag(xml, 'permitNumber');
   const certificateNumber          = extractTag(xml, 'certificateNumber');
   const serviceRequestId           = extractTag(xml, 'ServiceRequestId');
+  const serviceRequestIdentifier   = extractTag(xml, 'serviceRequestIdentifier');
   const customCertificateRequestId = extractTag(xml, 'customCertificateRequestId');
 
   return {
@@ -181,6 +183,7 @@ function parseSuccess(xml: string): SoapSuccessResult {
     permitNumber,
     certificateNumber,
     serviceRequestId,
+    serviceRequestIdentifier,
     customCertificateRequestId,
     notices:                parseNotices(xml),
     rexLines:               parseRexLines(xml),

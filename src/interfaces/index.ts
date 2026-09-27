@@ -10,3 +10,4 @@ export * from './read-rex.types';
 export * from './read-certificate.types';
 export * from './release-rex-to-print.types';
 export * from './custom-certificate.types';
+export * from './cancel-rex.types';

@@ -20,6 +20,7 @@ import {
   ReleaseRexToPrintPayload,
   LodgeCustomCertificatePayload,
   ReleaseCustomCertificateToPrintPayload,
+  CancelRexPayload,
   Identification,
 } from '../interfaces';
 
@@ -71,6 +72,14 @@ export interface ReleaseRexToPrintResult {
   permitNumber?:     string;
   exporterReference?: string;
   notices:           { noticeId: string; noticeType: string; noticeMessage: string }[];
+}
+
+/** Result returned by cancelRexStep. */
+export interface CancelRexResult {
+  /** e.g. 02261372101962 — tracking reference for the cancellation request. */
+  serviceRequestIdentifier: string;
+  notices:                  { noticeId: string; noticeType: string; noticeMessage: string }[];
+  rawXml:                   string;
 }
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
@@ -208,6 +217,24 @@ export async function releaseRexToPrintStep(client: SoapClient, state: RexState)
     permitNumber:      result.permitNumber,
     exporterReference: result.exporterReferences,
     notices:           result.notices,
+  };
+}
+
+/**
+ * Sends a CancelRex request to cancel a REX submission.
+ * serviceRequestIdentifier is required — it's the tracking reference for the cancellation.
+ */
+export async function cancelRexStep(client: SoapClient, state: RexState, reason?: string): Promise<CancelRexResult> {
+  const payload: CancelRexPayload = {
+    identification: toIdentification(state),
+    reason,
+  };
+  const result = await client.cancelRex(payload);
+  assertSuccess('CANCEL_REX', result);
+  return {
+    serviceRequestIdentifier: requireField('CANCEL_REX', 'serviceRequestIdentifier', result.serviceRequestIdentifier),
+    notices:                  result.notices,
+    rawXml:                   result.rawXml,
   };
 }
 

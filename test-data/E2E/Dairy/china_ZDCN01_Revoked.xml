@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<certificates>
+	<revision no="{B[CertificateNumber_Approved]}" status="Revoked">
+		<certificate_issue_date>.*</certificate_issue_date>
+		<revision_date>.*</revision_date>
+	</revision>
+</certificates>

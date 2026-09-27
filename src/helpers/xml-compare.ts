@@ -2,11 +2,14 @@
  * xml-compare.ts
  *
  * Compares a downloaded certificate XML against an expected XML template
- * (see test-data/E2E/**\/*.xml). Templates use two markers for values that
- * vary per test run:
+ * (see test-data/E2E/**\/*.xml). Templates use two kinds of markers for
+ * values that vary per test run:
  *
- *   .*                              — wildcard for dynamic fields (dates, timestamps, etc.)
- *   {B[CertificateNumber_Approved]} — replaced with the actual certificate number
+ *   .*                     — wildcard for dynamic fields (dates, timestamps, etc.)
+ *   {B[CertificateNumber_<Key>]} — replaced with a real certificate number. <Key> is
+ *     whatever name the template uses (e.g. "Approved", "Replaced") — a template can
+ *     contain more than one, such as china_ZDCN01_Replaced.xml which references both
+ *     the new certificate's own number and the original ("Replaced by") certificate.
  *
  * The comparison masks those same dynamic fields in the downloaded XML down
  * to the literal ".*" text already used in the template, substitutes the real
@@ -25,8 +28,12 @@ import * as path from 'path';
 import { expect } from '@playwright/test';
 import format from 'xml-formatter';
 
-const CERTIFICATE_NUMBER_PLACEHOLDER = '{B[CertificateNumber_Approved]}';
 const XML_FORMAT_OPTIONS = { collapseContent: true, indentation: '  ', lineSeparator: '\n' } as const;
+
+/** Builds the {B[CertificateNumber_<key>]} placeholder token for a given key. */
+function certificateNumberPlaceholder(key: string): string {
+  return `{B[CertificateNumber_${key}]}`;
+}
 
 /** Element local names whose content varies per test run and gets masked to ".*" before comparing. */
 const DYNAMIC_DATE_TAGS = ['issue_date', 'departure_date', 'date'];
@@ -58,9 +65,14 @@ export function readExpectedCertificateXml(relativePath: string): string {
 
 /**
  * Compares the downloaded certificate XML against the expected template:
- * dynamic date fields are masked to ".*" on the actual side, and
- * {B[CertificateNumber_Approved]} is substituted with the real certificate
- * number on the expected side, before comparing as formatted strings.
+ * dynamic date fields are masked to ".*" on the actual side, and every
+ * {B[CertificateNumber_<Key>]} placeholder is substituted with its matching
+ * real certificate number on the expected side, before comparing as
+ * formatted strings.
+ *
+ * certificateNumbers accepts either a single string — shorthand for
+ * { Approved: certificateNumber }, the common case — or a map for templates
+ * with more than one placeholder key (e.g. { Approved: oldCert, Replaced: newCert }).
  *
  * Always logs both sides (pass or fail). On a mismatch, records a soft
  * failure (test ends up reported as failed) without throwing, so the
@@ -69,23 +81,30 @@ export function readExpectedCertificateXml(relativePath: string): string {
 export function assertCertificateXmlMatches(
   actualXml: string,
   expectedTemplate: string,
-  certificateNumber: string,
+  certificateNumbers: string | Record<string, string>,
 ): void {
-  const expectedOutcome = expectedTemplate.split(CERTIFICATE_NUMBER_PLACEHOLDER).join(certificateNumber);
+  const placeholderValues: Record<string, string> =
+    typeof certificateNumbers === 'string' ? { Approved: certificateNumbers } : certificateNumbers;
+
+  let expectedOutcome = expectedTemplate;
+  for (const [key, value] of Object.entries(placeholderValues)) {
+    expectedOutcome = expectedOutcome.split(certificateNumberPlaceholder(key)).join(value);
+  }
 
   const formattedActual = format(maskDynamicFields(actualXml), XML_FORMAT_OPTIONS);
   const formattedExpected = format(expectedOutcome, XML_FORMAT_OPTIONS);
 
   const passed = formattedActual === formattedExpected;
+  const labelledNumbers = Object.entries(placeholderValues).map(([k, v]) => `${k}="${v}"`).join(', ');
 
   console.log(
-    `Certificate XML comparison (certificateNumber="${certificateNumber}") — ${passed ? 'MATCH' : 'MISMATCH'}\n` +
+    `Certificate XML comparison (${labelledNumbers}) — ${passed ? 'MATCH' : 'MISMATCH'}\n` +
     `--Actual--\n${formattedActual}\n` +
     `--Expected--\n${formattedExpected}`,
   );
 
   expect.soft(
     formattedActual,
-    `Downloaded certificate did not match the expected template (certificateNumber="${certificateNumber}")`,
+    `Downloaded certificate did not match the expected template (${labelledNumbers})`,
   ).toBe(formattedExpected);
 }

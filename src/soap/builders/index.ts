@@ -7,3 +7,4 @@ export { buildReadCertificatePayload } from './read-certificate.builder';
 export { buildReleaseRexToPrintPayload } from './release-rex-to-print.builder';
 export { buildLodgeCustomCertificatePayload } from './lodge-custom-certificate.builder';
 export { buildReleaseCustomCertificateToPrintPayload } from './release-custom-certificate-to-print.builder';
+export { buildCancelRexPayload } from './cancel-rex.builder';
