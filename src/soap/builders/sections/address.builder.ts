@@ -3,8 +3,10 @@ import { optElem, elem } from '../xml-utils';
 
 export function buildAddress(addr: Address | undefined, prefix = 'com'): string {
   if (!addr) return '';
-  const street = addr.streetLine
-    ? `<${prefix}:streetAddress><${prefix}:streetLine>${addr.streetLine}</${prefix}:streetLine></${prefix}:streetAddress>`
+  const street = addr.streetLine?.length
+    ? `<${prefix}:streetAddress>` +
+      addr.streetLine.map(line => `<${prefix}:streetLine>${line}</${prefix}:streetLine>`).join('') +
+      `</${prefix}:streetAddress>`
     : '';
   return street +
     optElem(`${prefix}:city`, addr.city) +

@@ -30,8 +30,9 @@ export interface CommodityDefaults {
   departureDaysFromNow: number;
   consigneeName:        string;
   consigneeAddress: {
-    streetLine: string;
+    streetLine: string[];
     city:       string;
+    state:      string;
     country:    string;
     postalCode: string;
   };
@@ -69,8 +70,9 @@ export const BASE_DEFAULTS: Omit<CommodityDefaults, 'commodityType' | 'defaultPr
   departureDaysFromNow: 5,
   consigneeName:        'ABC Importer Pte Ltd',
   consigneeAddress: {
-    streetLine: '123 Import Road',
+    streetLine: ['123 Import Road', 'Suite 4B'],
     city:       'Singapore',
+    state:      'Singapore',
     country:    'SG',
     postalCode: '123456',
   },
@@ -235,7 +237,7 @@ export function buildDefaultEuTransit(overrides: EuTransitOverrides = {}): EuTra
   return {
     personResponsible: {
       address: overrides.personAddress ?? {
-        streetLine: '10 Transit Way',
+        streetLine: ['10 Transit Way'],
         city:       'Rotterdam',
         country:    'NL',
         postalCode: '3011',
@@ -247,7 +249,7 @@ export function buildDefaultEuTransit(overrides: EuTransitOverrides = {}): EuTra
     placeOfDestinationDetails: {
       name: overrides.placeName ?? 'EU Distribution Hub',
       address: overrides.placeAddress ?? {
-        streetLine: '25 Destination Blvd',
+        streetLine: ['25 Destination Blvd'],
         city:       'Hamburg',
         country:    'DE',
         postalCode: '20095',
@@ -267,7 +269,7 @@ export function buildDefaultEuPlaceOfDestinationDetail(
   return {
     name: overrides.name ?? 'EU Distribution Hub',
     address: overrides.address ?? {
-      streetLine: '25 Destination Blvd',
+      streetLine: ['25 Destination Blvd'],
       city:       'Hamburg',
       country:    'DE',
       postalCode: '20095',

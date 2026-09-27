@@ -1081,5 +1081,19 @@ Asked clarifying questions on TC12-14 product/destination and whether TC15/16 ar
     </div>
 
   </div>
+
+  <div class="session">
+    <div class="session-date">Session: consigneeAddress streetLine array + required state (2026-09-27)</div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">[Pasted ConsigneeDetails/Address interfaces and the real com:consigneeAddress XML payload] I have a requirement that streetline has to be two rows and state has to be passed please update it</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Traced the shared Address type (common.types.ts) through every usage — consignee, EU transit person/place, EU place of destination, manufacturer — and updated streetLine from string to string[] project-wide, with address.builder.ts's buildAddress() now emitting one &lt;streetLine&gt; per array entry inside the same &lt;streetAddress&gt; wrapper. Made state required specifically on CommodityDefaults.consigneeAddress (rex-defaults.ts) rather than on the shared Address type, so only the consignee flow is forced to supply it. BASE_DEFAULTS.consigneeAddress now has two street lines and a populated state; EU transit/destination literals and both override files (payload-overrides.ts, eu-transit-overrides.ts) updated to match the array type. Left custom-certificate-defaults.ts/custom-certificate.types.ts untouched since the pasted XML used the com: namespace (REX LODGE), not cus1: (custom certificate). Verified end-to-end by running the existing horticulture debug test — serialized XML matched the requested structure exactly. tsc --noEmit clean.</div>
+    </div>
+
+  </div>
 </body>
 </html>

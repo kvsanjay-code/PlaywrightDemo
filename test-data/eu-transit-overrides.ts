@@ -9,9 +9,9 @@ export interface EuTransitOverrides {
   personFirstName?:     string;
   personLastName?:      string;
   personPhone?:         string;
-  personAddress?:       { streetLine: string; city: string; country: string; postalCode: string };
+  personAddress?:       { streetLine: string[]; city: string; country: string; postalCode: string };
   placeName?:           string;
-  placeAddress?:        { streetLine: string; city: string; country: string; postalCode: string };
+  placeAddress?:        { streetLine: string[]; city: string; country: string; postalCode: string };
   placePhone?:          string;
   approvalNumber?:      string;
   transitLocationType?: string;
@@ -19,6 +19,6 @@ export interface EuTransitOverrides {
 
 export interface EuPlaceOfDestinationDetailOverrides {
   name?:           string;
-  address?:        { streetLine: string; city: string; country: string; postalCode: string };
+  address?:        { streetLine: string[]; city: string; country: string; postalCode: string };
   approvalNumber?: string;
 }

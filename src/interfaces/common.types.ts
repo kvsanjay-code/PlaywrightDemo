@@ -1,7 +1,7 @@
 // Shared types used across multiple payload sections
 
 export interface Address {
-  streetLine?: string;
+  streetLine?: string[];
   city?: string;
   state?: string;
   country?: string;
