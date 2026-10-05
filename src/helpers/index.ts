@@ -9,3 +9,5 @@ export { saveDownload } from './download-utils';
 export { readExpectedCertificateXml, assertCertificateXmlMatches } from './xml-compare';
 export { createApproveReplaceTask, createApproveCancelTask } from './staff-portal-tasks-workflow';
 export type { ApproveReplaceTaskFn, ApproveCancelTaskFn } from './staff-portal-tasks-workflow';
+export { createAddHorticultureInspection, createAddGrainInspection } from './pems-workflow';
+export type { AddHorticultureInspectionFn, HorticultureInspectionDetails, AddGrainInspectionFn, GrainInspectionDetails } from './pems-workflow';

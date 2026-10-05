@@ -1,0 +1,35 @@
+/**
+ * portal-home.page.ts
+ *
+ * Page Object for the Self Service home page (post-login landing page).
+ * Links through to the PEMS application.
+ */
+
+import { expect, Locator, Page } from '@playwright/test';
+import { PemsBasePage } from './base.page';
+
+export class PemsPortalHomePage extends PemsBasePage {
+  // ── Locators ────────────────────────────────────────────────────────────────
+
+  private readonly welcomeUser: Locator;
+  private readonly pemsTile: Locator;
+
+  constructor(page: Page) {
+    super(page);
+    this.welcomeUser = page.getByRole('button', { name: /^Welcome / });
+    this.pemsTile = page.getByRole('link', { name: 'PEMS' });
+  }
+
+  // ── Actions ─────────────────────────────────────────────────────────────────
+
+  async expectLoggedIn(): Promise<void> {
+    await this.waitForPageReady();
+    await expect(this.page).toHaveTitle('Home');
+    await expect(this.welcomeUser).toBeVisible();
+  }
+
+  async openPems(): Promise<void> {
+    await this.pemsTile.click();
+    await this.page.waitForURL(/\/pems\//);
+  }
+}

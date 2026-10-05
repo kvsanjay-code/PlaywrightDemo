@@ -17,6 +17,14 @@
  *   taskDetailPage               — TaskDetailPage (approve/reject a task; approve opens a new tab).
  *   approveReplaceTask           — one-call helper: login → Tasks → open task → approve → replace-certificate new-tab flow.
  *   approveCancelTask            — one-call helper: login → Exports → Tasks → open task → approve (no new tab).
+ *   pemsLoginPage                — PemsLoginPage (PEMS/Self Service login, ADF splash + OAM retry handled).
+ *   pemsPortalHomePage           — PemsPortalHomePage (Self Service landing page — links through to PEMS).
+ *   pemsHomePage                 — PemsHomePage (PEMS app home — create-inspection tiles).
+ *   pemsInspectionPage           — PemsInspectionPage (Horticulture inspection detail steps).
+ *   grainInspectionPage          — GrainInspectionPage (Grain inspection detail steps).
+ *   pemsTimeEntryPage            — PemsTimeEntryPage (Time Entry tab).
+ *   addHorticultureInspection    — one-call helper: login → open PEMS → create Horticulture inspection → fill details → submit.
+ *   addGrainInspection           — one-call helper: login → open PEMS → create Grain inspection → fill details → submit.
  *
  * All tests should import { test, expect } from '../fixtures' rather than
  * from '@playwright/test' directly so they automatically get these fixtures.
@@ -24,11 +32,17 @@
 
 import { test as base } from '@playwright/test';
 import { SoapClient } from '../soap';
-import { LoginPage, RexSearchPage, RexDetailPage, ECertLoginPage, ECertHomePage, ECertSearchPage, ECertCertificateDetailsPage, TasksPage, TaskDetailPage } from '../pages';
+import {
+  LoginPage, RexSearchPage, RexDetailPage,
+  ECertLoginPage, ECertHomePage, ECertSearchPage, ECertCertificateDetailsPage,
+  TasksPage, TaskDetailPage,
+  PemsLoginPage, PemsPortalHomePage, PemsHomePage, PemsInspectionPage, GrainInspectionPage, PemsTimeEntryPage,
+} from '../pages';
 import { config } from '../config/environment';
 import { createAuthoriseRex, AuthoriseRexFn } from '../helpers/portal-workflow';
 import { createDownloadCertificateXml, DownloadCertificateXmlFn } from '../helpers/ecert-workflow';
 import { createApproveReplaceTask, ApproveReplaceTaskFn, createApproveCancelTask, ApproveCancelTaskFn } from '../helpers/staff-portal-tasks-workflow';
+import { createAddHorticultureInspection, AddHorticultureInspectionFn, createAddGrainInspection, AddGrainInspectionFn } from '../helpers/pems-workflow';
 
 // ─── Fixture type declarations ────────────────────────────────────────────────
 
@@ -63,6 +77,23 @@ type RexFixtures = {
   approveReplaceTask: ApproveReplaceTaskFn;
   /** One-call Staff Portal workflow: login → Exports → Tasks → open task → approve (no new tab). */
   approveCancelTask: ApproveCancelTaskFn;
+
+  /** PEMS/Self Service login page object — ADF splash fix + OAM "System error" retry. */
+  pemsLoginPage: PemsLoginPage;
+  /** Self Service landing page object — links through to PEMS. */
+  pemsPortalHomePage: PemsPortalHomePage;
+  /** PEMS app home page object — create-inspection tiles. */
+  pemsHomePage: PemsHomePage;
+  /** PEMS Horticulture inspection detail page object. */
+  pemsInspectionPage: PemsInspectionPage;
+  /** PEMS Grain inspection detail page object. */
+  grainInspectionPage: GrainInspectionPage;
+  /** PEMS Time Entry tab page object. */
+  pemsTimeEntryPage: PemsTimeEntryPage;
+  /** One-call PEMS workflow: login → open PEMS → create Horticulture inspection → fill details → submit. */
+  addHorticultureInspection: AddHorticultureInspectionFn;
+  /** One-call PEMS workflow: login → open PEMS → create Grain inspection → fill details → submit. */
+  addGrainInspection: AddGrainInspectionFn;
 };
 
 // ─── Extended test object ─────────────────────────────────────────────────────
@@ -127,6 +158,48 @@ export const test = base.extend<RexFixtures>({
 
   approveCancelTask: async ({ loginPage, rexSearchPage, tasksPage, taskDetailPage }, use) => {
     await use(createApproveCancelTask(loginPage, rexSearchPage, tasksPage, taskDetailPage));
+  },
+
+  pemsLoginPage: async ({ page }, use) => {
+    await use(new PemsLoginPage(page, config.pemsUrl));
+  },
+
+  pemsPortalHomePage: async ({ page }, use) => {
+    await use(new PemsPortalHomePage(page));
+  },
+
+  pemsHomePage: async ({ page }, use) => {
+    await use(new PemsHomePage(page));
+  },
+
+  pemsInspectionPage: async ({ page }, use) => {
+    await use(new PemsInspectionPage(page));
+  },
+
+  grainInspectionPage: async ({ page }, use) => {
+    await use(new GrainInspectionPage(page));
+  },
+
+  pemsTimeEntryPage: async ({ page }, use) => {
+    await use(new PemsTimeEntryPage(page));
+  },
+
+  addHorticultureInspection: async (
+    { pemsLoginPage, pemsPortalHomePage, pemsHomePage, pemsInspectionPage, pemsTimeEntryPage },
+    use,
+  ) => {
+    await use(
+      createAddHorticultureInspection(pemsLoginPage, pemsPortalHomePage, pemsHomePage, pemsInspectionPage, pemsTimeEntryPage),
+    );
+  },
+
+  addGrainInspection: async (
+    { pemsLoginPage, pemsPortalHomePage, pemsHomePage, grainInspectionPage, pemsTimeEntryPage },
+    use,
+  ) => {
+    await use(
+      createAddGrainInspection(pemsLoginPage, pemsPortalHomePage, pemsHomePage, grainInspectionPage, pemsTimeEntryPage),
+    );
   },
 });
 

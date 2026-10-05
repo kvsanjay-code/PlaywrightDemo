@@ -30,6 +30,11 @@ export interface EnvironmentConfig {
   ecertUsername: string;
   ecertPassword: string;
 
+  // PEMS (reached via Self Service)
+  pemsUrl: string;
+  pemsUsername: string;
+  pemsPassword: string;
+
   // Payload identifiers
   ownerExporterId:                   string;
   certificateRequiredClientGroup:    string;
@@ -59,6 +64,9 @@ function loadConfig(): EnvironmentConfig {
     ecertUrl:                          requireEnv('ECERT_URL'),
     ecertUsername:                     requireEnv('ECERT_USERNAME'),
     ecertPassword:                     requireEnv('ECERT_PASSWORD'),
+    pemsUrl:                           requireEnv('PEMS_URL'),
+    pemsUsername:                      requireEnv('PEMS_USERNAME'),
+    pemsPassword:                      requireEnv('PEMS_PASSWORD'),
     ownerExporterId:                   requireEnv('OWNER_EXPORTER_ID'),
     certificateRequiredClientGroup:    requireEnv('CERTIFICATE_REQUIRED_CLIENT_GROUP'),
   };
