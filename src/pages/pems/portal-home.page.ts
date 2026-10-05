@@ -12,11 +12,13 @@ export class PemsPortalHomePage extends PemsBasePage {
   // ── Locators ────────────────────────────────────────────────────────────────
 
   private readonly welcomeUser: Locator;
+  private readonly logoutLink: Locator;
   private readonly pemsTile: Locator;
 
   constructor(page: Page) {
     super(page);
     this.welcomeUser = page.getByRole('button', { name: /^Welcome / });
+    this.logoutLink = page.getByRole('link', { name: 'Logout' });
     this.pemsTile = page.getByRole('link', { name: 'PEMS' });
   }
 
@@ -31,5 +33,9 @@ export class PemsPortalHomePage extends PemsBasePage {
   async openPems(): Promise<void> {
     await this.pemsTile.click();
     await this.page.waitForURL(/\/pems\//);
+  }
+
+  async logout(): Promise<void> {
+    await this.logoutLink.click();
   }
 }

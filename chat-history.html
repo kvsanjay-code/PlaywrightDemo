@@ -1256,5 +1256,28 @@ Asked clarifying questions on TC12-14 product/destination and whether TC15/16 ar
     </div>
 
   </div>
+
+  <div class="session">
+    <div class="session-date">Session: PEMS REX authorisation + logout steps (2026-10-05)</div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">pems horticulture inspection two steps are missing C:\Playwright\Automation\PEMS — these steps should be part of Horticulture and Grain inspection steps — [pasted "Request authorisation of the REX" and "Wait 10 seconds, then log out" test.step blocks]</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Ported the three remaining page objects: PemsRexPage (search, requestAuthorisation), PemsHeader (backToSelfService), PemsLogoutPage (expectLoggedOut), plus stayIdle() on PemsBasePage and logout()/logoutLink on PemsPortalHomePage. Added both test.step() blocks (REX authorisation request, then 10s wait + logout) as Step 3 in both horticulture-lodge-inspection.spec.ts and grain-lodge-inspection.spec.ts, using lodgeState.rexNumber in place of the source project's REX-pool claim. Added test.setTimeout(5 * 60_000) matching the source project's own tuned timeout for the longer flow. tsc --noEmit clean, both tests discoverable.</div>
+    </div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">// Step 2 — Horticulture lodge: use the REX number to add the inspection details in PEMS — this step should include authorise and logout</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Folded the REX-authorisation and logout steps from the separate "Step 3" into the composed addHorticultureInspection()/addGrainInspection() workflow functions themselves, via a shared authoriseAndLogout() helper called after submit() — still emitting the same two named test.step()s from inside the helper, just invoked from one call instead of written out in the test file. Both spec files are back to a clean two-step shape (LODGE, then one call that does the inspection + authorisation + logout). tsc --noEmit clean, both tests still discoverable.</div>
+    </div>
+
+  </div>
 </body>
 </html>

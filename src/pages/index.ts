@@ -3,4 +3,4 @@ export type { REXStatus, InspectionDetails } from './staff-portal';
 
 export { ECertLoginPage, ECertHomePage, ECertSearchPage, ECertCertificateDetailsPage } from './ecert';
 
-export { PemsLoginPage, PemsPortalHomePage, PemsHomePage, PemsCreateInspectionDialog, PemsInspectionPage, GrainInspectionPage, PemsTimeEntryPage } from './pems';
+export { PemsLoginPage, PemsPortalHomePage, PemsHomePage, PemsCreateInspectionDialog, PemsInspectionPage, GrainInspectionPage, PemsTimeEntryPage, PemsRexPage, PemsHeader, PemsLogoutPage } from './pems';

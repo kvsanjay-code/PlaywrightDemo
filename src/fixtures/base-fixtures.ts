@@ -25,6 +25,9 @@
  *   pemsTimeEntryPage            — PemsTimeEntryPage (Time Entry tab).
  *   addHorticultureInspection    — one-call helper: login → open PEMS → create Horticulture inspection → fill details → submit.
  *   addGrainInspection           — one-call helper: login → open PEMS → create Grain inspection → fill details → submit.
+ *   pemsRexPage                  — PemsRexPage (PEMS REX search, request authorisation).
+ *   pemsHeader                   — PemsHeader (back to Self Service, shown on every PEMS screen).
+ *   pemsLogoutPage               — PemsLogoutPage (logout confirmation).
  *
  * All tests should import { test, expect } from '../fixtures' rather than
  * from '@playwright/test' directly so they automatically get these fixtures.
@@ -37,6 +40,7 @@ import {
   ECertLoginPage, ECertHomePage, ECertSearchPage, ECertCertificateDetailsPage,
   TasksPage, TaskDetailPage,
   PemsLoginPage, PemsPortalHomePage, PemsHomePage, PemsInspectionPage, GrainInspectionPage, PemsTimeEntryPage,
+  PemsRexPage, PemsHeader, PemsLogoutPage,
 } from '../pages';
 import { config } from '../config/environment';
 import { createAuthoriseRex, AuthoriseRexFn } from '../helpers/portal-workflow';
@@ -94,6 +98,13 @@ type RexFixtures = {
   addHorticultureInspection: AddHorticultureInspectionFn;
   /** One-call PEMS workflow: login → open PEMS → create Grain inspection → fill details → submit. */
   addGrainInspection: AddGrainInspectionFn;
+
+  /** PEMS REX search page object — search, request authorisation. */
+  pemsRexPage: PemsRexPage;
+  /** PEMS header component — back to Self Service, shown on every PEMS screen. */
+  pemsHeader: PemsHeader;
+  /** Self Service logout confirmation page object. */
+  pemsLogoutPage: PemsLogoutPage;
 };
 
 // ─── Extended test object ─────────────────────────────────────────────────────
@@ -185,21 +196,39 @@ export const test = base.extend<RexFixtures>({
   },
 
   addHorticultureInspection: async (
-    { pemsLoginPage, pemsPortalHomePage, pemsHomePage, pemsInspectionPage, pemsTimeEntryPage },
+    { pemsLoginPage, pemsPortalHomePage, pemsHomePage, pemsInspectionPage, pemsTimeEntryPage, pemsRexPage, pemsHeader, pemsLogoutPage },
     use,
   ) => {
     await use(
-      createAddHorticultureInspection(pemsLoginPage, pemsPortalHomePage, pemsHomePage, pemsInspectionPage, pemsTimeEntryPage),
+      createAddHorticultureInspection(
+        pemsLoginPage, pemsPortalHomePage, pemsHomePage, pemsInspectionPage, pemsTimeEntryPage,
+        pemsRexPage, pemsHeader, pemsLogoutPage,
+      ),
     );
   },
 
   addGrainInspection: async (
-    { pemsLoginPage, pemsPortalHomePage, pemsHomePage, grainInspectionPage, pemsTimeEntryPage },
+    { pemsLoginPage, pemsPortalHomePage, pemsHomePage, grainInspectionPage, pemsTimeEntryPage, pemsRexPage, pemsHeader, pemsLogoutPage },
     use,
   ) => {
     await use(
-      createAddGrainInspection(pemsLoginPage, pemsPortalHomePage, pemsHomePage, grainInspectionPage, pemsTimeEntryPage),
+      createAddGrainInspection(
+        pemsLoginPage, pemsPortalHomePage, pemsHomePage, grainInspectionPage, pemsTimeEntryPage,
+        pemsRexPage, pemsHeader, pemsLogoutPage,
+      ),
     );
+  },
+
+  pemsRexPage: async ({ page }, use) => {
+    await use(new PemsRexPage(page));
+  },
+
+  pemsHeader: async ({ page }, use) => {
+    await use(new PemsHeader(page));
+  },
+
+  pemsLogoutPage: async ({ page }, use) => {
+    await use(new PemsLogoutPage(page));
   },
 });
 
