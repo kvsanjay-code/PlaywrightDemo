@@ -21,6 +21,9 @@ export interface EnvironmentConfig {
   readCertificateServiceUrl: string;
 
   // Staff portal
+  /** Where the login form lives. */
+  staffPortalLoginUrl: string;
+  /** Where to land after a successful login — may differ from the login URL. */
   staffPortalUrl: string;
   staffUsername: string;
   staffPassword: string;
@@ -58,6 +61,7 @@ function loadConfig(): EnvironmentConfig {
     readRexServiceUrl:           requireEnv('READ_REX_SERVICE_URL'),
     customCertificateServiceUrl: requireEnv('CUSTOM_CERTIFICATE_SERVICE_URL'),
     readCertificateServiceUrl:  requireEnv('READ_CERTIFICATE_SERVICE_URL'),
+    staffPortalLoginUrl:               requireEnv('STAFF_PORTAL_LOGIN_URL'),
     staffPortalUrl:                    requireEnv('STAFF_PORTAL_URL'),
     staffUsername:                     requireEnv('STAFF_USERNAME'),
     staffPassword:                     requireEnv('STAFF_PASSWORD'),

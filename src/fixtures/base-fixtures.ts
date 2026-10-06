@@ -115,7 +115,7 @@ export const test = base.extend<RexFixtures>({
   },
 
   loginPage: async ({ page }, use) => {
-    await use(new LoginPage(page, config.staffPortalUrl, config.env));
+    await use(new LoginPage(page, config.staffPortalLoginUrl, config.staffPortalUrl, config.env));
   },
 
   rexSearchPage: async ({ page }, use) => {

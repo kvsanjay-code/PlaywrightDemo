@@ -22,11 +22,13 @@ export class PemsLoginPage extends PemsBasePage {
   private readonly signedInGreeting: Locator;
   private readonly accessManagerError: Locator;
 
-  constructor(
-    page: Page,
-    private readonly baseUrl: string,
-  ) {
+  private readonly baseUrl: string;
+
+  constructor(page: Page, pemsUrl: string) {
     super(page);
+    // Accepts either a bare origin or a full URL (e.g. including the Self Service home
+    // path) — only the origin is actually used, same as the source project's BASE_URL handling.
+    this.baseUrl = new URL(pemsUrl).origin;
     this.heading = page.getByRole('heading', { level: 1, name: /Welcome to the Department of Agriculture/ });
     this.userId = page.getByRole('textbox', { name: 'Enter User ID' });
     this.password = page.getByRole('textbox', { name: 'Enter Password' });

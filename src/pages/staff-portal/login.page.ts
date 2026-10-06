@@ -3,6 +3,10 @@
  *
  * Page Object for the Staff Portal login page.
  * Handles SIT and SIT2 login form variants.
+ *
+ * The login form and the portal itself live at different URLs — navigate() always
+ * goes to loginUrl, and login()/loginIfNeeded() always finish on portalUrl, whether
+ * or not a login form was actually submitted.
  */
 
 import { Page, Locator } from '@playwright/test';
@@ -11,7 +15,8 @@ import { Environment } from '../../config/environment';
 export class LoginPage {
   constructor(
     private readonly page: Page,
-    private readonly baseUrl: string,
+    private readonly loginUrl: string,
+    private readonly portalUrl: string,
     private readonly env: Environment,
   ) {}
 
@@ -36,7 +41,7 @@ export class LoginPage {
   // ── Actions ─────────────────────────────────────────────────────────────────
 
   async navigate(): Promise<void> {
-    await this.page.goto(this.baseUrl);
+    await this.page.goto(this.loginUrl);
   }
 
   async login(username: string, password: string): Promise<void> {
@@ -44,14 +49,17 @@ export class LoginPage {
     await this.usernameField().fill(username);
     await this.passwordField().fill(password);
     await this.loginButton().click();
+    await this.page.goto(this.portalUrl);
   }
 
   async loginIfNeeded(username: string, password: string): Promise<void> {
     await this.navigate();
     const isLoginForm = await this.usernameField().isVisible({ timeout: 3000 }).catch(() => false);
-    if (!isLoginForm) return;
-    await this.usernameField().fill(username);
-    await this.passwordField().fill(password);
-    await this.loginButton().click();
+    if (isLoginForm) {
+      await this.usernameField().fill(username);
+      await this.passwordField().fill(password);
+      await this.loginButton().click();
+    }
+    await this.page.goto(this.portalUrl);
   }
 }
