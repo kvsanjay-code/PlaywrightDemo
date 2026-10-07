@@ -1412,5 +1412,28 @@ Asked clarifying questions on TC12-14 product/destination and whether TC15/16 ar
     </div>
 
   </div>
+
+  <div class="session">
+    <div class="session-date">Session: Found the real root cause — parallel workers, not login logic (2026-10-07)</div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">even this solution try to login on every screen</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Asked whether it was a real credential resubmission or just an extra navigation, and whether it happened within one test or across separate parallel contexts, since the locked-text locator being too broad (matching innocuous footer text) was one plausible explanation worth ruling out before changing code again.</div>
+    </div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">all the command I have given is $env:ENV="vnd"; npx playwright test -g 'test name' --repeat-each=100 --headed --workers=6 --fully-parallel [mid-turn:] it is filling username and password each time now the account is locked</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Root cause found: --workers=6 --fully-parallel runs 6 separate browser contexts concurrently. All are seeded from the same saved session file, but OAM doesn't tolerate the same session being used from multiple simultaneous contexts — each one independently sees "not authenticated" and triggers its own real login, and those colliding simultaneous logins are what locks the account. This is a different problem from everything fixed in earlier sessions (which addressed logins across separate command invocations, not concurrent logins within one parallel run) — no login-detection logic can fix it, since each parallel context is a genuinely separate client to OAM. Asked the user to choose between workers=1 (sequential, safe) or serializing just the portal-touching section via a lock while keeping other work parallel; user chose workers=1. Added a fail-fast guard in the loginPage fixture (base-fixtures.ts) that throws immediately if testInfo.config.workers > 1, before any navigation — so a future accidental --workers=N run against a staff-portal test errors out clearly instead of silently re-locking the account. Pure SOAP-only tests (e.g. the bulk LODGE test) remain safe to run with --workers=6 --fully-parallel since they never touch the portal. tsc --noEmit clean.</div>
+    </div>
+
+  </div>
 </body>
 </html>

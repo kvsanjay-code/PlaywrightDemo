@@ -114,7 +114,16 @@ export const test = base.extend<RexFixtures>({
     await use(new SoapClient(config));
   },
 
-  loginPage: async ({ page }, use) => {
+  loginPage: async ({ page }, use, testInfo) => {
+    if (testInfo.config.workers > 1) {
+      throw new Error(
+        'Staff Portal tests must run with workers=1. OAM does not tolerate the same saved session being used ' +
+        'from multiple concurrent browser contexts — each one independently appears unauthenticated and ' +
+        'triggers its own real login, and those simultaneous real logins are what locks the account. ' +
+        'Drop --workers/--fully-parallel for any run that touches the Staff Portal (authoriseRex, ' +
+        'approveReplaceTask, approveCancelTask, etc.) — reserve parallel workers for SOAP-only tests.',
+      );
+    }
     await use(new LoginPage(page, config.staffPortalLoginUrl, config.staffPortalUrl, config.env));
   },
 
