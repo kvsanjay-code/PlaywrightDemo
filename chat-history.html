@@ -1357,5 +1357,28 @@ Asked clarifying questions on TC12-14 product/destination and whether TC15/16 ar
     </div>
 
   </div>
+
+  <div class="session">
+    <div class="session-date">Session: Fix two staff-portal login gaps revealed by a real account lockout (2026-10-07)</div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">I try to run the bulk\lodge-horticulture-rex.spec.ts hundred 100 in batch of 6 first batch was successful later I am getting the user accountis locked or disabled please contact the system administrator. I usually get this when multiple users are trying to login at the same time</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Initially diagnosed this as SOAP-layer concurrent authentication (6 parallel LODGE calls each carrying full credentials), since the bulk test never touches the browser. Asked whether the account was still locked and which throttle strategy (stagger vs full serialization) before implementing anything.</div>
+    </div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">soap account was fine only staff-portal account was locked looks like it tried to login even though that this is there to login and save session / if session is logged next time it should take to staffportalurl not staffportal login url</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Found the real bug: global-setup.ts always called login() unconditionally on a brand-new empty context — it never checked for an existing saved session. globalSetup runs once per `npx playwright test` command, not once ever, so running "100 in batches of 6" as several separate command invocations meant a fresh real login on every single batch — that's what actually locked the account, not in-batch parallelism. Fixed by having global-setup.ts load the previously saved STAFF_PORTAL_AUTH_FILE into its context (if present) before calling loginIfNeeded() instead of login(). Also restructured LoginPage.loginIfNeeded() to try portalUrl first — if already authenticated, that's the only navigation that happens and loginUrl is never visited at all; only falls back to loginUrl if the portal itself shows a login form. Scoped to staff portal only; eCert/PEMS untouched. Flagged that the account still needs to be unlocked server-side before any of this can be verified. tsc --noEmit clean, 28 tests still discoverable.</div>
+    </div>
+
+  </div>
 </body>
 </html>
