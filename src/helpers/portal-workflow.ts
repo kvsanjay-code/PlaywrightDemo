@@ -5,7 +5,7 @@
  * Combines common multi-step portal interactions into single function calls.
  */
 
-import { LoginPage, RexSearchPage, RexDetailPage, InspectionDetails } from '../pages';
+import { LoginPage, RexSearchPage, RexDetailPage, InspectionDetails, StaffPortalHeader } from '../pages';
 import { config } from '../config/environment';
 
 export interface PortalAuthoriseOptions {
@@ -23,6 +23,7 @@ export function createAuthoriseRex(
   loginPage: LoginPage,
   rexSearchPage: RexSearchPage,
   rexDetailPage: RexDetailPage,
+  staffPortalHeader: StaffPortalHeader,
 ): AuthoriseRexFn {
   return async (rexNumber: string, options: PortalAuthoriseOptions = {}) => {
     const today = new Date().toISOString().split('T')[0];
@@ -36,8 +37,9 @@ export function createAuthoriseRex(
 
     const comments = options.authoriseComments ?? 'Authorised via automated test';
 
-    await loginPage.loginIfNeeded(config.staffUsername, config.staffPassword);
+    await loginPage.login(config.staffUsername, config.staffPassword);
     await rexSearchPage.searchByRexNumber(rexNumber);
     await rexDetailPage.inspectAndAuthorise(inspection, comments);
+    await staffPortalHeader.logout();
   };
 }

@@ -6,3 +6,4 @@ export { TasksPage } from './tasks.page';
 export { TaskDetailPage } from './task-detail.page';
 export { ReplaceCertificatePage } from './replace-certificate.page';
 export { CertificateReplacementOptionPage } from './certificate-replacement-option.page';
+export { StaffPortalHeader } from './staff-portal-header.page';

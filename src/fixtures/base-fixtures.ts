@@ -7,7 +7,8 @@
  *   loginPage                    — LoginPage (handles SIT/SIT2 login variants).
  *   rexSearchPage                — RexSearchPage (search by REX number).
  *   rexDetailPage                — RexDetailPage (inspect, authorise, status).
- *   authoriseRex                 — one-call helper: login → search → inspect → authorise.
+ *   authoriseRex                 — one-call helper: login → search → inspect → authorise → logout.
+ *   staffPortalHeader             — StaffPortalHeader (Staff Portal/NEXDOC user menu — sign out).
  *   ecertLoginPage               — ECertLoginPage (eCert portal login).
  *   ecertHomePage                — ECertHomePage (links through to certificate search).
  *   ecertSearchPage              — ECertSearchPage (search by certificate number).
@@ -36,7 +37,7 @@
 import { test as base } from '@playwright/test';
 import { SoapClient } from '../soap';
 import {
-  LoginPage, RexSearchPage, RexDetailPage,
+  LoginPage, RexSearchPage, RexDetailPage, StaffPortalHeader,
   ECertLoginPage, ECertHomePage, ECertSearchPage, ECertCertificateDetailsPage,
   TasksPage, TaskDetailPage,
   PemsLoginPage, PemsPortalHomePage, PemsHomePage, PemsInspectionPage, GrainInspectionPage, PemsTimeEntryPage,
@@ -59,8 +60,10 @@ type RexFixtures = {
   rexSearchPage: RexSearchPage;
   /** REX detail page object — inspection, authorisation, status. */
   rexDetailPage: RexDetailPage;
-  /** One-call portal workflow: login → search → inspect → authorise. */
+  /** One-call portal workflow: login → search → inspect → authorise → logout. */
   authoriseRex: AuthoriseRexFn;
+  /** Staff Portal/NEXDOC user menu (top right) — sign out. */
+  staffPortalHeader: StaffPortalHeader;
 
   /** eCert login page object. */
   ecertLoginPage: ECertLoginPage;
@@ -135,8 +138,12 @@ export const test = base.extend<RexFixtures>({
     await use(new RexDetailPage(page));
   },
 
-  authoriseRex: async ({ loginPage, rexSearchPage, rexDetailPage }, use) => {
-    await use(createAuthoriseRex(loginPage, rexSearchPage, rexDetailPage));
+  authoriseRex: async ({ loginPage, rexSearchPage, rexDetailPage, staffPortalHeader }, use) => {
+    await use(createAuthoriseRex(loginPage, rexSearchPage, rexDetailPage, staffPortalHeader));
+  },
+
+  staffPortalHeader: async ({ page }, use) => {
+    await use(new StaffPortalHeader(page));
   },
 
   ecertLoginPage: async ({ page }, use) => {

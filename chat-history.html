@@ -1435,5 +1435,37 @@ Asked clarifying questions on TC12-14 product/destination and whether TC15/16 ar
     </div>
 
   </div>
+
+  <div class="session">
+    <div class="session-date">Session: Even workers=1 relogs in every repeat — add logout, drop shared session (2026-10-08)</div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">even this command (--repeat-each=100 --workers=1) running one at a time after 9 logins 10th one it is locking / every run it is asking for username and password / I think we should add logout after authorise</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Flagged that even repeat #1 re-logging in right after global-setup's own login meant storageState-based session reuse wasn't working at all, not just an idle-timeout/concurrent-session issue — logout alone wouldn't explain that part. Asked for the real Staff Portal user-menu selectors before guessing blind again.</div>
+    </div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">provided recorded logout selectors for two accounts: getByRole('button', { name: 'NA Nexdoc Business' }) / 'NH Nexdoc Helpdesk1' then getByRole('menuitem', { name: 'Sign out' })</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Added StaffPortalHeader page object (new staff-portal-header.page.ts) matching the user-menu button generically on /Nexdoc/i so it works for any account, with a logout() method. Wired into createAuthoriseRex as the last step after authorise. tsc clean.</div>
+    </div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">i want to remove login if needed for now</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Flagged that swapping loginIfNeeded() for login() in authoriseRex alone would conflict with every context still being pre-seeded by global-setup's shared session (login() would hit loginUrl's 404-when-already-logged-in case on the very first call). Asked whether to drop the shared session entirely; user chose yes. Deleted global-setup.ts, src/config/auth-state.ts, and src/helpers/process-lock.ts (the whole shared-session/concurrent-login-lock mechanism); removed globalSetup and storageState from playwright.config.ts; removed global-setup.ts from tsconfig.json's include. createAuthoriseRex now calls loginPage.login() unconditionally. authoriseRex is now fully self-contained every call: login → search → inspect/authorise → logout, no session-state checking at all. approveReplaceTask/approveCancelTask and replace-flow.spec.ts still use loginIfNeeded() untouched — not part of this change, still correct against a clean context. tsc --noEmit clean.</div>
+    </div>
+
+  </div>
 </body>
 </html>
