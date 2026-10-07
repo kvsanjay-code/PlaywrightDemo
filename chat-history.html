@@ -1380,5 +1380,37 @@ Asked clarifying questions on TC12-14 product/destination and whether TC15/16 ar
     </div>
 
   </div>
+
+  <div class="session">
+    <div class="session-date">Session: Portal-first login detection + concurrent-login lock (2026-10-07)</div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">I will explain the problem as I have mentioned there are two url one login url other portal url if you go to portal url with out login session it will take to that locked screen if we have login session once login then it will take to actual portal</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">This explained the whole saga: portalUrl without a session always shows the locked-looking screen by design — not evidence of a real lockout. Reverted LoginPage.loginIfNeeded() from "try portalUrl first" back to "always check loginUrl first, then go to portalUrl" (the previous portal-first version had been hitting that generic locked screen on every run and being misread as real lockouts).</div>
+    </div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">we want to avoid the account locked</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Added a cross-process lock (new src/helpers/process-lock.ts, STAFF_PORTAL_AUTH_LOCK_FILE in auth-state.ts) around the entire login step in global-setup.ts — closes the remaining gap where two separate `npx playwright test` invocations starting close together, with an expired saved session, could both attempt a real OAM login at once (the literal "multiple users logging in at the same time" trigger).</div>
+    </div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">if we user is logged when we go to login url again it will take to 404 page that is the design of it we can't change it [screenshot: Staff Portal welcome page after login] / screen shot I have attached earlier is after successful login page redirects to that it says welcome to agriculture staff portal, if we have logged in session and go to portal url we see the attached session [screenshot: NEXDOC Tasks page with Tasks/Exports/Certificates/Manage/Audit/Inspections menu]</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Full confirmed state machine: no session + portalUrl -> locked screen; no session + loginUrl -> real form; session + loginUrl -> 404 (avoid); session + portalUrl -> real portal. Redesigned loginIfNeeded() to check portalUrl first (reliable signal for session state) and only fall through to loginUrl once the locked screen confirms there's no session — so loginUrl's 404 case is never hit. A genuine lockout is still only ever declared from the check right after actually submitting credentials, never from the locked screen alone. Also found tests/replace/replace-flow.spec.ts was still calling login() directly, bypassing session reuse and hitting the 404 on every run — switched it to loginIfNeeded(). tsc --noEmit clean.</div>
+    </div>
+
+  </div>
 </body>
 </html>

@@ -91,7 +91,7 @@ test('TC-R04 — REPLACE rejected when REX is in INSPECTION status (not authoris
   console.log('LODGE complete (no authorisation):', lodgeState);
 
   // Portal — login and add inspection but do NOT authorise
-  await loginPage.login(process.env.STAFF_USERNAME!, process.env.STAFF_PASSWORD!);
+  await loginPage.loginIfNeeded(process.env.STAFF_USERNAME!, process.env.STAFF_PASSWORD!);
   await rexSearchPage.searchByRexNumber(lodgeState.rexNumber);
   await rexDetailPage.addInspectionDetails({
     startDate: new Date().toISOString().split('T')[0],

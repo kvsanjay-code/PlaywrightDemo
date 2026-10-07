@@ -4,11 +4,20 @@
  * Page Object for the Staff Portal login page.
  * Handles SIT and SIT2 login form variants.
  *
- * The login form and the portal itself live at different URLs. login() always
- * goes through loginUrl (used when a login is explicitly expected/required).
- * loginIfNeeded() tries portalUrl first — if a session is already active, the
- * portal loads directly and loginUrl is never visited at all; it only falls
- * back to loginUrl if the portal shows a login form instead of the portal.
+ * The login form and the portal itself live at different URLs, and (by design,
+ * confirmed, can't be changed) each only behaves correctly for one session
+ * state: portalUrl without a session shows the locked-looking error screen —
+ * not evidence of a real lockout, just what it always shows pre-authentication
+ * — while loginUrl *with* an active session 404s instead of showing the form.
+ * So loginIfNeeded() always checks portalUrl first: no locked screen there
+ * means a session is already active (the real portal loaded), so it's done.
+ * Only once the locked screen confirms there's no session does it go to
+ * loginUrl — which at that point is guaranteed to show the real form, never
+ * the 404, since there's nothing to 404 against. A genuine lockout is only
+ * ever confirmed afterwards, from the locked-screen check that runs right
+ * after actually submitting credentials. login() is the explicit, unconditional
+ * version — always submits credentials via loginUrl — for call sites that know
+ * for certain there's no session to begin with.
  */
 
 import { Page, Locator } from '@playwright/test';
@@ -67,23 +76,20 @@ export class LoginPage {
   }
 
   /**
-   * Tries the portal URL first — if a session is already active, this is the only
-   * navigation that happens and loginUrl is never touched. Falls back to loginUrl
-   * (and submits credentials) if the portal shows a login form, OR if it shows an
-   * account-locked/disabled error instead — that means the previously saved
-   * session belongs to an account that's since been locked, so it's discarded in
-   * favour of a fresh login with whatever credentials are passed in (e.g. trying
-   * a different account after the first one got locked).
+   * Checks portalUrl first, never loginUrl — portalUrl reliably tells us whether
+   * a session is active (real portal loads) or not (locked screen), whereas
+   * loginUrl behaves correctly only when we already know there's no session
+   * (otherwise it 404s). Only on confirming there's no session does this fall
+   * through to loginUrl, where the real lockout check happens post-submission.
    */
   async loginIfNeeded(username: string, password: string): Promise<void> {
     await this.navigateToPortal();
 
-    const isLoginForm = await this.usernameField().isVisible({ timeout: 3000 }).catch(() => false);
-    if (!isLoginForm) {
-      const isLocked = await this.accountLockedError().isVisible({ timeout: 1000 }).catch(() => false);
-      if (!isLocked) return; // genuinely already authenticated
-    }
+    const isLocked = await this.accountLockedError().isVisible({ timeout: 3000 }).catch(() => false);
+    if (!isLocked) return; // session already active — this is the real portal
 
+    // No session yet — portalUrl always shows the locked screen without one.
+    // loginUrl is safe to visit now; it only 404s when a session already exists.
     await this.navigate();
     await this.submitAndVerify(username, password);
   }

@@ -10,3 +10,6 @@
 import * as path from 'path';
 
 export const STAFF_PORTAL_AUTH_FILE = path.resolve(process.cwd(), 'playwright', '.auth', 'staff-portal-state.json');
+
+/** Guards global-setup.ts's real-login step so two concurrent test invocations never log in at once. */
+export const STAFF_PORTAL_AUTH_LOCK_FILE = `${STAFF_PORTAL_AUTH_FILE}.lock`;
