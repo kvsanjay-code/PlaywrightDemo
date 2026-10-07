@@ -1320,5 +1320,19 @@ Asked clarifying questions on TC12-14 product/destination and whether TC15/16 ar
     </div>
 
   </div>
+
+  <div class="session">
+    <div class="session-date">Session: Bulk parallel LODGE test with parallel-safe file output (2026-10-07)</div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">I want to write a test case which lodges a REX for horticulture and save the rexnumber in a file. i want to run the test case 100 times parallel execution 6 at a time and write the output to a file</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Built src/helpers/file-output.ts's appendLineSafely() using the same exclusive-lock-file technique as the PEMS project's REX pool (plain concurrent fs.appendFileSync would interleave/corrupt), and tests/bulk/lodge-horticulture-rex.spec.ts appending each LODGE's REX number to test-results/lodged-horticulture-rex-numbers.txt. Before handing it over, stress-tested the locking directly with 10 concurrent node processes — found a real Windows-specific bug: openSync(lockFile, 'wx') can throw EPERM instead of EEXIST when racing on Windows, which the original (and the ported PEMS project's own) code didn't handle, crashing ~13% of concurrent writers outright. Fixed by treating EPERM the same as "lock busy, retry", then re-verified with 15 concurrent processes — 450/450 expected lines, all unique, zero corruption. Gave the --repeat-each/--workers/--fully-parallel command plus a trial-first recommendation (6 before 100), since each run creates a real irreversible REX. tsc --noEmit clean, 28 tests across 11 files discoverable.</div>
+    </div>
+
+  </div>
 </body>
 </html>

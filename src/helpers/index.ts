@@ -11,3 +11,4 @@ export { createApproveReplaceTask, createApproveCancelTask } from './staff-porta
 export type { ApproveReplaceTaskFn, ApproveCancelTaskFn } from './staff-portal-tasks-workflow';
 export { createAddHorticultureInspection, createAddGrainInspection } from './pems-workflow';
 export type { AddHorticultureInspectionFn, HorticultureInspectionDetails, AddGrainInspectionFn, GrainInspectionDetails } from './pems-workflow';
+export { appendLineSafely } from './file-output';
