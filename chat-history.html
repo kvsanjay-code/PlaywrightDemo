@@ -1334,5 +1334,28 @@ Asked clarifying questions on TC12-14 product/destination and whether TC15/16 ar
     </div>
 
   </div>
+
+  <div class="session">
+    <div class="session-date">Session: Staff Portal globalSetup + storageState (one login per run) (2026-10-07)</div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">I have hundreds of test cases executing and sometime I have requirement to execute same test case 100 times to create data. in either of the case I want staffportal login to be done once and save the context I don't want staffportal to login multiple time at the same time that is creating ther problem please help me with first understanding the problem throughly and then fix the fix problem</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Diagnosed: every test gets a fresh empty browser context, so every staff-portal-touching test (authoriseRex, approveReplaceTask, approveCancelTask) logs in from scratch; under parallel/repeated runs that means many simultaneous login submissions against one account — the same class of problem as PEMS's documented OAM concurrent-login issue. Fixed with Playwright's standard globalSetup + storageState pattern: added src/config/auth-state.ts (dependency-free path constant, avoids pulling environment.ts's env-var validation into playwright.config.ts's load-time), global-setup.ts (logs into the Staff Portal exactly once via the existing LoginPage, saves the session with context.storageState()), and wired globalSetup + use.storageState into playwright.config.ts. No changes needed anywhere else — loginIfNeeded() already checks for an active session first, so every call site now skips the login form for free. Confirmed /playwright/.auth/ was already gitignored. Noted this only covers staff portal (eCert/PEMS untouched, different origins) and that session expiry self-heals per-test via the existing loginIfNeeded() fallback. Flagged that this couldn't be verified against the real portal from this machine. tsc --noEmit clean, 28 tests still discoverable.</div>
+    </div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">real portal won't work in this machine I will try this approach in the machine where it work please push these changes to git</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Pushed the globalSetup/storageState changes as-is, unverified against a live portal per the user's explanation that this machine can't reach it.</div>
+    </div>
+
+  </div>
 </body>
 </html>
