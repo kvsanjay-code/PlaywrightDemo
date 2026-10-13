@@ -12,3 +12,5 @@ export type { ApproveReplaceTaskFn, ApproveCancelTaskFn } from './staff-portal-t
 export { createAddHorticultureInspection, createAddGrainInspection } from './pems-workflow';
 export type { AddHorticultureInspectionFn, HorticultureInspectionDetails, AddGrainInspectionFn, GrainInspectionDetails } from './pems-workflow';
 export { appendLineSafely } from './file-output';
+export { runCertificateLifecycleE2E } from './certificate-lifecycle-workflow';
+export type { CertificateLifecycleParams, CertificateLifecycleTemplates } from './certificate-lifecycle-workflow';

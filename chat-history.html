@@ -1467,5 +1467,37 @@ Asked clarifying questions on TC12-14 product/destination and whether TC15/16 ar
     </div>
 
   </div>
+
+  <div class="session">
+    <div class="session-date">Session: Shared certificate-lifecycle helper + code-based test-data layout (2026-10-13/14)</div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">move the req to a file on its own I want to seperate the test data required to a test-data file</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Extracted the inline req: PayloadOverrides in zdcn01-certificate-lifecycle.spec.ts to its own test-data file.</div>
+    </div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">I have multiple E2E test cases, most of them only differ is 3 XMLs in E2E\Dairy and payload, some require authoriseRex, some doesn't — I am just guessing do we need a base test case which can be used in all subtest cases / as an example I have Dairy China Japan Taiwan Netherlands test cases</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Proposed a shared helper function (not a base test/class, matching the project's existing *-workflow.ts pattern) parameterized by builders, payload overrides, the three XML template paths, and an optional authoriseRex. User agreed to build it, starting with ZDCN01 as the reference implementation.</div>
+    </div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">I might have multiple test cases for same country and commodity, as an example zdcn01 DJP01 ZD001 etc</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Realized the test-case code (not country) is the real unique identifier, since a country can have multiple codes. Offered flat-by-code vs nested-country-then-code; user chose flat by code. Final layout: src/helpers/certificate-lifecycle-workflow.ts (runCertificateLifecycleE2E — LODGE → optional authoriseRex → ReadCertificate → compare → REPLACE → approve → compare twice → CancelRex → approve → compare); test-data/E2E/Dairy/ZDCN01/ (payload.ts + Approved/Replaced/Revoked.xml); tests/e2e/zdcn01-certificate-lifecycle.spec.ts rewritten from 143 lines to a 37-line wrapper calling the shared helper. Explained the label param (CancelRex reason text only, for SOAP-log traceability) and how to name/wire a future test case that does require authoriseRex (same code-based naming, just pull authoriseRex off the fixture and pass it through — the helper only calls it if present). tsc --noEmit clean, playwright test --list still finds 28 tests.</div>
+    </div>
+
+  </div>
 </body>
 </html>
