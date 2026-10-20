@@ -48,8 +48,10 @@ export interface PayloadOverrides {
   containerNumber?:    Nullable<string>;
   // Certificate
   printIndicator?:     Nullable<PrintIndicator>;
-  // Additional product lines (appended after the default line 1)
+  // Additional product lines (appended after line 1)
   additionalProductLines?: ProductLine[];
+  /** Fully overrides line 1, bypassing commodity defaults and the individual field overrides above entirely. */
+  productLineOverride?: ProductLine;
 }
 
 /**

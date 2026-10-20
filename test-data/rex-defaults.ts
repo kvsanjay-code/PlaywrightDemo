@@ -193,6 +193,15 @@ export function createCommodityBuilders(d: CommodityDefaults) {
 }
 
 function buildDefaultProductLines(d: CommodityDefaults, overrides: PayloadOverrides, transportMode: string): ProductLines {
+  // Escape hatch for tests whose line 1 differs too much from the commodity
+  // defaults to build via the individual field overrides below — bypasses all
+  // default-merging and uses the given ProductLine as line 1 verbatim.
+  if (overrides.productLineOverride) {
+    return {
+      productLine: [overrides.productLineOverride, ...(overrides.additionalProductLines ?? [])],
+    };
+  }
+
   const productType = o(d.defaultProductType, overrides.productType)!;
   const packType    = o(d.packType,           overrides.packType)!;
 

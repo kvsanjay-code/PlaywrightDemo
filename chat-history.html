@@ -1499,5 +1499,28 @@ Asked clarifying questions on TC12-14 product/destination and whether TC15/16 ar
     </div>
 
   </div>
+
+  <div class="session">
+    <div class="session-date">Session: Full line-1 override escape hatch for payload builders (2026-10-20)</div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">can u give me example of how to add second line in payload overrides</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Explained PayloadOverrides.additionalProductLines: ProductLine[] (distinct from the CustomCertificate-specific additionalProductLines used in TC-CC05) — appended verbatim after the auto-built line 1, no defaults applied to extra lines.</div>
+    </div>
+
+    <div class="message user">
+      <div class="avatar">You</div>
+      <div class="bubble">can we add line 1 also like this I have a requirement that some tests are way different to the commodity defaults it is easy to add this way</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">Claude</div>
+      <div class="bubble">Added PayloadOverrides.productLineOverride?: ProductLine (test-data/payload-overrides.ts). In buildDefaultProductLines (test-data/rex-defaults.ts), if set, it's used as line 1 verbatim, bypassing commodity defaults and the individual field shortcuts entirely; additionalProductLines still appends after it unchanged for multi-line cases. tsc --noEmit clean.</div>
+    </div>
+
+  </div>
 </body>
 </html>
